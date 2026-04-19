@@ -7,44 +7,27 @@ import { FocusModal } from "../focus-modal";
 import { ClaudeLogo, GithubLogo } from "../tool-logos";
 import { cn } from "@/lib/cn";
 
-const BRAND = {
-  bg: "#ffffff",
-  surface: "#f7f8fa",
-  border: "#e6e8ec",
-  ink: "#0a0e27",
-  muted: "#5b616e",
-  blue: "#0052ff",
-  blueSoft: "#eaf0ff",
-  green: "#00d395",
-  greenSoft: "#e6faf3",
-  red: "#ff3a44",
-  redSoft: "#ffe9eb",
-  amber: "#f5a524",
-  purple: "#7e5bef",
-};
-
-const ASSETS = [
-  { symbol: "BTC", name: "Bitcoin", price: 67420, change: 2.41, allocation: 0.42, color: "#f7931a" },
-  { symbol: "ETH", name: "Ethereum", price: 3285, change: 1.82, allocation: 0.28, color: "#627eea" },
-  { symbol: "SOL", name: "Solana", price: 184.3, change: -0.64, allocation: 0.18, color: "#14f195" },
-  { symbol: "AVAX", name: "Avalanche", price: 38.7, change: 3.12, allocation: 0.12, color: "#e84142" },
+const WATCHED = [
+  { pair: "BTC/USDT", price: 67420, ta: 0.75, ml: 0.68, ai: 0.82, verdict: "STRONG_BUY" as const },
+  { pair: "ETH/USDT", price: 3285, ta: 0.72, ml: 0.78, ai: 0.68, verdict: "BUY" as const },
+  { pair: "SOL/USDT", price: 184.3, ta: 0.44, ml: 0.52, ai: 0.38, verdict: "HOLD" as const },
+  { pair: "AVAX/USDT", price: 38.7, ta: 0.28, ml: 0.35, ai: 0.42, verdict: "SELL" as const },
 ];
 
-function seedSeries(basePrice: number, count: number, vol: number): number[] {
-  const out: number[] = [];
-  let price = basePrice;
-  for (let i = 0; i < count; i++) {
-    const delta = (Math.random() - 0.48) * basePrice * vol;
-    price = Math.max(basePrice * 0.7, price + delta);
-    out.push(price);
-  }
-  return out;
-}
-
-function nextPrice(last: number, base: number, vol: number): number {
-  const delta = (Math.random() - 0.48) * base * vol;
-  return Math.max(base * 0.7, last + delta);
-}
+const DISCORD = {
+  bg: "#313338",
+  sidebar: "#1e1f22",
+  channel: "#2b2d31",
+  hover: "#35373c",
+  text: "#dbdee1",
+  muted: "#949ba4",
+  accent: "#5865f2",
+  green: "#23a55a",
+  red: "#f23f42",
+  yellow: "#f0b232",
+  embed: "#2b2d31",
+  border: "#3f4147",
+};
 
 export function TradingBotPrototype({ activity }: { activity: CardActivity }) {
   const [open, setOpen] = useState(false);
@@ -65,123 +48,140 @@ function TradingPeek({
   activity: CardActivity;
   onOpen: () => void;
 }) {
-  const [series, setSeries] = useState<number[]>(() => seedSeries(12486, 36, 0.008));
+  const [idx, setIdx] = useState(1); // start on ETH (BUY vibe)
 
   useEffect(() => {
     if (activity === "idle") return;
     const id = setInterval(() => {
-      setSeries((prev) => [...prev.slice(1), nextPrice(prev[prev.length - 1], 12486, 0.008)]);
-    }, 900);
+      setIdx((i) => (i + 1) % WATCHED.length);
+    }, 2800);
     return () => clearInterval(id);
   }, [activity]);
 
-  const value = series[series.length - 1];
-  const start = series[0];
-  const change = ((value - start) / start) * 100;
-  const up = change >= 0;
+  const pair = WATCHED[idx];
 
   return (
     <ProjectFrame
       meta={{
         year: "2024",
         title: "Trading Bot",
-        tagline: "Automated crypto on Binance. TA, ML, and AI agreeing before every trade.",
+        tagline: "Halal crypto automation. Discord-first, 3-layer consensus, self-healing.",
       }}
-      innerClassName="bg-white"
+      innerClassName="bg-[#313338]"
       onOpen={onOpen}
       tape="top-left"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[#eaf0ff] via-white to-white" />
-
-      <div className="relative h-full flex flex-col px-4 py-4 gap-2">
-        <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.22em] text-[#5b616e]">
-          <div className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#00d395] animate-pulse" />
-            <span>live</span>
-          </div>
-          <span>Portfolio</span>
+      {/* Discord channel header */}
+      <div className="relative h-full flex flex-col text-[#dbdee1]" style={{ fontFamily: "'gg sans', 'Inter', system-ui" }}>
+        <div className="h-8 border-b border-[#1e1f22] flex items-center px-3 gap-2 text-xs shrink-0">
+          <span className="text-[#949ba4]">#</span>
+          <span className="font-semibold text-white text-[11px]">trade-alerts</span>
+          <span className="ml-auto text-[9px] text-[#949ba4] font-medium">live</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-[#23a55a] animate-pulse" />
         </div>
 
-        <div>
-          <p className="font-semibold text-[#0a0e27] text-2xl tracking-tight tabular-nums">
-            ${value.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}
-          </p>
-          <div className="mt-0.5 flex items-center gap-1.5">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums",
-                up ? "bg-[#e6faf3] text-[#00a574]" : "bg-[#ffe9eb] text-[#d01c28]",
-              )}
+        {/* Message with embed */}
+        <div className="flex-1 px-3 py-2.5 flex gap-2 min-h-0">
+          <div className="h-7 w-7 rounded-full shrink-0 bg-gradient-to-br from-[#5865f2] to-[#3b46d4] flex items-center justify-center text-white text-[9px] font-bold">
+            TB
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-1.5 text-[10px]">
+              <span className="text-white font-semibold">Trading Bot</span>
+              <span className="px-1 h-3 rounded-sm bg-[#5865f2] text-white text-[7px] font-bold flex items-center">APP</span>
+              <span className="text-[#949ba4]">now</span>
+            </div>
+
+            {/* Embed */}
+            <div
+              className="mt-1 rounded border-l-[3px] bg-[#2b2d31] pl-2.5 pr-2 py-1.5"
+              style={{
+                borderLeftColor:
+                  pair.verdict === "STRONG_BUY" || pair.verdict === "BUY"
+                    ? DISCORD.green
+                    : pair.verdict === "SELL"
+                      ? DISCORD.red
+                      : DISCORD.yellow,
+              }}
             >
-              <span>{up ? "↑" : "↓"}</span>
-              {Math.abs(change).toFixed(2)}%
-            </span>
-            <span className="text-[10px] text-[#5b616e]">24h</span>
+              <p className="text-[10px] font-semibold text-white truncate">
+                {pair.verdict === "STRONG_BUY"
+                  ? "📈 STRONG SIGNAL"
+                  : pair.verdict === "BUY"
+                    ? "📊 Entry signal"
+                    : pair.verdict === "SELL"
+                      ? "📉 Exit signal"
+                      : "⏸️ Hold"}
+                <span className="ml-1 text-[#949ba4] font-normal">· {pair.pair}</span>
+              </p>
+
+              {/* 3-layer bars */}
+              <div className="mt-1.5 space-y-1">
+                <LayerBar label="TA" value={pair.ta} color="#5865f2" />
+                <LayerBar label="ML" value={pair.ml} color="#9b6cff" />
+                <LayerBar label="AI" value={pair.ai} color="#f0b232" />
+              </div>
+
+              <div className="mt-1.5 pt-1.5 border-t border-[#3f4147] flex items-center justify-between text-[8px]">
+                <span className="text-[#949ba4] tabular-nums">
+                  @ ${pair.price.toLocaleString()}
+                </span>
+                <span className="text-[#949ba4]">scan #128 · 16 pairs</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 relative">
-          <AreaChart series={series} color={up ? BRAND.green : BRAND.red} />
-        </div>
-
-        <div className="flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.22em] text-[#5b616e]">
-          <span>TA · ML · AI agree</span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#0052ff]" />
-            3 open
-          </span>
+        <div className="shrink-0 border-t border-[#1e1f22] px-3 py-1.5 flex items-center gap-2 text-[8px] font-mono uppercase tracking-[0.22em] text-[#949ba4]">
+          <span>25 slash commands</span>
+          <span>·</span>
+          <span>systemctl active</span>
+          <span className="ml-auto text-[#23a55a]">paper mode</span>
         </div>
       </div>
     </ProjectFrame>
   );
 }
 
-function AreaChart({ series, color }: { series: number[]; color: string }) {
-  const max = Math.max(...series);
-  const min = Math.min(...series);
-  const range = max - min || 1;
-  const w = 100;
-  const h = 100;
-  const step = w / (series.length - 1);
-  const points = series.map((v, i) => {
-    const x = i * step;
-    const y = h - ((v - min) / range) * h;
-    return { x, y };
-  });
-  const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
-  const area = `${line} L ${w} ${h} L 0 ${h} Z`;
-  const id = useMemo(() => `area-${Math.random().toString(36).slice(2, 8)}`, []);
-
+function LayerBar({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-full">
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.28" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill={`url(#${id})`} />
-      <path d={line} fill="none" stroke={color} strokeWidth="1.2" strokeLinejoin="round" />
-    </svg>
+    <div className="flex items-center gap-1.5">
+      <span className="w-5 text-[8px] font-bold tabular-nums" style={{ color }}>
+        {label}
+      </span>
+      <div className="flex-1 h-1 rounded-full bg-[#1e1f22] overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${Math.round(value * 100)}%`, background: color }}
+        />
+      </div>
+      <span className="w-6 text-[8px] text-right text-[#949ba4] tabular-nums">
+        {Math.round(value * 100)}%
+      </span>
+    </div>
   );
 }
 
-type Tab = "portfolio" | "signals" | "strategy" | "activity";
+// ====================================================================
+// FOCUS MODAL
+// ====================================================================
+
+type Tab = "discord" | "signals" | "ml" | "rules";
 
 function TradingFocus() {
-  const [tab, setTab] = useState<Tab>("portfolio");
+  const [tab, setTab] = useState<Tab>("discord");
 
   return (
-    <div className="w-[min(1240px,96vw)] h-[min(780px,92vh)] grid grid-cols-[360px_1fr] bg-white text-[#0a0e27] overflow-hidden font-sans">
+    <div className="w-[min(1280px,96vw)] h-[min(800px,92vh)] grid grid-cols-[360px_1fr] bg-white text-[#0a0e27] overflow-hidden font-sans">
       <CaseStudySidebar />
-      <section className="flex flex-col overflow-hidden bg-white">
-        <TopBar />
+      <section className="flex flex-col overflow-hidden bg-white min-w-0">
+        <TopBar tab={tab} />
         <TabBar tab={tab} setTab={setTab} />
-        <div className="flex-1 overflow-y-auto">
-          {tab === "portfolio" && <PortfolioTab />}
+        <div className="flex-1 overflow-hidden">
+          {tab === "discord" && <DiscordTab />}
           {tab === "signals" && <SignalsTab />}
-          {tab === "strategy" && <StrategyTab />}
-          {tab === "activity" && <ActivityTab />}
+          {tab === "ml" && <MLPipelineTab />}
+          {tab === "rules" && <RulesTab />}
         </div>
       </section>
     </div>
@@ -192,12 +192,12 @@ function CaseStudySidebar() {
   return (
     <aside className="p-7 bg-[#f7f8fa] border-r border-[#e6e8ec] overflow-y-auto">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-[#0052ff] flex items-center justify-center">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <div className="h-10 w-10 rounded-xl bg-[#0a0e27] flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
-              d="M4 16l4-6 4 3 8-11"
-              stroke="white"
-              strokeWidth="2.2"
+              d="M3 17l5-6 4 4 4-8 5 10"
+              stroke="#23a55a"
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -206,16 +206,17 @@ function CaseStudySidebar() {
         <div>
           <p className="font-semibold tracking-tight text-base leading-none">Trading Bot</p>
           <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#5b616e] mt-1">
-            2024 · Crypto automation
+            2024 · Halal automation
           </p>
         </div>
       </div>
 
       <p className="mt-5 text-[13px] leading-relaxed text-[#5b616e]">
-        A 24/7 automated spot-trading bot on Binance. Three independent signal
-        layers (technical analysis, an ML ensemble, and a reasoning pass from
-        Claude) have to agree before the system takes a position. Runs on a
-        VPS with a kill switch and hard daily loss limits.
+        A Discord-first automated spot-trading bot on Binance. Halal by
+        design. No leverage, no margin, no futures. Three independent
+        signal layers (TA, an ML ensemble, and Claude&apos;s reasoning)
+        have to agree before anything fires. A `/fix` command lets the bot
+        diagnose and repair itself through a sandboxed Claude CLI.
       </p>
 
       <div className="mt-6">
@@ -223,8 +224,9 @@ function CaseStudySidebar() {
           My role
         </p>
         <p className="text-[13px] leading-relaxed text-[#5b616e]">
-          Solo. Strategy design, ML training pipeline, backend loop,
-          dashboard, deployment. Also the first user, which was the harshest
+          Solo. Strategy and risk rules, the ML pipeline, the Discord bot
+          with 25 slash commands, the self-healing loop, and the systemd
+          deployment. Also the first user, which was by far the harshest
           review cycle.
         </p>
       </div>
@@ -236,7 +238,7 @@ function CaseStudySidebar() {
         <div className="inline-flex items-center gap-2 rounded-md border border-[#e6e8ec] bg-white px-3 py-1.5">
           <ClaudeLogo size={14} className="text-[#0a0e27]" />
           <span className="text-[11px] font-semibold text-[#0a0e27]">Claude Code</span>
-          <span className="text-[9px] text-[#9a9ea8] ml-1">strategy + code</span>
+          <span className="text-[9px] text-[#9a9ea8] ml-1">strategy, ML, bot, ops</span>
         </div>
       </div>
 
@@ -247,12 +249,19 @@ function CaseStudySidebar() {
         <div className="flex flex-wrap gap-1.5">
           {[
             "Python",
+            "discord.py",
             "XGBoost",
             "Random Forest",
-            "Binance API",
-            "CoinGecko",
+            "Gradient Boosting",
+            "scikit-learn",
+            "pandas_ta",
+            "python-binance",
+            "PostgreSQL",
+            "Redis",
+            "Claude CLI",
+            "Flask",
+            "WebSockets",
             "systemd",
-            "Claude API",
           ].map((s) => (
             <span
               key={s}
@@ -269,16 +278,18 @@ function CaseStudySidebar() {
           What it taught me
         </p>
         <p className="text-[13px] leading-relaxed text-[#5b616e]">
-          Markets punish the parts of your system you trusted most. The
-          journal stream saved me more than the dashboard did. And a 52%
-          accuracy bot with good position sizing beats a 62% bot that blows
-          up one weekend.
+          Markets evolve, so the ML training weights more recent data
+          (2025=1.0, 2021=0.4). Adaptive TA/AI/ML weights had to be
+          smoothed (70% inertia, 30% update) to stop the strategy
+          whipsawing. And running Claude as a subprocess CLI, not an SDK
+          call, turned out to be the right choice for safety gates and
+          cost.
         </p>
       </div>
 
       <div className="mt-6 p-3 rounded-xl bg-[#eaf0ff] text-[#0a2ca6] text-xs leading-relaxed">
-        Three-layer confirmation. ATR stops. Trailing take-profit. Weekly
-        retrain. One kill switch.
+        Three layers must agree. 4h veto on 1h signals. ATR stops. 3-phase
+        trailing take-profit. Weekly retrain. One kill switch.
       </div>
 
       <div className="mt-6 space-y-2">
@@ -286,7 +297,7 @@ function CaseStudySidebar() {
           href="https://github.com/haider0072/trading-bot"
           target="_blank"
           rel="noreferrer"
-          className="group flex items-center justify-between rounded-xl bg-[#0052ff] hover:bg-[#0041cc] text-white px-4 py-3 text-sm font-semibold transition-colors"
+          className="group flex items-center justify-between rounded-xl bg-[#0a0e27] hover:bg-[#1a1f3d] text-white px-4 py-3 text-sm font-semibold transition-colors"
         >
           <span className="flex items-center gap-2">
             <GithubLogo size={16} />
@@ -299,67 +310,41 @@ function CaseStudySidebar() {
   );
 }
 
-function TopBar() {
-  const [series, setSeries] = useState<number[]>(() => seedSeries(12486, 80, 0.006));
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSeries((prev) => [...prev.slice(1), nextPrice(prev[prev.length - 1], 12486, 0.006)]);
-    }, 1200);
-    return () => clearInterval(id);
-  }, []);
-
-  const value = series[series.length - 1];
-  const start = series[0];
-  const change = value - start;
-  const changePct = (change / start) * 100;
-  const up = change >= 0;
-
+function TopBar({ tab }: { tab: Tab }) {
+  const titles: Record<Tab, { title: string; sub: string }> = {
+    discord: { title: "Discord feed", sub: "Primary interface, 25 slash commands" },
+    signals: { title: "Signal scan", sub: "Current 1h evaluation across the watchlist" },
+    ml: { title: "ML pipeline", sub: "800k candles, 40 features, weekly retrain" },
+    rules: { title: "Strategy rules", sub: "Entry, risk, and exit enforced in code" },
+  };
+  const t = titles[tab];
   return (
-    <header className="h-20 border-b border-[#e6e8ec] flex items-center px-7 gap-6 shrink-0 relative">
+    <header className="h-[72px] border-b border-[#e6e8ec] flex items-center pl-7 pr-24 gap-6 shrink-0 relative">
       <div className="flex flex-col min-w-0">
         <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-          Portfolio value
+          {t.sub}
         </span>
-        <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="text-2xl font-bold tracking-tight tabular-nums">
-            ${value.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}
-          </span>
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",
-              up ? "bg-[#e6faf3] text-[#00a574]" : "bg-[#ffe9eb] text-[#d01c28]",
-            )}
-          >
-            <span>{up ? "↑" : "↓"}</span>
-            ${Math.abs(change).toFixed(2)}
-            <span className="opacity-70">({changePct.toFixed(2)}%)</span>
-          </span>
-        </div>
+        <span className="text-xl font-bold tracking-tight mt-0.5">{t.title}</span>
       </div>
-
-      <div className="ml-auto flex items-center gap-3 shrink-0 pr-14">
+      <div className="ml-auto flex items-center gap-3 shrink-0">
         <span className="hidden lg:flex items-center gap-1.5 text-xs text-[#5b616e] whitespace-nowrap">
           <span className="h-1.5 w-1.5 rounded-full bg-[#00d395] animate-pulse shrink-0" />
           <span className="font-medium">systemd active</span>
         </span>
-        <button className="px-3 h-8 rounded-lg border border-[#e6e8ec] text-xs font-semibold text-[#5b616e] hover:bg-[#f7f8fa] transition-colors whitespace-nowrap">
-          Pause
-        </button>
-        <button className="px-3 h-8 rounded-lg bg-[#ffe9eb] text-[#d01c28] text-xs font-semibold hover:bg-[#ffd6da] transition-colors whitespace-nowrap">
-          Kill
-        </button>
+        <span className="h-7 px-2.5 rounded-md bg-[#eaf0ff] text-[#0052ff] text-[10px] font-mono uppercase tracking-[0.22em] font-semibold inline-flex items-center">
+          paper mode
+        </span>
       </div>
     </header>
   );
 }
 
 function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
-  const items: { id: Tab; label: string }[] = [
-    { id: "portfolio", label: "Portfolio" },
-    { id: "signals", label: "Signals" },
-    { id: "strategy", label: "Strategy" },
-    { id: "activity", label: "Activity" },
+  const items: { id: Tab; label: string; hint: string }[] = [
+    { id: "discord", label: "Discord", hint: "how you use it" },
+    { id: "signals", label: "Signals", hint: "TA · ML · AI" },
+    { id: "ml", label: "ML pipeline", hint: "training + features" },
+    { id: "rules", label: "Rules", hint: "entry · risk · exit" },
   ];
   return (
     <nav className="h-12 border-b border-[#e6e8ec] flex items-center px-5 gap-1 shrink-0">
@@ -370,13 +355,13 @@ function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
             key={item.id}
             onClick={() => setTab(item.id)}
             className={cn(
-              "relative h-12 px-3 text-sm font-medium transition-colors",
+              "relative h-12 px-4 text-sm font-medium transition-colors",
               active ? "text-[#0a0e27]" : "text-[#5b616e] hover:text-[#0a0e27]",
             )}
           >
             {item.label}
             {active && (
-              <span className="absolute bottom-[-1px] left-3 right-3 h-[2px] rounded-full bg-[#0052ff]" />
+              <span className="absolute bottom-[-1px] left-4 right-4 h-[2px] rounded-full bg-[#0052ff]" />
             )}
           </button>
         );
@@ -385,240 +370,603 @@ function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
   );
 }
 
-function PortfolioTab() {
-  const [range, setRange] = useState<"1H" | "24H" | "1W" | "1M" | "ALL">("24H");
-  const [series, setSeries] = useState<number[]>(() => seedSeries(12000, 96, 0.007));
+// ====================================================================
+// DISCORD TAB
+// ====================================================================
+
+type DiscordMsg =
+  | { kind: "slash"; user: string; command: string; args?: string }
+  | { kind: "bot-embed"; title: string; fields: { name: string; value: string; color?: string }[]; color: string; footer?: string }
+  | { kind: "bot-text"; text: string }
+  | { kind: "signal-alert"; pair: string; ta: number; ml: number; ai: number; entry: number; sl: number; tp: number }
+  | { kind: "trade-open"; pair: string; side: "BUY" | "SELL"; price: number; size: string; sl: number; tp: number }
+  | { kind: "trade-close"; pair: string; pnl: number; reason: string }
+  | { kind: "ask"; question: string; answer: string };
+
+const CHANNELS = [
+  { name: "trade-alerts", unread: 3, icon: "📈" },
+  { name: "system-logs", unread: 0, icon: "⚙️" },
+  { name: "ask-claude", unread: 1, icon: "💬" },
+  { name: "commands", unread: 0, icon: "🎛️" },
+];
+
+function DiscordTab() {
+  const [active, setActive] = useState(0);
+  const [messages, setMessages] = useState<(DiscordMsg & { id: number; time: string })[]>(() => [
+    {
+      id: 1,
+      time: "09:14",
+      kind: "signal-alert",
+      pair: "ETH/USDT",
+      ta: 0.72,
+      ml: 0.78,
+      ai: 0.68,
+      entry: 3281.5,
+      sl: 3248.0,
+      tp: 3395.2,
+    },
+    {
+      id: 2,
+      time: "09:15",
+      kind: "trade-open",
+      pair: "ETH/USDT",
+      side: "BUY",
+      price: 3281.5,
+      size: "0.32 ETH",
+      sl: 3248.0,
+      tp: 3395.2,
+    },
+    {
+      id: 3,
+      time: "09:32",
+      kind: "slash",
+      user: "haider",
+      command: "/ask",
+      args: "why did you enter ETH and not SOL?",
+    },
+    {
+      id: 4,
+      time: "09:32",
+      kind: "ask",
+      question: "why did you enter ETH and not SOL?",
+      answer:
+        "ETH hit TA score 3 with confidence 72% and AI agreed. SOL scored 1 (TA=buy weak), and the 4h timeframe was bearish so the multi-timeframe filter skipped it. Also, SOL had 2 losses in the last hour, so it's in a 60-min cooldown.",
+    },
+    {
+      id: 5,
+      time: "10:04",
+      kind: "slash",
+      user: "haider",
+      command: "/weights",
+    },
+    {
+      id: 6,
+      time: "10:04",
+      kind: "bot-embed",
+      title: "Adaptive signal weights · week 14",
+      color: "#5865f2",
+      fields: [
+        { name: "TA", value: "47% · rolling accuracy 61%", color: "#5865f2" },
+        { name: "AI", value: "44% · rolling accuracy 58%", color: "#f0b232" },
+        { name: "ML", value: "9% · rolling accuracy 52%", color: "#9b6cff" },
+      ],
+      footer: "Smoothed 70% old · 30% new · updates every Sunday",
+    },
+    {
+      id: 7,
+      time: "11:47",
+      kind: "trade-close",
+      pair: "ETH/USDT",
+      pnl: 1.8,
+      reason: "trailing stop hit · +0.4% locked in phase 2",
+    },
+  ]);
+  const idRef = useRef(8);
 
   useEffect(() => {
+    const pool: DiscordMsg[] = [
+      {
+        kind: "signal-alert",
+        pair: "BTC/USDT",
+        ta: 0.75,
+        ml: 0.68,
+        ai: 0.82,
+        entry: 67420,
+        sl: 66411,
+        tp: 69443,
+      },
+      {
+        kind: "bot-text",
+        text: "4h bearish skip SOL/USDT. Multi-timeframe filter enforced.",
+      },
+      {
+        kind: "bot-text",
+        text: "Scan done: 3 buy, 1 sell, 12 hold · 16 pairs",
+      },
+      {
+        kind: "trade-open",
+        pair: "BTC/USDT",
+        side: "BUY",
+        price: 67420,
+        size: "0.018 BTC",
+        sl: 66411,
+        tp: 69443,
+      },
+    ];
     const id = setInterval(() => {
-      setSeries((prev) => [...prev.slice(1), nextPrice(prev[prev.length - 1], 12000, 0.007)]);
-    }, 1500);
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      const now = new Date();
+      const t = `${now.getHours().toString().padStart(2, "0")}:${now
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`;
+      setMessages((prev) => [...prev.slice(-12), { ...pick, id: idRef.current++, time: t }]);
+    }, 4200);
     return () => clearInterval(id);
   }, []);
 
-  const value = series[series.length - 1];
-  const start = series[0];
-  const change = value - start;
-  const up = change >= 0;
-
   return (
-    <div className="p-7">
-      <div className="rounded-2xl border border-[#e6e8ec] p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-              Portfolio chart
-            </p>
-            <p className="text-2xl font-bold mt-1 tracking-tight tabular-nums">
-              ${value.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}
-            </p>
-            <p
+    <div
+      className="h-full grid grid-cols-[200px_1fr]"
+      style={{ fontFamily: "'gg sans', 'Inter', system-ui" }}
+    >
+      {/* Channel sidebar */}
+      <div className="bg-[#2b2d31] text-[#dbdee1] flex flex-col">
+        <div className="h-12 px-4 flex items-center border-b border-[#1e1f22] shrink-0">
+          <span className="text-sm font-semibold text-white">trading-bot</span>
+          <span className="ml-auto text-[#949ba4] text-xs">▾</span>
+        </div>
+        <div className="py-3 px-2 flex-1 overflow-y-auto">
+          <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[#949ba4]">
+            channels
+          </p>
+          {CHANNELS.map((c, i) => (
+            <button
+              key={c.name}
+              onClick={() => setActive(i)}
               className={cn(
-                "text-sm font-medium tabular-nums mt-0.5",
-                up ? "text-[#00a574]" : "text-[#d01c28]",
+                "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors mb-0.5",
+                active === i
+                  ? "bg-[#404249] text-white"
+                  : "text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]",
               )}
             >
-              {up ? "+" : ""}
-              ${change.toFixed(2)} ({((change / start) * 100).toFixed(2)}%)
+              <span className="text-[#949ba4] text-base leading-none">#</span>
+              <span className="flex-1 text-left truncate">{c.name}</span>
+              {c.unread > 0 && (
+                <span className="h-4 min-w-[16px] px-1 rounded-full bg-[#f23f42] text-white text-[10px] font-bold flex items-center justify-center">
+                  {c.unread}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        <div className="px-2 py-2 bg-[#232428] border-t border-[#1e1f22] flex items-center gap-2 shrink-0">
+          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#5865f2] to-[#3b46d4] flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+            TB
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-white truncate">Trading Bot</p>
+            <p className="text-[10px] text-[#23a55a]">online · paper</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Channel feed */}
+      <div className="bg-[#313338] text-[#dbdee1] flex flex-col min-w-0">
+        <div className="h-12 px-4 flex items-center border-b border-[#1e1f22] shrink-0 gap-2 whitespace-nowrap overflow-hidden">
+          <span className="text-[#949ba4] text-lg shrink-0">#</span>
+          <span className="font-semibold text-white truncate">{CHANNELS[active].name}</span>
+          <span className="text-[#949ba4] text-xs border-l border-[#3f4147] pl-3 ml-1 truncate hidden xl:inline">
+            Automated alerts from the trading loop
+          </span>
+          <span className="ml-auto text-xs text-[#949ba4] shrink-0">{messages.length} msgs</span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto py-3">
+          {messages.map((m) => (
+            <DiscordMessage key={m.id} msg={m} />
+          ))}
+        </div>
+
+        <div className="px-4 pb-3 shrink-0">
+          <div className="bg-[#383a40] rounded-lg px-4 py-2.5 text-sm text-[#949ba4] flex items-center gap-2">
+            <span className="text-[#949ba4]">+</span>
+            <span>Message #{CHANNELS[active].name}</span>
+            <span className="ml-auto text-[10px] font-mono uppercase tracking-[0.2em]">
+              try /ask, /scan, /fix
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DiscordMessage({ msg }: { msg: DiscordMsg & { id: number; time: string } }) {
+  const botAvatar = (
+    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#5865f2] to-[#3b46d4] flex items-center justify-center text-white text-xs font-bold shrink-0">
+      TB
+    </div>
+  );
+  const userAvatar = (
+    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#c2410c] to-[#9a3412] flex items-center justify-center text-white text-xs font-bold shrink-0">
+      H
+    </div>
+  );
+
+  if (msg.kind === "slash") {
+    return (
+      <div className="px-4 py-1.5 hover:bg-[#2e3035] flex gap-3 group">
+        {userAvatar}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-[#e1b94c]">{msg.user}</span>
+            <span className="text-[11px] text-[#949ba4]">{msg.time}</span>
+          </div>
+          <p className="text-sm text-[#dbdee1]">
+            <span className="px-1.5 py-0.5 rounded bg-[#404249] text-[#c4d4f7] font-medium">
+              {msg.command}
+            </span>
+            {msg.args && <span className="ml-2 text-[#b5bac1]">{msg.args}</span>}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.kind === "signal-alert") {
+    return (
+      <div className="px-4 py-1.5 hover:bg-[#2e3035] flex gap-3">
+        {botAvatar}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-white">Trading Bot</span>
+            <span className="px-1 h-4 rounded-sm bg-[#5865f2] text-white text-[9px] font-bold flex items-center">
+              APP
+            </span>
+            <span className="text-[11px] text-[#949ba4]">{msg.time}</span>
+          </div>
+          <div className="mt-1 max-w-[460px] rounded border-l-[3px] border-[#23a55a] bg-[#2b2d31] p-3">
+            <p className="text-sm font-semibold text-white">
+              📈 STRONG SIGNAL <span className="text-[#949ba4] font-normal">· {msg.pair}</span>
+            </p>
+            <div className="mt-2 space-y-1">
+              <LayerBarDiscord label="Technical" value={msg.ta} color="#5865f2" />
+              <LayerBarDiscord label="Machine Learning" value={msg.ml} color="#9b6cff" />
+              <LayerBarDiscord label="AI (Claude)" value={msg.ai} color="#f0b232" />
+            </div>
+            <div className="mt-3 pt-2 border-t border-[#3f4147] grid grid-cols-3 gap-3 text-[11px]">
+              <Field label="Entry" value={`$${msg.entry.toLocaleString()}`} />
+              <Field label="Stop" value={`$${msg.sl.toLocaleString()}`} color="#f23f42" />
+              <Field label="Target" value={`$${msg.tp.toLocaleString()}`} color="#23a55a" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.kind === "trade-open") {
+    return (
+      <div className="px-4 py-1.5 hover:bg-[#2e3035] flex gap-3">
+        {botAvatar}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-white">Trading Bot</span>
+            <span className="text-[11px] text-[#949ba4]">{msg.time}</span>
+          </div>
+          <div className="mt-1 max-w-[420px] rounded border-l-[3px] border-[#23a55a] bg-[#2b2d31] px-3 py-2">
+            <p className="text-xs font-semibold text-white">
+              ✅ {msg.side} filled · {msg.pair}
+            </p>
+            <p className="text-[11px] text-[#b5bac1] mt-0.5">
+              @ ${msg.price.toLocaleString()} · size {msg.size}
+            </p>
+            <p className="text-[10px] text-[#949ba4] mt-1 tabular-nums">
+              SL ${msg.sl.toLocaleString()} · TP ${msg.tp.toLocaleString()}
             </p>
           </div>
-          <div className="flex items-center gap-1 rounded-lg bg-[#f7f8fa] p-1">
-            {(["1H", "24H", "1W", "1M", "ALL"] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRange(r)}
-                className={cn(
-                  "px-3 h-7 rounded-md text-xs font-semibold transition-colors",
-                  range === r
-                    ? "bg-white text-[#0a0e27] shadow-sm"
-                    : "text-[#5b616e] hover:text-[#0a0e27]",
-                )}
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.kind === "trade-close") {
+    const win = msg.pnl >= 0;
+    return (
+      <div className="px-4 py-1.5 hover:bg-[#2e3035] flex gap-3">
+        {botAvatar}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-white">Trading Bot</span>
+            <span className="text-[11px] text-[#949ba4]">{msg.time}</span>
+          </div>
+          <div
+            className="mt-1 max-w-[420px] rounded border-l-[3px] bg-[#2b2d31] px-3 py-2"
+            style={{ borderLeftColor: win ? "#23a55a" : "#f23f42" }}
+          >
+            <p className="text-xs font-semibold text-white">
+              {win ? "🎯 Closed" : "❌ Stopped"} · {msg.pair}
+              <span
+                className="ml-2 font-bold tabular-nums"
+                style={{ color: win ? "#23a55a" : "#f23f42" }}
               >
-                {r}
-              </button>
+                {win ? "+" : ""}
+                {msg.pnl.toFixed(2)}%
+              </span>
+            </p>
+            <p className="text-[11px] text-[#949ba4] mt-0.5">{msg.reason}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.kind === "ask") {
+    return (
+      <div className="px-4 py-1.5 hover:bg-[#2e3035] flex gap-3">
+        {botAvatar}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-white">Trading Bot</span>
+            <span className="px-1 h-4 rounded-sm bg-[#5865f2] text-white text-[9px] font-bold flex items-center">
+              APP
+            </span>
+            <span className="text-[11px] text-[#949ba4]">{msg.time}</span>
+          </div>
+          <div className="mt-1 max-w-[520px] rounded bg-[#2b2d31] px-3 py-2.5 border-l-[3px] border-[#f0b232]">
+            <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#f0b232] mb-1.5">
+              /ask · claude cli · redis context
+            </p>
+            <p className="text-[13px] text-[#dbdee1] leading-relaxed">{msg.answer}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.kind === "bot-embed") {
+    return (
+      <div className="px-4 py-1.5 hover:bg-[#2e3035] flex gap-3">
+        {botAvatar}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-white">Trading Bot</span>
+            <span className="text-[11px] text-[#949ba4]">{msg.time}</span>
+          </div>
+          <div
+            className="mt-1 max-w-[440px] rounded border-l-[3px] bg-[#2b2d31] px-3 py-2.5"
+            style={{ borderLeftColor: msg.color }}
+          >
+            <p className="text-sm font-semibold text-white">{msg.title}</p>
+            <div className="mt-2 space-y-1.5">
+              {msg.fields.map((f) => (
+                <div key={f.name} className="flex items-center gap-2">
+                  <span
+                    className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold w-10"
+                    style={{ color: f.color || "#949ba4" }}
+                  >
+                    {f.name}
+                  </span>
+                  <span className="text-[12px] text-[#b5bac1] tabular-nums">{f.value}</span>
+                </div>
+              ))}
+            </div>
+            {msg.footer && (
+              <p className="mt-2 pt-2 border-t border-[#3f4147] text-[10px] text-[#949ba4]">
+                {msg.footer}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.kind === "bot-text") {
+    return (
+      <div className="px-4 py-1.5 hover:bg-[#2e3035] flex gap-3">
+        {botAvatar}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-white">Trading Bot</span>
+            <span className="text-[11px] text-[#949ba4]">{msg.time}</span>
+          </div>
+          <p className="text-sm text-[#dbdee1]">{msg.text}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function LayerBarDiscord({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-[11px]">
+      <span className="w-32 text-[#b5bac1]">{label}</span>
+      <div className="flex-1 h-1.5 rounded-full bg-[#1e1f22] overflow-hidden">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${Math.round(value * 100)}%`, background: color }}
+        />
+      </div>
+      <span className="w-9 text-right font-semibold tabular-nums" style={{ color }}>
+        {Math.round(value * 100)}%
+      </span>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string;
+  color?: string;
+}) {
+  return (
+    <div>
+      <p className="text-[9px] font-mono uppercase tracking-[0.22em] text-[#949ba4]">
+        {label}
+      </p>
+      <p className="text-xs font-semibold tabular-nums" style={{ color: color || "white" }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+// ====================================================================
+// SIGNALS TAB
+// ====================================================================
+
+const INDICATORS = [
+  { name: "RSI", period: "14", value: "34.2", score: "+2", note: "oversold, reversal zone", color: "#0052ff" },
+  { name: "RSI", period: "6", value: "41.8", score: "+1", note: "short-term turning up", color: "#0052ff" },
+  { name: "MACD", period: "12 / 26 / 9", value: "bullish cross", score: "+2", note: "histogram positive, momentum flip", color: "#0052ff" },
+  { name: "EMA", period: "9 > 21 > 50", value: "stacked", score: "+2", note: "strong bullish alignment", color: "#00a574" },
+  { name: "EMA", period: "200", value: "price above", score: "+1", note: "macro trend bullish", color: "#00a574" },
+  { name: "Bollinger", period: "20, 2σ", value: "lower touch", score: "+1", note: "mean reversion setup", color: "#7e5bef" },
+  { name: "Volume", period: "vs 20-SMA", value: "1.6×", score: "+1", note: "participation confirming", color: "#f5a524" },
+  { name: "ATR", period: "14", value: "1.8%", score: "", note: "sizing stop at 1.5× ATR = 2.7%", color: "#5b616e" },
+];
+
+function SignalsTab() {
+  return (
+    <div className="h-full overflow-y-auto p-7">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
+        <div>
+          <div className="flex items-center gap-3 mb-5">
+            <span className="h-7 px-2.5 rounded-md bg-[#eaf0ff] text-[#0052ff] text-[10px] font-mono uppercase tracking-[0.22em] font-semibold inline-flex items-center">
+              ETH/USDT · 1h
+            </span>
+            <span className="text-xs text-[#5b616e]">
+              latest candle · $3,285 · cycle #128
+            </span>
+          </div>
+
+          <h3 className="text-lg font-semibold tracking-tight">
+            TA score 9 of possible 10
+          </h3>
+          <p className="text-sm text-[#5b616e] mt-0.5 leading-relaxed">
+            Seven indicators evaluated against weighted rules from{" "}
+            <span className="font-mono text-[12px] text-[#0a0e27]">
+              core/analyzer.py
+            </span>
+            . Score over 4 is strong_buy. Between 2 and 3 is buy. Below −2 is sell.
+          </p>
+
+          <div className="mt-5 rounded-2xl border border-[#e6e8ec] overflow-hidden">
+            <div className="grid grid-cols-[1.2fr_0.9fr_1fr_60px_1.4fr] gap-4 px-5 py-3 bg-[#f7f8fa] text-[11px] font-semibold uppercase tracking-[0.1em] text-[#5b616e]">
+              <span>Indicator</span>
+              <span>Period</span>
+              <span>Value</span>
+              <span className="text-right">Score</span>
+              <span>Why it matters</span>
+            </div>
+            {INDICATORS.map((ind, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[1.2fr_0.9fr_1fr_60px_1.4fr] gap-4 px-5 py-3 items-center text-sm border-t border-[#e6e8ec]"
+              >
+                <span className="font-semibold" style={{ color: ind.color }}>
+                  {ind.name}
+                </span>
+                <span className="font-mono text-xs text-[#5b616e]">{ind.period}</span>
+                <span className="text-[#0a0e27] tabular-nums">{ind.value}</span>
+                <span
+                  className={cn(
+                    "text-right font-semibold tabular-nums text-sm",
+                    ind.score.startsWith("+")
+                      ? "text-[#00a574]"
+                      : ind.score.startsWith("-")
+                        ? "text-[#d01c28]"
+                        : "text-[#5b616e]",
+                  )}
+                >
+                  {ind.score || "—"}
+                </span>
+                <span className="text-xs text-[#5b616e]">{ind.note}</span>
+              </div>
             ))}
           </div>
         </div>
 
-        <div className="h-[200px]">
-          <AreaChart series={series} color={up ? BRAND.blue : BRAND.red} />
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-            Holdings
-          </p>
-          <span className="text-xs text-[#5b616e]">4 assets</span>
-        </div>
-
-        <div className="rounded-2xl border border-[#e6e8ec] overflow-hidden">
-          <div className="grid grid-cols-[1.5fr_1fr_1fr_0.8fr_100px] gap-4 px-5 py-3 bg-[#f7f8fa] text-[11px] font-semibold uppercase tracking-[0.1em] text-[#5b616e]">
-            <span>Asset</span>
-            <span className="text-right">Price</span>
-            <span className="text-right">24h</span>
-            <span className="text-right">Allocation</span>
-            <span />
+        {/* Right panel: 3-layer + verdict */}
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-[#e6e8ec] p-5">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e] mb-4">
+              Three-layer consensus
+            </p>
+            <LayerFull
+              label="Technical Analysis"
+              tag="TA"
+              value={0.72}
+              color="#0052ff"
+              bg="#eaf0ff"
+              note="7 indicators, weighted score 9/10"
+            />
+            <div className="h-px bg-[#e6e8ec] my-4" />
+            <LayerFull
+              label="Machine Learning"
+              tag="ML"
+              value={0.78}
+              color="#7e5bef"
+              bg="#f3efff"
+              note="VotingClassifier · xgb + rf + gb · up class 78%"
+            />
+            <div className="h-px bg-[#e6e8ec] my-4" />
+            <LayerFull
+              label="AI reasoning"
+              tag="AI"
+              value={0.68}
+              color="#f5a524"
+              bg="#fff6e5"
+              note="Claude CLI · sonnet · JSON out, technical only"
+            />
           </div>
-          {ASSETS.map((a) => (
-            <AssetRow key={a.symbol} asset={a} />
-          ))}
+
+          <div className="rounded-2xl border border-[#e6e8ec] p-5">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
+              Combined verdict
+            </p>
+            <div className="mt-2 flex items-baseline gap-3">
+              <span className="text-3xl font-bold tracking-tight text-[#00a574]">BUY</span>
+              <span className="text-sm font-medium text-[#5b616e] tabular-nums">
+                72% confidence · weighted 0.47 TA · 0.44 AI · 0.09 ML
+              </span>
+            </div>
+            <div className="mt-4 space-y-2">
+              <RowSmall label="Entry target" value="$3,281.50" />
+              <RowSmall label="Stop loss" value="$3,248.00" sub="−1.02% · 1.5× ATR" subColor="#d01c28" />
+              <RowSmall label="Take profit" value="$3,395.20" sub="+3.46% · 1:3.4 R:R" subColor="#00a574" />
+              <RowSmall label="Position size" value="0.32 ETH" sub="$1,050 · 2% account risk" subColor="#5b616e" />
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-[#f7f8fa] p-4 text-xs leading-relaxed text-[#5b616e]">
+            4h timeframe shows bullish trend, multi-timeframe filter passes. No
+            cooldown active on ETH. Daily loss today: $8.20 of $50 limit.
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function AssetRow({ asset }: { asset: (typeof ASSETS)[number] }) {
-  const [spark, setSpark] = useState<number[]>(() => seedSeries(asset.price, 30, 0.01));
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSpark((prev) => [...prev.slice(1), nextPrice(prev[prev.length - 1], asset.price, 0.01)]);
-    }, 1600);
-    return () => clearInterval(id);
-  }, [asset.price]);
-
-  const up = asset.change >= 0;
-  return (
-    <div className="grid grid-cols-[1.5fr_1fr_1fr_0.8fr_100px] gap-4 px-5 py-4 items-center border-t border-[#e6e8ec] hover:bg-[#f7f8fa]/60 transition-colors">
-      <div className="flex items-center gap-3 min-w-0">
-        <div
-          className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-white text-[10px] font-bold"
-          style={{ background: asset.color }}
-        >
-          {asset.symbol.slice(0, 1)}
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold truncate">{asset.name}</p>
-          <p className="text-[11px] text-[#5b616e]">{asset.symbol}</p>
-        </div>
-      </div>
-      <span className="text-right text-sm tabular-nums">
-        ${asset.price.toLocaleString()}
-      </span>
-      <span
-        className={cn(
-          "text-right text-sm font-semibold tabular-nums",
-          up ? "text-[#00a574]" : "text-[#d01c28]",
-        )}
-      >
-        {up ? "+" : ""}
-        {asset.change.toFixed(2)}%
-      </span>
-      <span className="text-right text-sm tabular-nums text-[#5b616e]">
-        {Math.round(asset.allocation * 100)}%
-      </span>
-      <div className="h-8">
-        <AreaChart series={spark} color={up ? BRAND.green : BRAND.red} />
-      </div>
-    </div>
-  );
-}
-
-function SignalsTab() {
-  const [ta, setTa] = useState(0.72);
-  const [ml, setMl] = useState(0.78);
-  const [ai, setAi] = useState(0.68);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setTa(0.55 + Math.random() * 0.4);
-      setMl(0.5 + Math.random() * 0.45);
-      setAi(0.5 + Math.random() * 0.42);
-    }, 2400);
-    return () => clearInterval(id);
-  }, []);
-
-  const combined = ta * 0.35 + ml * 0.4 + ai * 0.25;
-  const verdict = combined > 0.7 ? "BUY" : combined < 0.45 ? "SELL" : "HOLD";
-
-  return (
-    <div className="p-7 grid grid-cols-[1fr_320px] gap-6">
-      <div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-          Three-layer confirmation · ETH/USDT
-        </p>
-        <h3 className="text-xl font-semibold mt-1 tracking-tight">
-          Signals have to agree before a trade fires.
-        </h3>
-
-        <div className="mt-6 space-y-4">
-          <SignalCard
-            label="Technical Analysis"
-            tag="TA"
-            value={ta}
-            color={BRAND.blue}
-            bg={BRAND.blueSoft}
-            note="RSI 34 · MACD bullish cross · price above EMA200"
-          />
-          <SignalCard
-            label="Machine Learning"
-            tag="ML"
-            value={ml}
-            color={BRAND.purple}
-            bg="#f3efff"
-            note="XGBoost + Random Forest + Gradient Boosting ensemble · 765k training candles"
-          />
-          <SignalCard
-            label="AI reasoning"
-            tag="AI"
-            value={ai}
-            color={BRAND.amber}
-            bg="#fff6e5"
-            note="Claude reviews the indicator stack · technical only, no market opinion"
-          />
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-[#e6e8ec] p-5 h-fit">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-          Combined verdict
-        </p>
-        <div className="mt-3 flex items-baseline gap-2">
-          <span
-            className={cn(
-              "text-3xl font-bold tracking-tight",
-              verdict === "BUY"
-                ? "text-[#00a574]"
-                : verdict === "SELL"
-                  ? "text-[#d01c28]"
-                  : "text-[#5b616e]",
-            )}
-          >
-            {verdict}
-          </span>
-          <span className="text-sm font-medium text-[#5b616e] tabular-nums">
-            {(combined * 100).toFixed(0)}% confidence
-          </span>
-        </div>
-
-        <div className="mt-4 h-2 rounded-full bg-[#f7f8fa] overflow-hidden">
-          <div
-            className={cn(
-              "h-full transition-all duration-700",
-              verdict === "BUY"
-                ? "bg-[#00d395]"
-                : verdict === "SELL"
-                  ? "bg-[#ff3a44]"
-                  : "bg-[#5b616e]",
-            )}
-            style={{ width: `${Math.round(combined * 100)}%` }}
-          />
-        </div>
-
-        <div className="mt-6 pt-5 border-t border-[#e6e8ec] space-y-2.5">
-          <Row label="Entry target" value="$3,281.50" />
-          <Row label="Stop loss" value="$3,248.00" sub="-1.02%" subColor="#d01c28" />
-          <Row label="Take profit" value="$3,395.20" sub="+3.46%" subColor="#00a574" />
-          <Row label="Position size" value="0.32 ETH" sub="$1,050.00" subColor="#5b616e" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SignalCard({
+function LayerFull({
   label,
   tag,
   value,
@@ -634,33 +982,33 @@ function SignalCard({
   note: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#e6e8ec] p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
           <span
-            className="h-7 px-2.5 rounded-md text-[10px] font-mono uppercase tracking-[0.22em] font-semibold inline-flex items-center"
+            className="h-6 px-2 rounded-md text-[10px] font-mono uppercase tracking-[0.22em] font-semibold inline-flex items-center"
             style={{ background: bg, color }}
           >
             {tag}
           </span>
-          <span className="font-semibold">{label}</span>
+          <span className="text-sm font-semibold">{label}</span>
         </div>
         <span className="text-sm font-semibold tabular-nums" style={{ color }}>
           {(value * 100).toFixed(0)}%
         </span>
       </div>
-      <div className="h-2 rounded-full bg-[#f7f8fa] overflow-hidden">
+      <div className="h-1.5 rounded-full bg-[#f7f8fa] overflow-hidden">
         <div
-          className="h-full transition-all duration-700"
+          className="h-full"
           style={{ width: `${Math.round(value * 100)}%`, background: color }}
         />
       </div>
-      <p className="mt-3 text-xs text-[#5b616e] leading-relaxed">{note}</p>
+      <p className="mt-1.5 text-[11px] text-[#5b616e]">{note}</p>
     </div>
   );
 }
 
-function Row({
+function RowSmall({
   label,
   value,
   sub,
@@ -686,60 +1034,288 @@ function Row({
   );
 }
 
-function StrategyTab() {
-  const rules = [
+// ====================================================================
+// ML PIPELINE TAB
+// ====================================================================
+
+const FEATURES = [
+  { group: "Price returns", color: "#0052ff", items: ["return_1", "return_3", "return_5", "return_10", "return_20", "log_return"] },
+  { group: "Volatility", color: "#7e5bef", items: ["vol_5", "vol_10", "vol_20"] },
+  { group: "RSI", color: "#00a574", items: ["rsi", "rsi_6"] },
+  { group: "MACD", color: "#00a574", items: ["MACD_12_26_9", "MACDh", "MACDs"] },
+  { group: "EMAs", color: "#f5a524", items: ["ema_9", "ema_21", "ema_50", "ema_200", "ema_9_21", "ema_21_50", "price_ema9", "price_ema50"] },
+  { group: "Bollinger", color: "#d01c28", items: ["BBU", "BBM", "BBL", "bb_width", "bb_pos"] },
+  { group: "Volume", color: "#7e5bef", items: ["vol_ratio", "vol_change"] },
+  { group: "ATR", color: "#5b616e", items: ["atr", "atr_ratio"] },
+  { group: "Candle structure", color: "#f5a524", items: ["body", "upper_wick", "lower_wick"] },
+  { group: "Trend & lag", color: "#0052ff", items: ["higher_high", "lower_low", "trend_3", "trend_5", "rsi_lag1", "rsi_lag2", "rsi_lag3", "ret_lag1", "ret_lag2", "ret_lag3"] },
+];
+
+const YEAR_WEIGHTS = [
+  { year: "2025+", weight: 1.0 },
+  { year: "2023–24", weight: 0.7 },
+  { year: "2021–22", weight: 0.4 },
+  { year: "< 2021", weight: 0.2 },
+];
+
+function MLPipelineTab() {
+  return (
+    <div className="h-full overflow-y-auto p-7">
+      <div className="grid grid-cols-3 gap-4 mb-7">
+        <StatCard label="Training candles" value="800k+" sub="1h / 4h / 1d / 15m across 16 pairs" />
+        <StatCard label="Engineered features" value="40" sub="returns, volatility, indicators, lag" />
+        <StatCard label="Retrain cadence" value="Weekly" sub="Sunday, full rewrite, versioned pkl" />
+      </div>
+
+      {/* Time-weighted */}
+      <div className="rounded-2xl border border-[#e6e8ec] p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
+              Time-weighted training
+            </p>
+            <h3 className="text-base font-semibold tracking-tight mt-0.5">
+              Recent markets weigh more. Old markets still teach.
+            </h3>
+          </div>
+          <span className="text-xs text-[#5b616e] font-mono">core/ml_model.py · L239</span>
+        </div>
+        <div className="grid grid-cols-4 gap-3">
+          {YEAR_WEIGHTS.map((y) => (
+            <div key={y.year} className="rounded-xl bg-[#f7f8fa] p-4">
+              <p className="text-xs text-[#5b616e]">{y.year}</p>
+              <p className="text-2xl font-bold tabular-nums mt-0.5">
+                {y.weight.toFixed(1)}×
+              </p>
+              <div className="h-1.5 rounded-full bg-white mt-3 overflow-hidden">
+                <div
+                  className="h-full bg-[#0052ff]"
+                  style={{ width: `${y.weight * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Feature groups */}
+      <div className="rounded-2xl border border-[#e6e8ec] p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
+              Feature engineering
+            </p>
+            <h3 className="text-base font-semibold tracking-tight mt-0.5">
+              40 features computed per candle
+            </h3>
+          </div>
+          <span className="text-xs text-[#5b616e]">
+            Target: future return &gt; 0 over 6-hour lookahead
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {FEATURES.map((g) => (
+            <div key={g.group} className="rounded-xl border border-[#e6e8ec] p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-semibold" style={{ color: g.color }}>
+                  {g.group}
+                </span>
+                <span className="text-[10px] text-[#5b616e]">{g.items.length} feats</span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {g.items.map((it) => (
+                  <span
+                    key={it}
+                    className="px-1.5 py-0.5 rounded bg-[#f7f8fa] text-[10px] font-mono text-[#5b616e]"
+                  >
+                    {it}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Ensemble + CV */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="rounded-2xl border border-[#e6e8ec] p-5">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
+            Voting ensemble
+          </p>
+          <h3 className="text-base font-semibold tracking-tight mt-0.5 mb-4">
+            Three models, soft vote
+          </h3>
+          <ModelRow
+            name="XGBoost"
+            detail="200 trees · depth 4 · lr 0.08"
+            color="#0052ff"
+            weight={0.38}
+          />
+          <ModelRow
+            name="Random Forest"
+            detail="100 trees · depth 6"
+            color="#7e5bef"
+            weight={0.34}
+          />
+          <ModelRow
+            name="Gradient Boosting"
+            detail="100 trees · depth 4 · lr 0.1"
+            color="#f5a524"
+            weight={0.28}
+          />
+          <p className="mt-4 text-[11px] text-[#5b616e] font-mono">
+            VotingClassifier(estimators=[...], voting=&quot;soft&quot;)
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-[#e6e8ec] p-5">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
+            Cross-validation
+          </p>
+          <h3 className="text-base font-semibold tracking-tight mt-0.5 mb-4">
+            TimeSeriesSplit with gap
+          </h3>
+          <div className="space-y-2">
+            {[0, 1, 2, 3, 4].map((fold) => (
+              <div key={fold} className="flex items-center gap-2">
+                <span className="w-12 text-[10px] font-mono uppercase tracking-[0.2em] text-[#5b616e]">
+                  fold {fold + 1}
+                </span>
+                <div className="flex-1 h-5 rounded-md overflow-hidden bg-[#f7f8fa] flex text-[9px] font-semibold text-white">
+                  <div
+                    className="bg-[#0052ff] flex items-center justify-center"
+                    style={{ width: `${20 + fold * 15}%` }}
+                  >
+                    train
+                  </div>
+                  <div
+                    className="bg-[#e6e8ec]"
+                    style={{ width: "6%" }}
+                    title="gap"
+                  />
+                  <div
+                    className="bg-[#00a574] flex items-center justify-center"
+                    style={{ width: "12%" }}
+                  >
+                    test
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-[11px] text-[#5b616e] leading-relaxed">
+            Gap equals lookahead plus 5 bars. Prevents label leakage. Test
+            accuracy sits in the 52–55% band, which is enough with good
+            position sizing and trailing exits.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="rounded-2xl border border-[#e6e8ec] p-5">
+      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
+        {label}
+      </p>
+      <p className="text-3xl font-bold tracking-tight mt-1 tabular-nums">{value}</p>
+      <p className="text-xs text-[#5b616e] mt-1">{sub}</p>
+    </div>
+  );
+}
+
+function ModelRow({
+  name,
+  detail,
+  color,
+  weight,
+}: {
+  name: string;
+  detail: string;
+  color: string;
+  weight: number;
+}) {
+  return (
+    <div className="mb-3">
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <p className="text-sm font-semibold" style={{ color }}>
+            {name}
+          </p>
+          <p className="text-[11px] text-[#5b616e]">{detail}</p>
+        </div>
+        <span className="text-xs font-semibold tabular-nums" style={{ color }}>
+          {(weight * 100).toFixed(0)}%
+        </span>
+      </div>
+      <div className="h-1 rounded-full bg-[#f7f8fa] overflow-hidden">
+        <div
+          className="h-full"
+          style={{ width: `${weight * 100}%`, background: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ====================================================================
+// RULES TAB
+// ====================================================================
+
+function RulesTab() {
+  const groups = [
     {
-      phase: "Entry",
+      phase: "Entry gates",
+      count: "5 checks",
       items: [
         "Hourly scan across the top 25 coins by volume and momentum",
-        "TA score at or above 2, confidence at or above 55%",
-        "AI reasoning pass agrees, or TA is strong enough to proceed alone",
-        "Risk manager lets it through (daily loss, max trades, cooldown)",
-        "15-minute timeframe confirms the higher-frame bias",
-        "Limit order 0.1% below market, market fallback after 60 seconds",
+        "TA score at or above 2 with confidence over 55%",
+        "AI and TA must agree direction, or TA alone must be strong enough",
+        "Risk manager passes (daily loss, max trades, cooldown)",
+        "4h timeframe is not bearish. Multi-timeframe veto is strict.",
+        "Limit order 0.1% below market, market order fallback after 60s",
       ],
     },
     {
-      phase: "Risk",
+      phase: "Risk controls",
+      count: "6 guards",
       items: [
-        "Stop loss sized with 1.5x ATR so volatile coins get wider stops",
-        "Minimum risk-reward 1:2 enforced at order time",
-        "Daily loss limit defaults to $50, hard stops new entries",
-        "Maximum three open positions at any moment",
-        "One-hour cooldown after three consecutive losses",
+        "Spot only. No leverage. No margin. No futures. Halal constraint, enforced in code.",
+        "Stop loss at 1.5× ATR so volatile coins get wider stops automatically",
+        "Minimum risk to reward 1:2 required before an order is placed",
+        "Daily loss limit $50 by default. Bot halts entries when hit.",
+        "Max 3 open positions. One hour cooldown after 3 consecutive losses.",
+        "Kill switch via Redis and file fallback. `/stop` halts, `/resume` restarts.",
       ],
     },
     {
-      phase: "Exit",
+      phase: "Exit logic",
+      count: "4 phases",
       items: [
-        "Phase 1 (0 to 2% profit): stop sits at entry minus 2%",
-        "Phase 2 (2 to 4% profit): stop moves to entry, breakeven locked",
+        "Phase 1 (0–2% profit): stop stays at entry minus 2%",
+        "Phase 2 (2–4% profit): stop moves to entry. Breakeven locked.",
         "Phase 3 (4%+ profit): trailing stop tracks highest minus 1.5%",
-        "Kill switch drops all positions and pauses the loop",
+        "Kill switch or `/closeall` force-closes every open position",
       ],
     },
   ];
 
   return (
-    <div className="p-7">
-      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-        Strategy rules
-      </p>
-      <h3 className="text-xl font-semibold mt-1 tracking-tight mb-6">
-        The full entry, risk, and exit logic.
-      </h3>
-
+    <div className="h-full overflow-y-auto p-7">
       <div className="grid grid-cols-3 gap-4">
-        {rules.map((group) => (
-          <div key={group.phase} className="rounded-2xl border border-[#e6e8ec] p-5">
-            <div className="flex items-center gap-2 mb-4">
+        {groups.map((g) => (
+          <div key={g.phase} className="rounded-2xl border border-[#e6e8ec] p-5">
+            <div className="flex items-center gap-2 mb-5">
               <span className="h-6 px-2 rounded-md text-[10px] font-mono uppercase tracking-[0.22em] font-semibold inline-flex items-center bg-[#eaf0ff] text-[#0052ff]">
-                {group.phase}
+                {g.phase}
               </span>
-              <span className="text-xs text-[#5b616e]">{group.items.length} rules</span>
+              <span className="text-xs text-[#5b616e]">{g.count}</span>
             </div>
             <ul className="space-y-3">
-              {group.items.map((item, i) => (
+              {g.items.map((item, i) => (
                 <li key={i} className="flex gap-3 text-[13px] leading-snug text-[#0a0e27]">
                   <span className="shrink-0 h-5 w-5 rounded-full bg-[#f7f8fa] text-[#5b616e] text-[10px] font-bold flex items-center justify-center mt-0.5">
                     {i + 1}
@@ -751,107 +1327,18 @@ function StrategyTab() {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
 
-type Event = {
-  id: number;
-  time: string;
-  kind: "TA" | "ML" | "AI" | "FILL" | "TRAIL" | "EXIT" | "COOLDOWN" | "INIT";
-  message: string;
-};
-
-function ActivityTab() {
-  const [events, setEvents] = useState<Event[]>(() => [
-    { id: 1, time: "09:14", kind: "INIT", message: "Loaded 765k candles, ML model v4.2" },
-    { id: 2, time: "09:15", kind: "TA", message: "RSI=34 · MACD bullish cross on ETH/USDT" },
-    { id: 3, time: "09:15", kind: "ML", message: "XGBoost confidence 0.78 · long bias" },
-    { id: 4, time: "09:15", kind: "AI", message: "Indicators align, structure intact, lean buy" },
-    { id: 5, time: "09:15", kind: "FILL", message: "Limit buy ETH/USDT at 3281.50, size 0.32" },
-    { id: 6, time: "09:32", kind: "TRAIL", message: "Stop moved to breakeven, +0.4% locked" },
-  ]);
-  const idRef = useRef(7);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      const pool: { kind: Event["kind"]; message: string }[] = [
-        { kind: "TA", message: "Bollinger squeeze, volatility drop detected" },
-        { kind: "ML", message: "Confidence 0.71 · recent wins 3/5" },
-        { kind: "AI", message: "Trend intact, continuation likely" },
-        { kind: "FILL", message: "ETH/USDT filled at 3285.20" },
-        { kind: "TRAIL", message: "Stop moved to entry, +0.8% locked" },
-        { kind: "EXIT", message: "Trailing stop hit on SOL, realized +1.8%" },
-        { kind: "COOLDOWN", message: "Three losses in a row, paused for 1 hour" },
-      ];
-      const pick = pool[Math.floor(Math.random() * pool.length)];
-      const now = new Date();
-      const t = `${now.getHours().toString().padStart(2, "0")}:${now
-        .getMinutes()
-        .toString()
-        .padStart(2, "0")}`;
-      setEvents((prev) => [
-        { id: idRef.current++, time: t, ...pick },
-        ...prev.slice(0, 19),
-      ]);
-    }, 2600);
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <div className="p-7">
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-            Activity
-          </p>
-          <h3 className="text-xl font-semibold mt-1 tracking-tight">
-            Live bot journal
-          </h3>
-        </div>
-        <span className="inline-flex items-center gap-1.5 text-xs text-[#5b616e]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#00d395] animate-pulse" />
-          streaming
-        </span>
-      </div>
-
-      <div className="rounded-2xl border border-[#e6e8ec] overflow-hidden">
-        {events.map((e, i) => (
-          <div
-            key={e.id}
-            className={cn(
-              "grid grid-cols-[64px_90px_1fr] gap-4 px-5 py-3.5 items-center text-sm",
-              i > 0 && "border-t border-[#e6e8ec]",
-            )}
-          >
-            <span className="text-xs text-[#5b616e] font-mono tabular-nums">{e.time}</span>
-            <KindBadge kind={e.kind} />
-            <span className="text-[#0a0e27]">{e.message}</span>
-          </div>
-        ))}
+      <div className="mt-6 rounded-2xl bg-[#f7f8fa] border border-[#e6e8ec] p-5">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e] mb-3">
+          Adaptive weights
+        </p>
+        <p className="text-[13px] text-[#5b616e] leading-relaxed">
+          Every Sunday the bot reviews its last 20 closed trades and updates
+          the TA / AI / ML weights based on rolling accuracy. Update is
+          smoothed at 70% inertia and 30% fresh. Without this smoothing the
+          strategy whipsawed between layers as markets shifted.
+        </p>
       </div>
     </div>
-  );
-}
-
-function KindBadge({ kind }: { kind: Event["kind"] }) {
-  const map: Record<Event["kind"], { bg: string; color: string }> = {
-    INIT: { bg: "#f7f8fa", color: "#5b616e" },
-    TA: { bg: BRAND.blueSoft, color: BRAND.blue },
-    ML: { bg: "#f3efff", color: BRAND.purple },
-    AI: { bg: "#fff6e5", color: "#b47600" },
-    FILL: { bg: BRAND.greenSoft, color: "#00a574" },
-    TRAIL: { bg: BRAND.greenSoft, color: "#00a574" },
-    EXIT: { bg: BRAND.greenSoft, color: "#00a574" },
-    COOLDOWN: { bg: BRAND.redSoft, color: "#d01c28" },
-  };
-  const s = map[kind];
-  return (
-    <span
-      className="h-6 px-2.5 rounded-md text-[10px] font-mono uppercase tracking-[0.22em] font-semibold inline-flex items-center w-fit"
-      style={{ background: s.bg, color: s.color }}
-    >
-      {kind}
-    </span>
   );
 }
