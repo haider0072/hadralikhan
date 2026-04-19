@@ -7,10 +7,27 @@ import { FocusModal } from "../focus-modal";
 import { cn } from "@/lib/cn";
 
 const TRACKS = [
-  { title: "Midnight in Kyoto", artist: "Hiroshi Yoshimura", duration: 213, album: "静かな夜" },
-  { title: "Wabi", artist: "Haruomi Hosono", duration: 187, album: "Glass Garden" },
-  { title: "Soft Rain, Osaka", artist: "Mariah", duration: 244, album: "Utakata no Hibi" },
-  { title: "Seaside Drive", artist: "Yasuaki Shimizu", duration: 298, album: "Kakashi" },
+  {
+    title: "Midnight in Kyoto",
+    artist: "Hiroshi Yoshimura",
+    album: "静かな夜",
+    duration: 213,
+    year: 1993,
+  },
+  {
+    title: "Wabi",
+    artist: "Haruomi Hosono",
+    album: "Glass Garden",
+    duration: 187,
+    year: 1988,
+  },
+  {
+    title: "Soft Rain, Osaka",
+    artist: "Mariah",
+    album: "Utakata no Hibi",
+    duration: 244,
+    year: 1983,
+  },
 ];
 
 export function AudoraPrototype({ activity }: { activity: CardActivity }) {
@@ -63,24 +80,19 @@ function AudoraPeek({
       meta={{
         year: "2025",
         title: "Audora",
-        tagline: "A modern music player — FLAC, EQ, cloud sync, beautiful.",
+        tagline:
+          "A high-res music player for audiophiles. FLAC, YouTube, lyrics, AI song stories, downloads.",
       }}
       innerClassName="bg-gradient-to-br from-[#fdf2f8] via-[#fce7f3] to-[#ffe4e6]"
       onOpen={onOpen}
       tape="top-right"
     >
-      {/* Rose glow */}
       <div className="absolute -top-8 -right-10 w-44 h-44 rounded-full bg-[#e11d48]/25 blur-3xl" />
       <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-[#fb7185]/20 blur-3xl" />
 
-      {/* Album art */}
       <div className="absolute inset-4 flex items-center gap-3">
         <div className="relative h-28 w-28 rounded-md bg-gradient-to-br from-[#e11d48] via-[#be185d] to-[#831843] shadow-lg flex items-center justify-center shrink-0">
-          <svg
-            viewBox="0 0 100 100"
-            className="w-20 h-20 opacity-90"
-            aria-hidden
-          >
+          <svg viewBox="0 0 100 100" className="w-20 h-20 opacity-90" aria-hidden>
             <circle cx="50" cy="50" r="46" fill="#1f1a1e" />
             <circle cx="50" cy="50" r="32" fill="none" stroke="#fda4af" strokeWidth="0.4" opacity="0.5" />
             <circle cx="50" cy="50" r="22" fill="none" stroke="#fda4af" strokeWidth="0.4" opacity="0.5" />
@@ -95,11 +107,7 @@ function AudoraPeek({
           <p className="mt-1 font-semibold text-[#4c0519] leading-tight truncate">
             Midnight in Kyoto
           </p>
-          <p className="text-[11px] text-[#9f1239] truncate">
-            Hiroshi Yoshimura
-          </p>
-
-          {/* Mini waveform */}
+          <p className="text-[11px] text-[#9f1239] truncate">Hiroshi Yoshimura</p>
           <div className="mt-3 flex items-end gap-[2px] h-[24px]">
             {Array.from({ length: 28 }).map((_, i) => (
               <div
@@ -115,30 +123,271 @@ function AudoraPeek({
         </div>
       </div>
 
-      {/* Lower stripe */}
       <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
         <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.22em] text-[#9f1239]">
           <span className="h-1.5 w-1.5 rounded-full bg-[#e11d48] animate-pulse" />
           <span>FLAC · 44.1kHz</span>
         </div>
         <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9f1239]">
-          Next.js · shadcn
+          v0 · Cursor · Claude Code
         </span>
       </div>
     </ProjectFrame>
   );
 }
 
+type Tab = "now" | "youtube" | "lyrics" | "ai" | "download";
+
 function AudoraFocus() {
-  const [trackIdx, setTrackIdx] = useState(0);
+  const [tab, setTab] = useState<Tab>("now");
+  const [dark, setDark] = useState(true);
+  const [track, setTrack] = useState(TRACKS[0]);
+
+  const bg = dark ? "bg-[#0a0a0a] text-[#fafafa]" : "bg-white text-[#0a0a0a]";
+  const surface = dark ? "bg-[#18181b]" : "bg-[#f4f4f5]";
+  const subtle = dark ? "text-[#a1a1aa]" : "text-[#71717a]";
+  const border = dark ? "border-white/10" : "border-black/10";
+  const muted = dark ? "bg-white/5" : "bg-black/5";
+
+  return (
+    <div
+      className={cn(
+        "w-[min(1100px,95vw)] h-[min(700px,90vh)] grid grid-cols-[320px_1fr] font-sans overflow-hidden",
+        bg,
+      )}
+    >
+      {/* Sidebar — case study */}
+      <aside className={cn("border-r p-6 overflow-y-auto", border)}>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-[#e11d48] flex items-center justify-center">
+            <span className="text-white font-serif italic text-lg">a</span>
+          </div>
+          <div>
+            <p className="font-semibold tracking-tight text-base">Audora</p>
+            <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+              2025 · Music player
+            </p>
+          </div>
+        </div>
+
+        <p className={cn("mt-5 text-sm leading-relaxed", subtle)}>
+          I buy FLAC tracks. Studio-recorded, not MP3. Qobuz didn't feel right;
+          nothing had the sorting, typography, or backstory I wanted. So I
+          built my own.
+        </p>
+
+        <div className="mt-6">
+          <p
+            className={cn(
+              "text-[10px] font-mono uppercase tracking-[0.22em] mb-3",
+              subtle,
+            )}
+          >
+            Built with
+          </p>
+          <div className="space-y-2">
+            <BuildStep dark={dark} tool="v0" role="Started here — base structure when v0 was new." />
+            <BuildStep dark={dark} tool="Cursor" role="Manual-heavy early features: EQ, YouTube, lyrics." />
+            <BuildStep dark={dark} tool="Claude Code" role="Polish, UI, and the download engine." />
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <p
+            className={cn(
+              "text-[10px] font-mono uppercase tracking-[0.22em] mb-2",
+              subtle,
+            )}
+          >
+            Stack
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              "Next.js",
+              "shadcn",
+              "Tailwind",
+              "Web Audio",
+              "Spotify API",
+              "YouTube",
+            ].map((s) => (
+              <span
+                key={s}
+                className={cn(
+                  "text-[10px] px-2 py-0.5 rounded border",
+                  border,
+                  subtle,
+                )}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-2">
+          <a
+            href="https://audora-player.vercel.app"
+            target="_blank"
+            rel="noreferrer"
+            className="group flex items-center justify-between rounded-xl bg-[#e11d48] hover:bg-[#be185d] text-white px-4 py-3 text-sm font-semibold transition-colors"
+          >
+            <span>Open live app</span>
+            <span className="transition-transform group-hover:translate-x-1">→</span>
+          </a>
+          <a
+            href="https://github.com/haider0072/Audora"
+            target="_blank"
+            rel="noreferrer"
+            className={cn(
+              "flex items-center justify-between rounded-xl border px-4 py-2.5 text-xs",
+              border,
+              subtle,
+              dark ? "hover:bg-white/5" : "hover:bg-black/5",
+            )}
+          >
+            <span>View on GitHub</span>
+            <span>↗</span>
+          </a>
+        </div>
+      </aside>
+
+      {/* Main — feature demo */}
+      <section className="flex flex-col overflow-hidden relative">
+        {/* Tab bar */}
+        <nav
+          className={cn(
+            "flex items-center gap-1 px-6 h-14 border-b shrink-0",
+            border,
+          )}
+        >
+          <TabBtn id="now" tab={tab} setTab={setTab} dark={dark}>
+            Now playing
+          </TabBtn>
+          <TabBtn id="youtube" tab={tab} setTab={setTab} dark={dark}>
+            YouTube
+          </TabBtn>
+          <TabBtn id="lyrics" tab={tab} setTab={setTab} dark={dark}>
+            Lyrics
+          </TabBtn>
+          <TabBtn id="ai" tab={tab} setTab={setTab} dark={dark}>
+            AI · Backstory
+          </TabBtn>
+          <TabBtn id="download" tab={tab} setTab={setTab} dark={dark}>
+            Download
+          </TabBtn>
+          <div className="ml-auto flex items-center gap-2 mr-14">
+            <button
+              onClick={() => setDark((d) => !d)}
+              className={cn(
+                "h-7 px-3 rounded-full border text-[10px] font-mono uppercase tracking-[0.22em] transition-colors",
+                border,
+                subtle,
+                dark ? "hover:bg-white/10" : "hover:bg-black/5",
+              )}
+            >
+              {dark ? "Light" : "Dark"}
+            </button>
+          </div>
+        </nav>
+
+        <div className="flex-1 overflow-y-auto relative">
+          {tab === "now" && (
+            <NowPlaying track={track} setTrack={setTrack} dark={dark} subtle={subtle} border={border} muted={muted} />
+          )}
+          {tab === "youtube" && <YouTubeTab dark={dark} subtle={subtle} surface={surface} border={border} />}
+          {tab === "lyrics" && <LyricsTab track={track} dark={dark} subtle={subtle} />}
+          {tab === "ai" && <AITab track={track} dark={dark} subtle={subtle} surface={surface} border={border} />}
+          {tab === "download" && <DownloadTab track={track} dark={dark} subtle={subtle} border={border} surface={surface} />}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TabBtn({
+  id,
+  tab,
+  setTab,
+  dark,
+  children,
+}: {
+  id: Tab;
+  tab: Tab;
+  setTab: (t: Tab) => void;
+  dark: boolean;
+  children: React.ReactNode;
+}) {
+  const active = tab === id;
+  return (
+    <button
+      onClick={() => setTab(id)}
+      className={cn(
+        "h-9 px-3.5 rounded-md text-xs font-medium transition-colors",
+        active
+          ? "bg-[#e11d48] text-white"
+          : dark
+            ? "text-white/60 hover:text-white hover:bg-white/5"
+            : "text-black/60 hover:text-black hover:bg-black/5",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function BuildStep({
+  tool,
+  role,
+  dark,
+}: {
+  tool: string;
+  role: string;
+  dark: boolean;
+}) {
+  return (
+    <div className="flex gap-3 items-start">
+      <span
+        className={cn(
+          "shrink-0 text-[9px] font-mono uppercase tracking-[0.22em] px-2 py-1 rounded-md border",
+          dark ? "border-white/15 text-white" : "border-black/15 text-black",
+        )}
+      >
+        {tool}
+      </span>
+      <p
+        className={cn(
+          "text-[12px] leading-snug",
+          dark ? "text-white/60" : "text-black/60",
+        )}
+      >
+        {role}
+      </p>
+    </div>
+  );
+}
+
+// ---------- Tabs ----------
+
+function NowPlaying({
+  track,
+  setTrack,
+  dark,
+  subtle,
+  border,
+  muted,
+}: {
+  track: (typeof TRACKS)[number];
+  setTrack: (t: (typeof TRACKS)[number]) => void;
+  dark: boolean;
+  subtle: string;
+  border: string;
+  muted: string;
+}) {
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0.32);
-  const [dark, setDark] = useState(true);
   const bars = useRef<HTMLDivElement[]>([]);
   const raf = useRef<number | null>(null);
   const t = useRef(0);
-
-  const track = TRACKS[trackIdx];
 
   useEffect(() => {
     if (!playing) {
@@ -152,7 +401,8 @@ function AudoraFocus() {
         const el = bars.current[i];
         if (!el) continue;
         const h =
-          18 + Math.abs(Math.sin(t.current + i * 0.28)) * 52 +
+          18 +
+          Math.abs(Math.sin(t.current + i * 0.28)) * 52 +
           Math.abs(Math.sin(t.current * 1.7 + i * 0.5)) * 10;
         el.style.height = `${h}px`;
       }
@@ -167,177 +417,86 @@ function AudoraFocus() {
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 1) {
-          setTrackIdx((i) => (i + 1) % TRACKS.length);
-          return 0;
-        }
-        return p + 1 / track.duration / 3;
-      });
+      setProgress((p) => (p >= 1 ? 0 : p + 1 / track.duration / 3));
     }, 100);
     return () => clearInterval(id);
   }, [playing, track.duration]);
 
-  const bg = dark ? "bg-[#0a0a0a] text-[#fafafa]" : "bg-white text-[#0a0a0a]";
-  const surface = dark ? "bg-[#18181b]" : "bg-[#f4f4f5]";
-  const subtle = dark ? "text-[#a1a1aa]" : "text-[#71717a]";
-  const border = dark ? "border-white/10" : "border-black/10";
-
   return (
-    <div
-      className={cn(
-        "w-[min(1000px,94vw)] h-[min(640px,88vh)] grid grid-cols-[340px_1fr] font-sans",
-        bg,
-      )}
-    >
-      {/* Sidebar — library */}
-      <aside className={cn("border-r p-5 overflow-y-auto", border)}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-[#e11d48] flex items-center justify-center text-white font-semibold text-sm">
-              a
-            </div>
-            <span className="font-semibold tracking-tight">Audora</span>
-          </div>
-          <button
-            onClick={() => setDark((d) => !d)}
-            className={cn(
-              "h-7 px-2.5 rounded-full border text-[11px] font-medium transition-colors",
-              border,
-              dark
-                ? "hover:bg-white/10"
-                : "hover:bg-black/5",
-            )}
-          >
-            {dark ? "Light" : "Dark"}
-          </button>
-        </div>
-
-        <div className={cn("mt-5 rounded-lg px-3 py-2 flex items-center gap-2", surface)}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.75" />
-            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    <div className="p-8 grid grid-cols-[260px_1fr] gap-8 h-full">
+      <div className="space-y-3">
+        <div className="relative h-60 w-60 rounded-2xl bg-gradient-to-br from-[#e11d48] via-[#be185d] to-[#831843] shadow-2xl flex items-center justify-center overflow-hidden">
+          <svg viewBox="0 0 100 100" className="w-44 h-44 animate-[spin_8s_linear_infinite]" aria-hidden>
+            <circle cx="50" cy="50" r="46" fill="#1f1a1e" />
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
+            <circle cx="50" cy="50" r="30" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
+            <circle cx="50" cy="50" r="22" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
+            <circle cx="50" cy="50" r="14" fill="#e11d48" />
+            <circle cx="50" cy="50" r="3" fill="#fce7f3" />
           </svg>
-          <span className={cn("text-xs", subtle)}>Search library</span>
         </div>
 
-        <div className="mt-6">
-          <p className={cn("font-mono text-[10px] uppercase tracking-[0.2em] mb-3", subtle)}>
-            Queue · {TRACKS.length} tracks
-          </p>
-          <ul className="space-y-1">
-            {TRACKS.map((tr, i) => (
-              <li key={tr.title}>
-                <button
-                  onClick={() => {
-                    setTrackIdx(i);
-                    setProgress(0);
-                    setPlaying(true);
-                  }}
-                  className={cn(
-                    "w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-colors",
-                    i === trackIdx
-                      ? "bg-[#e11d48]/10 text-[#e11d48]"
-                      : dark
-                        ? "hover:bg-white/5"
-                        : "hover:bg-black/5",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "h-10 w-10 rounded shrink-0 bg-gradient-to-br",
-                      [
-                        "from-[#e11d48] to-[#831843]",
-                        "from-[#f43f5e] to-[#881337]",
-                        "from-[#fb7185] to-[#9f1239]",
-                        "from-[#fda4af] to-[#be185d]",
-                      ][i % 4],
-                    )}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{tr.title}</p>
-                    <p className={cn("text-xs truncate", i === trackIdx ? "text-[#e11d48]/80" : subtle)}>
-                      {tr.artist}
-                    </p>
-                  </div>
-                  <span className={cn("text-[10px] font-mono shrink-0", subtle)}>
-                    {formatTime(tr.duration)}
-                  </span>
-                </button>
-              </li>
+        <div>
+          <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em] mb-2", subtle)}>Queue</p>
+          <div className="space-y-1">
+            {TRACKS.map((tr) => (
+              <button
+                key={tr.title}
+                onClick={() => setTrack(tr)}
+                className={cn(
+                  "w-full text-left px-3 py-2 rounded-md text-xs flex items-center justify-between",
+                  tr.title === track.title
+                    ? "bg-[#e11d48]/15 text-[#e11d48]"
+                    : dark
+                      ? "hover:bg-white/5"
+                      : "hover:bg-black/5",
+                )}
+              >
+                <span className="truncate">{tr.title}</span>
+                <span className={cn("text-[10px] font-mono shrink-0 ml-2", subtle)}>
+                  {formatTime(tr.duration)}
+                </span>
+              </button>
             ))}
-          </ul>
-        </div>
-      </aside>
-
-      {/* Main player */}
-      <section className="p-8 flex flex-col justify-between relative overflow-hidden">
-        {/* Ambient glow */}
-        <div
-          className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#e11d48]/20 blur-3xl pointer-events-none"
-          aria-hidden
-        />
-        <div
-          className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-[#fb7185]/15 blur-3xl pointer-events-none"
-          aria-hidden
-        />
-
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em]">
-            <span className={subtle}>Now playing</span>
-            <span className="h-1 w-1 rounded-full bg-current opacity-40" />
-            <span className={subtle}>{track.album}</span>
-          </div>
-          <div className="flex items-center gap-2 text-[11px]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
-            <span className={subtle}>Cloud synced</span>
           </div>
         </div>
+      </div>
 
-        <div className="relative grid grid-cols-[auto_1fr] gap-8 items-center my-4">
-          {/* Cover */}
-          <div className="relative h-56 w-56 rounded-2xl bg-gradient-to-br from-[#e11d48] via-[#be185d] to-[#831843] shadow-2xl flex items-center justify-center">
-            <svg viewBox="0 0 100 100" className="w-40 h-40" aria-hidden>
-              <circle cx="50" cy="50" r="46" fill="#1f1a1e" />
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
-              <circle cx="50" cy="50" r="30" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
-              <circle cx="50" cy="50" r="22" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
-              <circle cx="50" cy="50" r="14" fill="#e11d48" />
-              <circle cx="50" cy="50" r="3" fill="#fce7f3" />
-            </svg>
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-serif text-4xl tracking-tight leading-tight">{track.title}</h3>
-            <p className={cn("mt-1 text-base", subtle)}>{track.artist}</p>
-            <p className={cn("mt-0.5 text-sm", subtle)}>
-              {track.album} · FLAC · 44.1 kHz · 24-bit
-            </p>
-
-            {/* EQ-style chips */}
-            <div className="mt-4 flex gap-2 flex-wrap">
-              {["Flat", "Jazz", "Classical", "Ambient", "Custom"].map((p, i) => (
-                <button
-                  key={p}
-                  className={cn(
-                    "px-3 py-1 rounded-full text-xs border transition-colors",
-                    border,
-                    i === 3
-                      ? "bg-[#e11d48] text-white border-[#e11d48]"
-                      : dark
-                        ? "hover:bg-white/10"
-                        : "hover:bg-black/5",
-                  )}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
+      <div className="flex flex-col min-w-0">
+        <div className="min-w-0">
+          <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+            Now playing · {track.album} · {track.year}
+          </p>
+          <h3 className="mt-2 font-serif text-3xl md:text-4xl tracking-tight leading-tight truncate">
+            {track.title}
+          </h3>
+          <p className={cn("mt-1 text-lg", subtle)}>{track.artist}</p>
+          <p className={cn("mt-1 text-xs font-mono uppercase tracking-[0.22em]", subtle)}>
+            FLAC · 44.1 kHz · 24-bit
+          </p>
         </div>
 
-        {/* Big waveform */}
-        <div className="relative flex items-end justify-center gap-[3px] h-[80px] mb-4">
-          {Array.from({ length: 72 }).map((_, i) => (
+        <div className="mt-4 flex gap-2 flex-wrap">
+          {["Flat", "Jazz", "Classical", "Ambient", "Custom"].map((p, i) => (
+            <button
+              key={p}
+              className={cn(
+                "px-3 py-1 rounded-full text-xs border transition-colors",
+                border,
+                i === 3
+                  ? "bg-[#e11d48] text-white border-[#e11d48]"
+                  : dark
+                    ? "hover:bg-white/10"
+                    : "hover:bg-black/5",
+              )}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 flex items-end justify-center gap-[3px] h-[80px] mt-6">
+          {Array.from({ length: 64 }).map((_, i) => (
             <div
               key={i}
               ref={(el) => {
@@ -347,7 +506,7 @@ function AudoraFocus() {
               style={{
                 height: "20px",
                 background:
-                  i / 72 < progress
+                  i / 64 < progress
                     ? "linear-gradient(to top, #e11d48, #fb7185)"
                     : dark
                       ? "#ffffff22"
@@ -357,10 +516,9 @@ function AudoraFocus() {
           ))}
         </div>
 
-        {/* Progress */}
-        <div className="relative flex items-center gap-3 font-mono text-xs mb-5">
+        <div className="mt-5 flex items-center gap-3 font-mono text-xs">
           <span className={subtle}>{formatTime(progress * track.duration)}</span>
-          <div className={cn("flex-1 h-[3px] rounded-full overflow-hidden", dark ? "bg-white/10" : "bg-black/10")}>
+          <div className={cn("flex-1 h-[3px] rounded-full overflow-hidden", muted)}>
             <div
               className="h-full bg-gradient-to-r from-[#e11d48] to-[#fb7185]"
               style={{ width: `${progress * 100}%` }}
@@ -369,21 +527,7 @@ function AudoraFocus() {
           <span className={subtle}>{formatTime(track.duration)}</span>
         </div>
 
-        {/* Transport */}
-        <div className="relative flex items-center justify-center gap-6">
-          <IconBtn ariaLabel="Shuffle" dark={dark}>
-            <path d="M3 6h3l8 12h4m0 0l-2-2m2 2l-2 2M3 18h3l2-3M17 6h4m0 0l-2-2m2 2l-2 2" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-          </IconBtn>
-          <IconBtn
-            ariaLabel="Previous"
-            dark={dark}
-            onClick={() => {
-              setTrackIdx((i) => (i - 1 + TRACKS.length) % TRACKS.length);
-              setProgress(0);
-            }}
-          >
-            <path d="M6 4v16M20 4v16L8 12z" stroke="currentColor" strokeWidth="1.75" fill="none" />
-          </IconBtn>
+        <div className="mt-5 flex items-center justify-center gap-6">
           <button
             onClick={() => setPlaying((p) => !p)}
             className="h-14 w-14 rounded-full bg-[#e11d48] hover:bg-[#be185d] flex items-center justify-center shadow-lg transition-colors"
@@ -400,49 +544,398 @@ function AudoraFocus() {
               </svg>
             )}
           </button>
-          <IconBtn
-            ariaLabel="Next"
-            dark={dark}
-            onClick={() => {
-              setTrackIdx((i) => (i + 1) % TRACKS.length);
-              setProgress(0);
-            }}
-          >
-            <path d="M4 4v16M18 4v16M4 12l12-8v16z" stroke="currentColor" strokeWidth="1.75" fill="none" />
-          </IconBtn>
-          <IconBtn ariaLabel="Repeat" dark={dark}>
-            <path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" fill="none" />
-          </IconBtn>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
 
-function IconBtn({
-  children,
-  ariaLabel,
-  onClick,
+function YouTubeTab({
   dark,
+  subtle,
+  surface,
+  border,
 }: {
-  children: React.ReactNode;
-  ariaLabel: string;
-  onClick?: () => void;
   dark: boolean;
+  subtle: string;
+  surface: string;
+  border: string;
 }) {
+  const [url, setUrl] = useState("");
+  const [loaded, setLoaded] = useState<{ title: string; channel: string } | null>(null);
+  const [typing, setTyping] = useState(true);
+  const targetUrl = "https://youtu.be/kQyUl3rhxW0";
+
+  useEffect(() => {
+    setUrl("");
+    setLoaded(null);
+    setTyping(true);
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setUrl(targetUrl.slice(0, i));
+      if (i >= targetUrl.length) {
+        clearInterval(id);
+        setTyping(false);
+        setTimeout(() => {
+          setLoaded({
+            title: "Hiroshi Yoshimura — Music for Nine Postcards (Full Album)",
+            channel: "Light in the Attic Records",
+          });
+        }, 700);
+      }
+    }, 60);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <button
-      onClick={onClick}
-      aria-label={ariaLabel}
-      className={cn(
-        "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
-        dark ? "text-white/70 hover:text-white hover:bg-white/10" : "text-black/60 hover:text-black hover:bg-black/5",
+    <div className="p-8 max-w-3xl mx-auto">
+      <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+        Paste any YouTube URL · Audora handles the rest
+      </p>
+      <h3 className="mt-3 font-serif text-3xl tracking-tight">Import from YouTube</h3>
+
+      <div className={cn("mt-6 rounded-xl border p-1.5 flex items-center gap-2", border, surface)}>
+        <div className="h-8 w-8 rounded-md bg-[#ff0000] flex items-center justify-center shrink-0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+            <path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.4 3.6-6.4 3.6z" />
+          </svg>
+        </div>
+        <input
+          readOnly
+          value={url}
+          className={cn(
+            "flex-1 bg-transparent outline-none px-2 text-sm tabular-nums",
+            dark ? "text-white" : "text-black",
+          )}
+        />
+        <button
+          className={cn(
+            "h-8 px-4 rounded-md text-xs font-semibold transition-colors",
+            typing
+              ? dark
+                ? "bg-white/10 text-white/50"
+                : "bg-black/5 text-black/40"
+              : "bg-[#e11d48] text-white hover:bg-[#be185d]",
+          )}
+          disabled={typing}
+        >
+          {typing ? "…" : "Load"}
+        </button>
+      </div>
+
+      {loaded && (
+        <div
+          className={cn(
+            "mt-6 rounded-xl border overflow-hidden",
+            border,
+            "animate-[fadeIn_0.4s_ease-out]",
+          )}
+        >
+          <div className="relative aspect-video bg-gradient-to-br from-[#0a0a0a] to-[#27272a]">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-[#e11d48] flex items-center justify-center shadow-2xl">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M7 4l13 8-13 8z" />
+                </svg>
+              </div>
+            </div>
+            <span className="absolute bottom-3 right-3 font-mono text-[10px] bg-black/80 text-white px-2 py-1 rounded">
+              47:22
+            </span>
+          </div>
+          <div className={cn("p-4", surface)}>
+            <p className="font-semibold text-sm">{loaded.title}</p>
+            <p className={cn("text-xs mt-1", subtle)}>{loaded.channel}</p>
+            <div className="mt-3 flex gap-2">
+              <button className="h-8 px-3 rounded-md bg-[#e11d48] hover:bg-[#be185d] text-white text-xs font-semibold transition-colors">
+                Queue now
+              </button>
+              <button
+                className={cn(
+                  "h-8 px-3 rounded-md border text-xs font-semibold transition-colors",
+                  border,
+                  dark ? "hover:bg-white/5" : "hover:bg-black/5",
+                )}
+              >
+                Save to library
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        {children}
-      </svg>
-    </button>
+
+      <div className={cn("mt-6 text-xs leading-relaxed", subtle)}>
+        Audora extracts audio via yt-dlp on the backend, caches the track, and
+        matches it against Spotify metadata for cover art, album name, and
+        release year.
+      </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: none; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+const LYRICS = [
+  "静かな夜、京都の雨",
+  "Soft the city breathes in grey",
+  "Neon flickers on the pavement",
+  "Tea cools by my side",
+  "A thousand paper cranes",
+  "Fold inside the silence",
+  "And I drift on the tone",
+  "Of a piano from next door",
+  "静かな夜、また明日",
+];
+
+function LyricsTab({
+  track,
+  dark,
+  subtle,
+}: {
+  track: (typeof TRACKS)[number];
+  dark: boolean;
+  subtle: string;
+}) {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActive((i) => (i + 1) % LYRICS.length);
+    }, 2000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="p-8 max-w-3xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+            Live lyrics · synced
+          </p>
+          <h3 className="mt-2 font-serif text-2xl tracking-tight">{track.title}</h3>
+        </div>
+        <span
+          className={cn(
+            "text-[10px] font-mono uppercase tracking-[0.22em] px-2.5 py-1 rounded-full bg-[#e11d48]/15 text-[#e11d48]",
+          )}
+        >
+          ● synced
+        </span>
+      </div>
+
+      <div className="mt-8 space-y-5">
+        {LYRICS.map((line, i) => {
+          const distance = Math.abs(i - active);
+          const opacity = i === active ? 1 : Math.max(0.15, 1 - distance * 0.25);
+          const scale = i === active ? 1 : 0.94;
+          return (
+            <p
+              key={i}
+              className={cn(
+                "font-serif transition-all duration-500",
+                i === active
+                  ? "text-[#e11d48] text-4xl font-medium"
+                  : dark
+                    ? "text-white text-3xl"
+                    : "text-black text-3xl",
+              )}
+              style={{ opacity, transform: `scale(${scale})`, transformOrigin: "left center" }}
+            >
+              {line}
+            </p>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function AITab({
+  track,
+  dark,
+  subtle,
+  surface,
+  border,
+}: {
+  track: (typeof TRACKS)[number];
+  dark: boolean;
+  subtle: string;
+  surface: string;
+  border: string;
+}) {
+  const story = `"${track.title}" sits in the tradition of Japanese kankyō ongaku — "environmental music" — that ${track.artist} helped crystallize in the late 80s and early 90s. ${track.year === 1993 ? "Recorded in a single afternoon session at the artist's Tokyo apartment" : "Released as part of a small-run cassette"}, the piece leans on a Roland SH-2 drone, long sustains, and spaced silences. What you're hearing is less a song than a room — a thick, slow atmosphere you walk into and out of.`;
+
+  const [typed, setTyped] = useState("");
+
+  useEffect(() => {
+    setTyped("");
+    let i = 0;
+    const id = setInterval(() => {
+      i += 3;
+      setTyped(story.slice(0, i));
+      if (i >= story.length) clearInterval(id);
+    }, 14);
+    return () => clearInterval(id);
+  }, [story]);
+
+  return (
+    <div className="p-8 max-w-3xl mx-auto">
+      <div className="flex items-center gap-2 mb-1">
+        <span
+          className={cn(
+            "text-[10px] font-mono uppercase tracking-[0.22em] px-2.5 py-1 rounded-full bg-[#e11d48]/15 text-[#e11d48]",
+          )}
+        >
+          AI · Backstory
+        </span>
+        <span className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+          via Spotify + Claude
+        </span>
+      </div>
+      <h3 className="mt-3 font-serif text-3xl tracking-tight">{track.title}</h3>
+      <p className={cn("text-sm", subtle)}>
+        {track.artist} · {track.album} · {track.year}
+      </p>
+
+      <p className={cn("mt-6 text-lg leading-relaxed font-serif", dark ? "text-white/85" : "text-black/80")}>
+        {typed}
+        {typed.length < story.length && (
+          <span className="inline-block w-[2px] h-[1.1em] bg-[#e11d48] align-middle ml-0.5 animate-pulse" />
+        )}
+      </p>
+
+      <div className={cn("mt-8 rounded-xl border p-4 text-xs", border, surface)}>
+        <p className={cn("font-mono uppercase tracking-[0.22em] text-[10px] mb-2", subtle)}>
+          Related tracks
+        </p>
+        <ul className="space-y-1">
+          {[
+            "Hiroshi Yoshimura — Music for Nine Postcards",
+            "Haruomi Hosono — Watering a Flower",
+            "Mariah — Shinzo No Tobira",
+          ].map((t) => (
+            <li key={t} className={cn("py-1 flex items-center justify-between", subtle)}>
+              <span>{t}</span>
+              <span>→</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function DownloadTab({
+  track,
+  dark,
+  subtle,
+  border,
+  surface,
+}: {
+  track: (typeof TRACKS)[number];
+  dark: boolean;
+  subtle: string;
+  border: string;
+  surface: string;
+}) {
+  const qualities = [
+    { label: "FLAC", detail: "44.1 kHz · 24-bit · lossless", size: "42.3 MB" },
+    { label: "ALAC", detail: "44.1 kHz · 16-bit · lossless", size: "28.1 MB" },
+    { label: "MP3", detail: "320 kbps · compressed", size: "9.8 MB" },
+  ];
+  const [picked, setPicked] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [downloading, setDownloading] = useState(true);
+
+  useEffect(() => {
+    if (!downloading) return;
+    setProgress(0);
+    const id = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 1) {
+          setDownloading(false);
+          clearInterval(id);
+          return 1;
+        }
+        return p + 0.012;
+      });
+    }, 80);
+    return () => clearInterval(id);
+  }, [downloading, picked]);
+
+  return (
+    <div className="p-8 max-w-3xl mx-auto">
+      <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+        Save locally · airplane mode friendly
+      </p>
+      <h3 className="mt-2 font-serif text-3xl tracking-tight">Download</h3>
+
+      <div className={cn("mt-5 rounded-xl border p-5", border, surface)}>
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 rounded-lg bg-gradient-to-br from-[#e11d48] to-[#831843] shrink-0" />
+          <div>
+            <p className="font-semibold">{track.title}</p>
+            <p className={cn("text-xs", subtle)}>
+              {track.artist} · {formatTime(track.duration)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-2">
+          {qualities.map((q, i) => (
+            <button
+              key={q.label}
+              onClick={() => {
+                setPicked(i);
+                setDownloading(true);
+                setProgress(0);
+              }}
+              className={cn(
+                "w-full rounded-lg border px-4 py-3 flex items-center justify-between text-left transition-colors",
+                picked === i ? "border-[#e11d48] bg-[#e11d48]/10" : border,
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "h-4 w-4 rounded-full border-2",
+                    picked === i ? "border-[#e11d48] bg-[#e11d48]" : dark ? "border-white/30" : "border-black/30",
+                  )}
+                />
+                <div>
+                  <p className="text-sm font-semibold">{q.label}</p>
+                  <p className={cn("text-xs", subtle)}>{q.detail}</p>
+                </div>
+              </div>
+              <span className={cn("text-xs font-mono tabular-nums", subtle)}>{q.size}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-5">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className={subtle}>
+              {downloading ? "Downloading…" : "Saved · ready offline"}
+            </span>
+            <span className={cn("font-mono tabular-nums", subtle)}>
+              {Math.round(progress * 100)}%
+            </span>
+          </div>
+          <div className={cn("h-[3px] rounded-full overflow-hidden", dark ? "bg-white/10" : "bg-black/10")}>
+            <div
+              className="h-full bg-gradient-to-r from-[#e11d48] to-[#fb7185] transition-[width]"
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
