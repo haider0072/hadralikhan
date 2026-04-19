@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import type { CardActivity } from "../use-card-activity";
 import { ProjectFrame } from "../project-frame";
 import { FocusModal } from "../focus-modal";
+import {
+  V0Logo,
+  CursorLogo,
+  ClaudeLogo,
+  YoutubeLogo,
+  SpotifyLogo,
+  GithubLogo,
+} from "../tool-logos";
 import { cn } from "@/lib/cn";
 
 const TRACKS = [
@@ -128,8 +136,10 @@ function AudoraPeek({
           <span className="h-1.5 w-1.5 rounded-full bg-[#e11d48] animate-pulse" />
           <span>FLAC · 44.1kHz</span>
         </div>
-        <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9f1239]">
-          v0 · Cursor · Claude Code
+        <span className="flex items-center gap-1.5 text-[#9f1239]">
+          <V0Logo size={10} />
+          <CursorLogo size={10} />
+          <ClaudeLogo size={10} />
         </span>
       </div>
     </ProjectFrame>
@@ -152,12 +162,12 @@ function AudoraFocus() {
   return (
     <div
       className={cn(
-        "w-[min(1100px,95vw)] h-[min(700px,90vh)] grid grid-cols-[320px_1fr] font-sans overflow-hidden",
+        "w-[min(1240px,96vw)] h-[min(780px,92vh)] grid grid-cols-[360px_1fr] font-sans overflow-hidden",
         bg,
       )}
     >
       {/* Sidebar — case study */}
-      <aside className={cn("border-r p-6 overflow-y-auto", border)}>
+      <aside className={cn("border-r p-7 overflow-y-auto", border)}>
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-[#e11d48] flex items-center justify-center">
             <span className="text-white font-serif italic text-lg">a</span>
@@ -185,10 +195,25 @@ function AudoraFocus() {
           >
             Built with
           </p>
-          <div className="space-y-2">
-            <BuildStep dark={dark} tool="v0" role="Started here — base structure when v0 was new." />
-            <BuildStep dark={dark} tool="Cursor" role="Manual-heavy early features: EQ, YouTube, lyrics." />
-            <BuildStep dark={dark} tool="Claude Code" role="Polish, UI, and the download engine." />
+          <div className="space-y-2.5">
+            <BuildStep
+              dark={dark}
+              tool="v0"
+              Logo={V0Logo}
+              role="Started here — base structure when v0 was new."
+            />
+            <BuildStep
+              dark={dark}
+              tool="Cursor"
+              Logo={CursorLogo}
+              role="Manual-heavy early features: EQ, YouTube, lyrics."
+            />
+            <BuildStep
+              dark={dark}
+              tool="Claude Code"
+              Logo={ClaudeLogo}
+              role="Polish, UI, and the download engine."
+            />
           </div>
         </div>
 
@@ -245,7 +270,10 @@ function AudoraFocus() {
               dark ? "hover:bg-white/5" : "hover:bg-black/5",
             )}
           >
-            <span>View on GitHub</span>
+            <span className="flex items-center gap-2">
+              <GithubLogo size={14} />
+              View on GitHub
+            </span>
             <span>↗</span>
           </a>
         </div>
@@ -339,19 +367,22 @@ function BuildStep({
   tool,
   role,
   dark,
+  Logo,
 }: {
   tool: string;
   role: string;
   dark: boolean;
+  Logo: React.ComponentType<{ size?: number; className?: string }>;
 }) {
   return (
     <div className="flex gap-3 items-start">
       <span
         className={cn(
-          "shrink-0 text-[9px] font-mono uppercase tracking-[0.22em] px-2 py-1 rounded-md border",
+          "shrink-0 flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-[0.22em] px-2 py-1 rounded-md border",
           dark ? "border-white/15 text-white" : "border-black/15 text-black",
         )}
       >
+        <Logo size={12} />
         {tool}
       </span>
       <p
@@ -596,10 +627,8 @@ function YouTubeTab({
       <h3 className="mt-3 font-serif text-3xl tracking-tight">Import from YouTube</h3>
 
       <div className={cn("mt-6 rounded-xl border p-1.5 flex items-center gap-2", border, surface)}>
-        <div className="h-8 w-8 rounded-md bg-[#ff0000] flex items-center justify-center shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
-            <path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.4 3.6-6.4 3.6z" />
-          </svg>
+        <div className="h-8 w-8 rounded-md bg-white flex items-center justify-center shrink-0">
+          <YoutubeLogo size={20} />
         </div>
         <input
           readOnly
@@ -794,8 +823,11 @@ function AITab({
         >
           AI · Backstory
         </span>
-        <span className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
-          via Spotify + Claude
+        <span className={cn("flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+          <span>via</span>
+          <SpotifyLogo size={12} />
+          <span>+</span>
+          <ClaudeLogo size={12} />
         </span>
       </div>
       <h3 className="mt-3 font-serif text-3xl tracking-tight">{track.title}</h3>

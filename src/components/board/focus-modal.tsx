@@ -36,7 +36,7 @@ export function FocusModal({
 
   const node = (
     <div
-      className="fixed inset-0 z-[70]"
+      className="fixed inset-0 z-[9999]"
       role="dialog"
       aria-modal="true"
       aria-label={`${projectKey} focused view`}
@@ -53,7 +53,9 @@ export function FocusModal({
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className="pointer-events-auto relative max-w-[min(1100px,96vw)] max-h-[92vh] overflow-hidden rounded-lg shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] animate-[zoomIn_320ms_cubic-bezier(0.2,0.9,0.2,1)]"
+          onPointerDown={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
+          className="pointer-events-auto relative max-w-[min(1240px,96vw)] max-h-[92vh] overflow-hidden rounded-lg shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] animate-[zoomIn_320ms_cubic-bezier(0.2,0.9,0.2,1)]"
         >
           <button
             onClick={onClose}
