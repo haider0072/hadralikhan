@@ -1,0 +1,337 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { usePanZoom } from "./use-pan-zoom";
+import { cards as initialCards, WORLD } from "./layout";
+import { CardRenderer } from "./cards";
+import { Minimap } from "./minimap";
+import { Cursor } from "./cursor";
+import { cn } from "@/lib/cn";
+import { site } from "@/data/site";
+import type { BoardCard, Viewport } from "./types";
+
+const STORAGE_KEY = "haider.board.layout.v1";
+const DRAG_THRESHOLD = 5;
+
+type Positions = Record<string, { x: number; y: number }>;
+
+export function BoardCanvas() {
+  const { containerRef, viewport, setViewport, isDragging, fit } = usePanZoom({
+    world: WORLD,
+    minScale: 0.3,
+    maxScale: 2,
+  });
+
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const [showHint, setShowHint] = useState(true);
+  const [positions, setPositions] = useState<Positions>({});
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [topIndex, setTopIndex] = useState<Record<string, number>>({});
+  const topCounter = useRef(100);
+  const viewportRef = useRef(viewport);
+  viewportRef.current = viewport;
+
+  // Compose current card state (base + override positions)
+  const cards: BoardCard[] = initialCards.map((c) =>
+    positions[c.id] ? { ...c, x: positions[c.id].x, y: positions[c.id].y } : c,
+  );
+
+  // Load layout from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setPositions(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  // Persist on change (debounced)
+  useEffect(() => {
+    const id = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(positions));
+      } catch {}
+    }, 250);
+    return () => clearTimeout(id);
+  }, [positions]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const r = el.getBoundingClientRect();
+      setSize({ w: r.width, h: r.height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [containerRef]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowHint(false), 5200);
+    return () => clearTimeout(t);
+  }, []);
+
+  const onMinimapJump = (wx: number, wy: number) => {
+    animateTo({ wx, wy, scale: viewport.scale }, viewport, setViewport, size);
+  };
+
+  const onFocusCard = (c: BoardCard) => {
+    const wx = c.x;
+    const wy = c.y;
+    animateTo({ wx, wy, scale: 1.4 }, viewport, setViewport, size);
+  };
+
+  const resetLayout = useCallback(() => {
+    setPositions({});
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {}
+  }, []);
+
+  // Per-card drag
+  const dragRef = useRef<{
+    id: string;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    origX: number;
+    origY: number;
+    moved: boolean;
+  } | null>(null);
+  const suppressClickRef = useRef(false);
+
+  const bringToFront = useCallback((id: string) => {
+    topCounter.current += 1;
+    setTopIndex((prev) => ({ ...prev, [id]: topCounter.current }));
+  }, []);
+
+  const onCardPointerDown = (e: React.PointerEvent, card: BoardCard) => {
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {}
+    dragRef.current = {
+      id: card.id,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: card.x,
+      origY: card.y,
+      moved: false,
+    };
+    setActiveCardId(card.id);
+    bringToFront(card.id);
+  };
+
+  const onCardPointerMove = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d || d.pointerId !== e.pointerId) return;
+    const screenDx = e.clientX - d.startX;
+    const screenDy = e.clientY - d.startY;
+    if (!d.moved && Math.hypot(screenDx, screenDy) > DRAG_THRESHOLD) {
+      d.moved = true;
+    }
+    if (!d.moved) return;
+    const scale = viewportRef.current.scale;
+    const nx = d.origX + screenDx / scale;
+    const ny = d.origY + screenDy / scale;
+    setPositions((prev) => ({ ...prev, [d.id]: { x: nx, y: ny } }));
+  };
+
+  const onCardPointerUp = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+    if (d.moved) suppressClickRef.current = true;
+    dragRef.current = null;
+    setActiveCardId(null);
+  };
+
+  const onCardClickCapture = (e: React.MouseEvent) => {
+    if (suppressClickRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      suppressClickRef.current = false;
+    }
+  };
+
+  return (
+    <>
+      <div
+        ref={containerRef}
+        className={cn(
+          "fixed inset-0 overflow-hidden touch-none select-none bg-cream",
+          isDragging ? "cursor-grabbing" : "cursor-grab",
+        )}
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(42,31,23,0.14) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+          backgroundPosition: `${viewport.x}px ${viewport.y}px`,
+        }}
+      >
+        <div
+          className="absolute top-0 left-0 will-change-transform"
+          style={{
+            width: `${WORLD.w}px`,
+            height: `${WORLD.h}px`,
+            transform: `translate3d(${viewport.x}px, ${viewport.y}px, 0) scale(${viewport.scale})`,
+            transformOrigin: "0 0",
+          }}
+        >
+          {cards.map((c) => {
+            const isActive = activeCardId === c.id;
+            const base =
+              (c.depth ?? 1) * 2 + (c.kind === "sticker" ? 5 : 0);
+            const z = topIndex[c.id] ?? base;
+            return (
+              <div
+                key={c.id}
+                data-no-drag
+                className={cn(
+                  "absolute",
+                  isActive
+                    ? "cursor-grabbing"
+                    : "cursor-grab active:cursor-grabbing",
+                )}
+                style={{
+                  left: c.x,
+                  top: c.y,
+                  transform: `translate(-50%, -50%) rotate(${
+                    isActive ? 0 : (c.rotation ?? 0)
+                  }deg) ${isActive ? "scale(1.03)" : ""}`,
+                  transformOrigin: "center center",
+                  zIndex: z,
+                  filter: isActive
+                    ? "drop-shadow(0 20px 40px rgba(42,31,23,0.25))"
+                    : undefined,
+                  transition: isActive
+                    ? "none"
+                    : "transform 180ms ease, filter 180ms ease",
+                }}
+                onPointerDown={(e) => onCardPointerDown(e, c)}
+                onPointerMove={onCardPointerMove}
+                onPointerUp={onCardPointerUp}
+                onPointerCancel={onCardPointerUp}
+                onClickCapture={onCardClickCapture}
+                onDoubleClick={() => onFocusCard(c)}
+              >
+                <CardRenderer card={c} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Top-left brand */}
+      <div
+        data-no-drag
+        className="fixed top-5 left-5 z-40 flex items-center gap-3 bg-paper/80 backdrop-blur border border-ink/10 rounded-full px-4 py-2"
+      >
+        <span className="h-2 w-2 rounded-full bg-terracotta animate-pulse" />
+        <span className="font-serif text-sm italic tracking-tight">
+          Haider<span className="text-terracotta">.</span>
+        </span>
+        <span className="hidden md:inline font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted">
+          Portfolio · Board
+        </span>
+      </div>
+
+      {/* Drag hint */}
+      <div
+        data-no-drag
+        className={cn(
+          "fixed top-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-paper/90 backdrop-blur border border-ink/10 rounded-full px-5 py-2.5 transition-opacity duration-700 pointer-events-none",
+          showHint ? "opacity-100" : "opacity-0",
+        )}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M7 7l10 10M17 7L7 17"
+            stroke="#2a1f17"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+        <span className="font-hand text-lg text-ink">
+          drag the board to pan · pick up any card · scroll to zoom
+        </span>
+      </div>
+
+      {/* Top-right controls */}
+      <div
+        data-no-drag
+        className="fixed top-5 right-5 z-40 flex items-center gap-2"
+      >
+        <button
+          onClick={resetLayout}
+          className="bg-paper/90 backdrop-blur border border-ink/10 rounded-full px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted hover:text-ink transition-colors"
+          title="Reset card positions"
+        >
+          Reset
+        </button>
+        <button
+          onClick={fit}
+          className="bg-paper/90 backdrop-blur border border-ink/10 rounded-full px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink hover:bg-ink hover:text-cream transition-colors"
+        >
+          Fit all
+        </button>
+        <a
+          href={site.socials.email}
+          className="bg-ink text-cream rounded-full px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] hover:bg-terracotta transition-colors"
+        >
+          Hello →
+        </a>
+      </div>
+
+      {/* Zoom indicator */}
+      <div
+        data-no-drag
+        className="fixed bottom-5 left-5 z-40 bg-paper/90 backdrop-blur border border-ink/10 rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted"
+      >
+        Zoom · {Math.round(viewport.scale * 100)}%
+      </div>
+
+      <Minimap
+        cards={cards}
+        world={WORLD}
+        viewport={viewport}
+        containerSize={size}
+        onJump={onMinimapJump}
+      />
+
+      <Cursor dragging={isDragging} />
+    </>
+  );
+}
+
+function animateTo(
+  target: { wx: number; wy: number; scale: number },
+  current: Viewport,
+  setViewport: (v: Viewport) => void,
+  size: { w: number; h: number },
+) {
+  const targetView: Viewport = {
+    x: size.w / 2 - target.wx * target.scale,
+    y: size.h / 2 - target.wy * target.scale,
+    scale: target.scale,
+  };
+  const start = { ...current };
+  const duration = 700;
+  const t0 = performance.now();
+  const ease = (t: number) =>
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  const tick = () => {
+    const now = performance.now();
+    const t = Math.min(1, (now - t0) / duration);
+    const e = ease(t);
+    setViewport({
+      x: start.x + (targetView.x - start.x) * e,
+      y: start.y + (targetView.y - start.y) * e,
+      scale: start.scale + (targetView.scale - start.scale) * e,
+    });
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}

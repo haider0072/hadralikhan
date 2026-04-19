@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# hadralikhan
 
-## Getting Started
+Personal portfolio of **Haider Ali Khan** — Product Designer, PM, and Developer from Karachi.
 
-First, run the development server:
+A drag-to-explore, FigJam-style infinite pinboard with scattered polaroids, project cards, sticky notes, and a warm vintage-modern aesthetic. Built as a single-page spatial experience rather than a scroll.
+
+→ [hadralikhan.vercel.app](https://hadralikhan.vercel.app)
+
+## Highlights
+
+- Infinite canvas (~4800 × 3200 world) with dot-grid background
+- Drag to pan · scroll-wheel to zoom · double-click any card to focus
+- Every card is individually pickable and draggable (positions persist in `localStorage`)
+- Live minimap with viewport rectangle — click to jump anywhere
+- Custom cursor with contextual labels (drag / panning / open)
+- Warm light palette · serif display · handwritten accents
+- Classic scrolling portfolio fallback at `/classic`
+
+## Stack
+
+- **Framework** — Next.js 16 (App Router, Turbopack)
+- **Language** — TypeScript
+- **Styling** — Tailwind CSS v4
+- **Animation** — GSAP + Lenis (scroll version), pointer-event engine (board)
+- **3D** — React Three Fiber (scroll version hero)
+- **Content** — MDX-ready
+- **Fonts** — Fraunces, Inter, JetBrains Mono, Caveat
+- **Deploy** — Vercel
+
+## Local
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├─ app/
+│  ├─ page.tsx            → / (board — the pinboard)
+│  ├─ classic/page.tsx    → /classic (traditional scroll version)
+│  └─ layout.tsx
+├─ components/
+│  ├─ board/              → infinite-canvas engine, cards, minimap, cursor
+│  └─ sections/           → scroll-version sections (classic)
+└─ data/
+   ├─ site.ts
+   ├─ experience.ts
+   ├─ projects.ts
+   └─ skills.ts
+```
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT](LICENSE) — code is open, content is mine.
