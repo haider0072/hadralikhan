@@ -19,6 +19,7 @@ import type {
 } from "./types";
 import { AudoraPrototype } from "./prototypes/audora";
 import { MochiPrototype } from "./prototypes/mochi";
+import { TradingBotPrototype } from "./prototypes/trading-bot";
 import type { CardActivity } from "./use-card-activity";
 import {
   ContributionCalendarCard,
@@ -92,6 +93,8 @@ function PrototypeCardView({
       return <AudoraPrototype activity={activity} />;
     case "mochi":
       return <MochiPrototype activity={activity} />;
+    case "trading-bot":
+      return <TradingBotPrototype activity={activity} />;
     default:
       return <GhPlaceholder label={`${card.slug} · coming soon`} />;
   }

@@ -144,17 +144,12 @@ export const cards: BoardCard[] = [
   },
   {
     id: "project-trading",
-    kind: "project",
+    kind: "prototype",
     slug: "trading-bot",
     x: 1100,
     y: 2400,
     rotation: -5,
     depth: 0,
-    title: "Trading Bot",
-    tagline: "ML-driven automated crypto trading on Binance.",
-    year: "2024",
-    stack: ["Python", "ML"],
-    accent: "ochre",
   },
   {
     id: "project-wisesend",
