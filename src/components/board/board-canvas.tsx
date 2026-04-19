@@ -9,13 +9,14 @@ import { Cursor } from "./cursor";
 import { cn } from "@/lib/cn";
 import { site } from "@/data/site";
 import type { BoardCard, Viewport } from "./types";
+import type { GithubStats } from "@/lib/github";
 
 const STORAGE_KEY = "haider.board.layout.v1";
 const DRAG_THRESHOLD = 5;
 
 type Positions = Record<string, { x: number; y: number }>;
 
-export function BoardCanvas() {
+export function BoardCanvas({ github }: { github: GithubStats | null }) {
   const { containerRef, viewport, setViewport, isDragging, fit } = usePanZoom({
     world: WORLD,
     minScale: 0.3,
@@ -216,7 +217,11 @@ export function BoardCanvas() {
                 onClickCapture={onCardClickCapture}
                 onDoubleClick={() => onFocusCard(c)}
               >
-                <CardRenderer card={c} />
+                <CardRenderer
+                  card={c}
+                  activity={viewport.scale >= 0.55 ? "active" : "idle"}
+                  github={github}
+                />
               </div>
             );
           })}

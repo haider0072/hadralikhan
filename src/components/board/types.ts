@@ -1,13 +1,18 @@
 export type CardKind =
   | "intro"
   | "project"
+  | "prototype"
   | "polaroid"
   | "note"
   | "sticker"
   | "contact"
   | "experience"
   | "skills"
-  | "quote";
+  | "quote"
+  | "gh-calendar"
+  | "gh-stats"
+  | "gh-activity"
+  | "gh-languages";
 
 export type CardBase = {
   id: string;
@@ -72,15 +77,30 @@ export type QuoteCard = CardBase & {
   text: string;
 };
 
+export type PrototypeCard = CardBase & {
+  kind: "prototype";
+  slug: "audora" | "flowcraft" | "mochi" | "trading-bot" | "ember" | "relay" | "wisesend";
+};
+
+export type GhCalendarCard = CardBase & { kind: "gh-calendar" };
+export type GhStatsCard = CardBase & { kind: "gh-stats" };
+export type GhActivityCard = CardBase & { kind: "gh-activity" };
+export type GhLanguagesCard = CardBase & { kind: "gh-languages" };
+
 export type BoardCard =
   | IntroCard
   | ProjectCard
+  | PrototypeCard
   | PolaroidCard
   | NoteCard
   | StickerCard
   | ContactCard
   | ExperienceCard
   | SkillsCard
-  | QuoteCard;
+  | QuoteCard
+  | GhCalendarCard
+  | GhStatsCard
+  | GhActivityCard
+  | GhLanguagesCard;
 
 export type Viewport = { x: number; y: number; scale: number };

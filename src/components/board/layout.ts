@@ -1,7 +1,7 @@
 import type { BoardCard } from "./types";
 
-// World is in "world units" — cards positioned in a ~4000 x 3000 area
-export const WORLD = { w: 4800, h: 3200, padding: 600 };
+// World is in "world units" — cards positioned in a ~5200 x 3600 area
+export const WORLD = { w: 5200, h: 3600, padding: 600 };
 
 export const cards: BoardCard[] = [
   // INTRO — center
@@ -113,17 +113,12 @@ export const cards: BoardCard[] = [
   },
   {
     id: "project-audora",
-    kind: "project",
+    kind: "prototype",
     slug: "audora",
-    x: 3700,
+    x: 3800,
     y: 600,
-    rotation: 4,
+    rotation: 2,
     depth: 0,
-    title: "Audora",
-    tagline: "Pro music player. FLAC, EQ, cloud sync.",
-    year: "2025",
-    stack: ["Next.js", "Web Audio"],
-    accent: "ochre",
   },
   {
     id: "project-flowcraft",
@@ -288,5 +283,49 @@ export const cards: BoardCard[] = [
     depth: 3,
     symbol: "○",
     label: "tap a project →",
+  },
+
+  // GITHUB STATS CLUSTER — right side, "developer corner"
+  {
+    id: "gh-calendar",
+    kind: "gh-calendar",
+    x: 4600,
+    y: 2400,
+    rotation: -1.5,
+    depth: 1,
+  },
+  {
+    id: "gh-stats",
+    kind: "gh-stats",
+    x: 4450,
+    y: 2900,
+    rotation: 2.5,
+    depth: 1,
+  },
+  {
+    id: "gh-activity",
+    kind: "gh-activity",
+    x: 4900,
+    y: 3000,
+    rotation: -3,
+    depth: 1,
+  },
+  {
+    id: "gh-languages",
+    kind: "gh-languages",
+    x: 4800,
+    y: 2450,
+    rotation: 4,
+    depth: 0,
+  },
+  {
+    id: "sticker-dev",
+    kind: "sticker",
+    x: 4300,
+    y: 2250,
+    rotation: -10,
+    depth: 3,
+    symbol: "↳",
+    label: "also: i code",
   },
 ];

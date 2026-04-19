@@ -8,6 +8,7 @@ import type {
   BoardCard,
   IntroCard,
   ProjectCard,
+  PrototypeCard,
   PolaroidCard,
   NoteCard,
   StickerCard,
@@ -16,6 +17,15 @@ import type {
   SkillsCard,
   QuoteCard,
 } from "./types";
+import { AudoraPrototype } from "./prototypes/audora";
+import type { CardActivity } from "./use-card-activity";
+import {
+  ContributionCalendarCard,
+  StatsSummaryCard,
+  ActivityFeedCard,
+  LanguagesCard,
+} from "./github-cards";
+import type { GithubStats } from "@/lib/github";
 
 const noteColors: Record<string, string> = {
   yellow: "#f5e7a8",
@@ -24,12 +34,22 @@ const noteColors: Record<string, string> = {
   green: "#c7d9ba",
 };
 
-export function CardRenderer({ card }: { card: BoardCard }) {
+export function CardRenderer({
+  card,
+  activity,
+  github,
+}: {
+  card: BoardCard;
+  activity: CardActivity;
+  github: GithubStats | null;
+}) {
   switch (card.kind) {
     case "intro":
       return <IntroCardView card={card} />;
     case "project":
       return <ProjectCardView card={card} />;
+    case "prototype":
+      return <PrototypeCardView card={card} activity={activity} />;
     case "polaroid":
       return <PolaroidCardView card={card} />;
     case "note":
@@ -44,7 +64,45 @@ export function CardRenderer({ card }: { card: BoardCard }) {
       return <SkillsCardView card={card} />;
     case "quote":
       return <QuoteCardView card={card} />;
+    case "gh-calendar":
+      return <ContributionCalendarCard data={github?.calendar ?? null} />;
+    case "gh-stats":
+      return github ? (
+        <StatsSummaryCard data={github} />
+      ) : (
+        <GhPlaceholder label="GitHub · stats" />
+      );
+    case "gh-activity":
+      return <ActivityFeedCard data={github?.activity ?? []} />;
+    case "gh-languages":
+      return <LanguagesCard data={github?.languages ?? []} />;
   }
+}
+
+function PrototypeCardView({
+  card,
+  activity,
+}: {
+  card: PrototypeCard;
+  activity: CardActivity;
+}) {
+  switch (card.slug) {
+    case "audora":
+      return <AudoraPrototype activity={activity} />;
+    default:
+      return <GhPlaceholder label={`${card.slug} · coming soon`} />;
+  }
+}
+
+function GhPlaceholder({ label }: { label: string }) {
+  return (
+    <div
+      data-no-drag
+      className="bg-paper border border-ink/10 rounded-sm p-5 w-[280px] font-mono text-[11px] text-ink-muted"
+    >
+      {label}
+    </div>
+  );
 }
 
 function IntroCardView({ card }: { card: IntroCard }) {
