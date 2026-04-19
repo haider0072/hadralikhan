@@ -98,10 +98,9 @@ function TradingPeek({
         tagline:
           "Automated crypto on Binance. TA + ML + AI, 3-layer signal confirmation.",
       }}
-      innerClassName="bg-[#0a0f0c]"
+      innerClassName="bg-[#0a0f0c] text-[#d4e4d1]"
       onOpen={onOpen}
       tape="top-left"
-      className="text-[#d4e4d1]"
     >
       {/* Grid */}
       <div
