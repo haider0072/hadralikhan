@@ -375,10 +375,14 @@ function BuildStep({
   Logo: React.ComponentType<{ size?: number; className?: string }>;
 }) {
   return (
-    <div className="flex gap-3 items-start">
+    <div
+      className={cn(
+        "grid grid-cols-[104px_1fr] items-start gap-3 py-1",
+      )}
+    >
       <span
         className={cn(
-          "shrink-0 flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-[0.22em] px-2 py-1 rounded-md border",
+          "flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-[0.22em] px-2 py-1 rounded-md border whitespace-nowrap",
           dark ? "border-white/15 text-white" : "border-black/15 text-black",
         )}
       >
@@ -388,7 +392,7 @@ function BuildStep({
       <p
         className={cn(
           "text-[12px] leading-snug",
-          dark ? "text-white/60" : "text-black/60",
+          dark ? "text-white/55" : "text-black/55",
         )}
       >
         {role}

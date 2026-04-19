@@ -17,6 +17,7 @@ const base = (size: number) => ({
   viewBox: "0 0 24 24",
   xmlns: "http://www.w3.org/2000/svg",
   "aria-hidden": true as const,
+  style: { flexShrink: 0 },
 });
 
 export function V0Logo({ size = 16, className }: LogoProps) {
@@ -40,10 +41,10 @@ export function CursorLogo({ size = 16, className }: LogoProps) {
 }
 
 export function ClaudeLogo({ size = 16, className }: LogoProps) {
-  // Anthropic Claude "sunburst" mark, simplified
+  // Anthropic "burst" mark — four-point starburst filling the viewBox
   return (
     <svg {...base(size)} className={className} fill="currentColor">
-      <path d="M8.4 4.5h2.9l4.5 15h-2.9l-.9-3H7.6l-1 3H3.8l4.6-15Zm-.1 9.4h3.3l-1.6-5.5-1.7 5.5Zm9.2-9.4h2.7v15h-2.7v-15Z" />
+      <path d="M12 1c.4 4.6 1.3 7.6 3 9.3s4.7 2.6 9.3 3l.7.2-.7.2c-4.6.4-7.6 1.3-9.3 3S12.4 22 12 24h-.1c-.4-4.6-1.3-7.6-3-9.3s-4.7-2.6-9.3-3L-.1 12l.7-.2c4.6-.4 7.6-1.3 9.3-3s2.6-4.7 3-9.3h.1Z" />
     </svg>
   );
 }
