@@ -153,17 +153,12 @@ export const cards: BoardCard[] = [
   },
   {
     id: "project-wisesend",
-    kind: "project",
+    kind: "prototype",
     slug: "wisesend",
     x: 2250,
     y: 2550,
     rotation: -2,
     depth: 0,
-    title: "WiseSend",
-    tagline: "File transfer app. Live on Play Store.",
-    year: "2023",
-    stack: ["Flutter"],
-    accent: "terracotta",
   },
 
   // EXPERIENCE CARD
