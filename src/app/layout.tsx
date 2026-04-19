@@ -44,8 +44,8 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(seo.url),
   title: {
-    default: `${seo.name} — ${seo.role}`,
-    template: `%s — ${seo.name}`,
+    default: `${seo.name} · ${seo.role}`,
+    template: `%s · ${seo.name}`,
   },
   description: seo.description,
   keywords: seo.keywords,
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     locale: seo.locale,
     url: seo.url,
     siteName: seo.name,
-    title: `${seo.name} — ${seo.role}`,
+    title: `${seo.name} · ${seo.role}`,
     description: seo.description,
     firstName: "Haider",
     lastName: "Ali Khan",
@@ -86,7 +86,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: seo.twitterHandle,
     creator: seo.twitterHandle,
-    title: `${seo.name} — ${seo.role}`,
+    title: `${seo.name} · ${seo.role}`,
     description: seo.description,
   },
   icons: {

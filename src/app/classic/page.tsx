@@ -10,12 +10,12 @@ import { Contact } from "@/components/sections/contact";
 import { seo } from "@/data/seo";
 
 export const metadata: Metadata = {
-  title: "Classic — scroll version",
-  description: `A traditional scrolling portfolio view of ${seo.name}'s work. Hero, experience, selected projects, and contact — laid out as a cinematic long-read.`,
+  title: "Classic · scroll version",
+  description: `A traditional scrolling portfolio view of ${seo.name}'s work. Hero, experience, selected projects, and contact, laid out as a cinematic long-read.`,
   alternates: { canonical: "/classic" },
   openGraph: {
     url: `${seo.url}/classic`,
-    title: `${seo.name} — ${seo.role} (Classic view)`,
+    title: `${seo.name} · ${seo.role} (Classic view)`,
   },
 };
 

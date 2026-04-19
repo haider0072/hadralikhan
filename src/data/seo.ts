@@ -5,7 +5,7 @@ export const seo = {
   tagline:
     "Designs products, ships systems, occasionally a little magic. Available for remote work worldwide.",
   description:
-    "Portfolio of Haider Ali Khan — a Product Designer, Product Manager, and Full-Stack Developer available for remote work worldwide. Builds end-to-end: product design, AI agents, web, mobile, backend, and infrastructure.",
+    "Portfolio of Haider Ali Khan, a Product Designer, Product Manager, and Full-Stack Developer available for remote work worldwide. Builds end-to-end: product design, AI agents, web, mobile, backend, and infrastructure.",
   url: "https://hadralikhan.vercel.app",
   locale: "en_US",
   twitterHandle: "@hadralikhan",

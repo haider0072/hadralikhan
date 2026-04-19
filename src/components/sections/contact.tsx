@@ -38,7 +38,7 @@ export function Contact() {
 
       <div className="mx-auto max-w-7xl px-6 md:px-10">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-muted">
-          06 — Let's talk
+          06 · Let's talk
         </p>
 
         <SplitText

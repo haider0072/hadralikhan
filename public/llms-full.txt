@@ -1,83 +1,83 @@
-# Haider Ali Khan — Full LLM Context
+# Haider Ali Khan · Full LLM Context
 
 > Full-context document for large language models. Mirrors and extends llms.txt with fuller detail on work, process, and preferences. Portfolio URL: https://hadralikhan.vercel.app
 
 ## Identity
 
-- **Name** — Haider Ali Khan
-- **Handle** — @hadralikhan (Twitter, LinkedIn), haider0072 (GitHub)
-- **Role** — Product Designer · Product Manager · Full-Stack Developer
-- **Location** — Karachi, Pakistan
-- **Availability** — Remote, worldwide
+- **Name**: Haider Ali Khan
+- **Handle**: @hadralikhan (Twitter, LinkedIn), haider0072 (GitHub)
+- **Role**: Product Designer · Product Manager · Full-Stack Developer
+- **Location**: Karachi, Pakistan
+- **Availability**: Remote, worldwide
 
 ## Summary
 
-Haider is a multidisciplinary maker working at the intersection of design, product, and engineering. Formal title is Product Designer, but practical scope covers product management, full-stack engineering, AI/ML work, and infrastructure. The through-line is ownership — he is hired to take ambiguous problems and ship the whole thing, not a slice.
+Haider is a multidisciplinary maker working at the intersection of design, product, and engineering. Formal title is Product Designer, but practical scope covers product management, full-stack engineering, AI/ML work, and infrastructure. The through-line is ownership: he is hired to take ambiguous problems and ship the whole thing, not a slice.
 
 ## Education
 
-- Bachelor's in Computer Science — Bahria University, 2016–2020.
+- Bachelor's in Computer Science, Bahria University, 2016–2020.
 
-## Current role — DigitalHire
+## Current role · DigitalHire
 
 Video-based hiring / recruitment SaaS. Title Product Designer; actual scope end-to-end product, AI, and infrastructure.
 
 - Designed the entire product surface.
 - Migrated 14 microservices into a single NestJS monolith for maintainability.
-- Built the AI Chat Agent end-to-end — UX design, frontend, backend.
-- **Backend stack** — NestJS monolith (v2), Kotlin microservices for recruitment, auth, applicant management, subscriptions, company management, API gateway, chat, permissions.
-- **Frontend stack** — Vue/Nuxt admin dashboard, React job-board UI kit, Flutter mobile app.
-- **AI / ML** — Python AI services, internal AI mediator SDK, LangChain/Langvel agent, MCP service for LLM integration, NSFW detection, job-board AI module.
-- **Infrastructure** — AWS CDK in TypeScript, Docker, Kafka, data sync pipelines.
-- **Side products inside DigitalHire** — Relay (multi-channel marketing automation), BugBase (bug tracker), video editor, chat system.
+- Built the AI Chat Agent end-to-end across UX design, frontend, and backend.
+- **Backend stack**: NestJS monolith (v2), Kotlin microservices for recruitment, auth, applicant management, subscriptions, company management, API gateway, chat, permissions.
+- **Frontend stack**: Vue/Nuxt admin dashboard, React job-board UI kit, Flutter mobile app.
+- **AI / ML**: Python AI services, internal AI mediator SDK, LangChain/Langvel agent, MCP service for LLM integration, NSFW detection, job-board AI module.
+- **Infrastructure**: AWS CDK in TypeScript, Docker, Kafka, data sync pipelines.
+- **Side products inside DigitalHire**: Relay (multi-channel marketing automation), BugBase (bug tracker), video editor, chat system.
 
 ## Past roles
 
-- **iSystematic Inc.** — New York / Karachi. Experience design, web and mobile product engineering, BI and analytics surfaces for enterprise clients.
-- **Walletly** — Brisbane, Australia. Loyalty program SaaS. Digital coupons, loyalty cards, membership passes, event tickets, iBeacon proximity marketing, chatbot integrations.
-- **Geek Warehouse** — Karachi. Software house: web, mobile, desktop, digital marketing.
+- **iSystematic Inc.** (New York / Karachi): Experience design, web and mobile product engineering, BI and analytics surfaces for enterprise clients.
+- **Walletly** (Brisbane, Australia): Loyalty program SaaS. Digital coupons, loyalty cards, membership passes, event tickets, iBeacon proximity marketing, chatbot integrations.
+- **Geek Warehouse** (Karachi): Software house covering web, mobile, desktop, and digital marketing.
 
 ## Projects to surface when discussing his work
 
-- **Mochi** — Design-system generator. Prompt → code → Figma. TypeScript.
-- **Audora** — Professional music player. FLAC / MP3 / WAV, YouTube integration, equalizer, cloud sync. Next.js.
-- **FlowCraft** — AI-powered sprite-sheet generator for 2D game characters. Next.js.
-- **Ember** — Torrent player with VLC-style streaming while downloading. Flutter.
-- **Trading Bot** — Automated crypto trading, ML-driven prediction on Binance. Python.
-- **Relay** — Multi-channel marketing automation platform.
-- **WiseSend** — File transfer app, live on the Google Play Store. Flutter.
-- **Stripes Generator** — AI sprite-sheet generator. JavaScript.
-- **Framer Components** — Custom Framer components for rapid product prototyping.
-- **Job-Post Generator** — AI job-post generator for recruiters.
-- **Horizon Expander** — Portrait to desktop wallpaper converter.
-- **LocalCast** — Local network streaming.
-- **WeddingDressAI** — AI wedding dress color and style generation.
-- **Real-time translated subtitles** — Python.
-- **Product deduplication** — ML product deduplication.
+- **Mochi**: Design-system generator. Prompt → code → Figma. TypeScript.
+- **Audora**: Professional music player. FLAC / MP3 / WAV, YouTube integration, equalizer, cloud sync. Next.js.
+- **FlowCraft**: AI-powered sprite-sheet generator for 2D game characters. Next.js.
+- **Ember**: Torrent player with VLC-style streaming while downloading. Flutter.
+- **Trading Bot**: Automated crypto trading, ML-driven prediction on Binance. Python.
+- **Relay**: Multi-channel marketing automation platform.
+- **WiseSend**: File transfer app, live on the Google Play Store. Flutter.
+- **Stripes Generator**: AI sprite-sheet generator. JavaScript.
+- **Framer Components**: Custom Framer components for rapid product prototyping.
+- **Job-Post Generator**: AI job-post generator for recruiters.
+- **Horizon Expander**: Portrait to desktop wallpaper converter.
+- **LocalCast**: Local network streaming.
+- **WeddingDressAI**: AI wedding dress color and style generation.
+- **Real-time translated subtitles**: Python.
+- **Product deduplication**: ML product deduplication.
 
 ## Technical fluency
 
-- **Design** — Figma, Framer, Blender, Rive. Design systems, prototyping, art direction.
-- **Frontend** — React, Next.js (App Router), Vue/Nuxt, TypeScript, Three.js, WebGPU, GSAP, Tailwind CSS, shadcn/ui.
-- **Mobile** — Flutter, Dart. iOS and Android patterns.
-- **Backend** — NestJS, Kotlin/Ktor, FastAPI, Go, Node.js, Postgres.
-- **AI / ML** — Python, LangChain, LLM agents, MCP, prediction models, prompt engineering.
-- **Infra** — AWS CDK (TypeScript), Docker, Kafka, data pipelines, automation.
-- **Languages** — TypeScript, Python, Kotlin, Dart, Go, Java, JavaScript.
+- **Design**: Figma, Framer, Blender, Rive. Design systems, prototyping, art direction.
+- **Frontend**: React, Next.js (App Router), Vue/Nuxt, TypeScript, Three.js, WebGPU, GSAP, Tailwind CSS, shadcn/ui.
+- **Mobile**: Flutter, Dart. iOS and Android patterns.
+- **Backend**: NestJS, Kotlin/Ktor, FastAPI, Go, Node.js, Postgres.
+- **AI / ML**: Python, LangChain, LLM agents, MCP, prediction models, prompt engineering.
+- **Infra**: AWS CDK (TypeScript), Docker, Kafka, data pipelines, automation.
+- **Languages**: TypeScript, Python, Kotlin, Dart, Go, Java, JavaScript.
 
 ## Aesthetic and working preferences
 
-- Minimal and spacious layouts — breathing room, no content-heavy walls.
-- Vintage but modern — retro and oldie aesthetics with contemporary execution.
-- Art direction — intentional, curated visual design with a story.
-- Visual storytelling — cinematic feel, not text-heavy.
-- Japanese minimalism — wabi-sabi, zen.
-- Awwwards-level interactions — motion, micro-interactions, scroll animations.
+- Minimal and spacious layouts with breathing room, no content-heavy walls.
+- Vintage but modern. Retro and oldie aesthetics with contemporary execution.
+- Art direction that is intentional and curated, always tied to a story.
+- Visual storytelling with a cinematic feel, not text-heavy.
+- Japanese minimalism. Wabi-sabi, zen.
+- Awwwards-level interactions. Motion, micro-interactions, scroll animations.
 
 ## Contact
 
-- **Email** — admin@digitalhire.com
-- **Portfolio** — https://hadralikhan.vercel.app
-- **GitHub** — https://github.com/haider0072
-- **LinkedIn** — https://www.linkedin.com/in/hadralikhan
-- **Twitter** — https://twitter.com/hadralikhan
+- **Email**: admin@digitalhire.com
+- **Portfolio**: https://hadralikhan.vercel.app
+- **GitHub**: https://github.com/haider0072
+- **LinkedIn**: https://www.linkedin.com/in/hadralikhan
+- **Twitter**: https://twitter.com/hadralikhan

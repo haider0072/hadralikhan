@@ -167,7 +167,7 @@ export function ActivityFeedCard({ data }: { data: GithubStats["activity"] }) {
         </div>
       </div>
       {data.length === 0 ? (
-        <p className="text-[#f4ece0]/50">$ gh events — quiet right now</p>
+        <p className="text-[#f4ece0]/50">$ gh events · quiet right now</p>
       ) : (
         <ul className="space-y-2">
           {data.map((a, i) => (

@@ -3,7 +3,7 @@ import { seo } from "@/data/seo";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: `${seo.name} — ${seo.role}`,
+    name: `${seo.name} · ${seo.role}`,
     short_name: seo.shortName,
     description: seo.description,
     start_url: "/",

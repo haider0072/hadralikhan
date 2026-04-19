@@ -8,7 +8,7 @@ export function About() {
       <div className="mx-auto max-w-7xl px-6 md:px-10 grid gap-12 md:grid-cols-12">
         <div className="md:col-span-4 md:sticky md:top-32 self-start">
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-muted">
-            01 — About
+            01 · About
           </p>
           <SplitText
             as="h2"

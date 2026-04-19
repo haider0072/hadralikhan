@@ -12,7 +12,7 @@ export function Experience() {
         <div className="grid gap-12 md:grid-cols-12 mb-16">
           <div className="md:col-span-4">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-muted">
-              02 — Work
+              02 · Work
             </p>
           </div>
           <div className="md:col-span-8">
@@ -48,7 +48,7 @@ export function Experience() {
                   <ul className="space-y-1.5 text-sm text-ink-muted">
                     {exp.highlights.map((h) => (
                       <li key={h} className="flex gap-2">
-                        <span className="text-terracotta">—</span>
+                        <span className="text-terracotta">·</span>
                         <span>{h}</span>
                       </li>
                     ))}

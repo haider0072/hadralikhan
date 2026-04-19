@@ -67,7 +67,7 @@ export const projects: Project[] = [
   {
     slug: "wisesend",
     title: "WiseSend",
-    tagline: "File transfer app — live on Play Store.",
+    tagline: "File transfer app, live on Play Store.",
     year: "2023",
     stack: ["Flutter"],
     role: "Design & Engineering",
@@ -107,7 +107,7 @@ export const projects: Project[] = [
   {
     slug: "localcast",
     title: "LocalCast",
-    tagline: "Local network streaming — no cloud in the middle.",
+    tagline: "Local network streaming, no cloud in the middle.",
     year: "2023",
     stack: ["Networking"],
     role: "Engineering",

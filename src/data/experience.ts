@@ -13,11 +13,11 @@ export const experience: Experience[] = [
     role: "Product Designer · Full-Stack",
     period: "Current",
     location: "Karachi",
-    body: "Video-based hiring SaaS. Title says Designer; reality is designer, engineer, and accidental PM — end-to-end product, AI agents, and infrastructure.",
+    body: "Video-based hiring SaaS. Title says Designer; reality is designer, engineer, and accidental PM across end-to-end product, AI agents, and infrastructure.",
     highlights: [
       "Designed the entire product surface",
       "Migrated 14 microservices into one NestJS monolith",
-      "Built the AI Chat Agent — UX, frontend, backend",
+      "Built the AI Chat Agent across UX, frontend, and backend",
       "Vue/Nuxt admin · React job-board kit · Flutter mobile",
       "AWS CDK, Docker, Kafka, data sync pipelines",
     ],
@@ -39,7 +39,7 @@ export const experience: Experience[] = [
     role: "Designer · Developer",
     period: "Previous",
     location: "Brisbane",
-    body: "Loyalty program SaaS — digital coupons, loyalty cards, membership passes, event tickets, iBeacon proximity marketing, chatbot integrations.",
+    body: "Loyalty program SaaS covering digital coupons, loyalty cards, membership passes, event tickets, iBeacon proximity marketing, and chatbot integrations.",
     highlights: [
       "Digital wallet and loyalty experiences",
       "Chatbot and proximity flows",

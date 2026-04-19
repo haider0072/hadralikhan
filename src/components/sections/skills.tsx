@@ -9,7 +9,7 @@ export function Skills() {
         <div className="grid gap-12 md:grid-cols-12 mb-12">
           <div className="md:col-span-4">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-muted">
-              05 — Toolkit
+              05 · Toolkit
             </p>
           </div>
           <div className="md:col-span-8">

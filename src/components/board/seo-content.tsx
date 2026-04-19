@@ -14,7 +14,7 @@ export function SeoContent() {
   return (
     <div className="sr-only" aria-hidden={false}>
       <h1>
-        {seo.name} — {seo.role}
+        {seo.name} · {seo.role}
       </h1>
       <p>{seo.description}</p>
       <p>
@@ -33,7 +33,7 @@ export function SeoContent() {
         {experience.map((e) => (
           <li key={e.company}>
             <h3>
-              {e.role} — {e.company}
+              {e.role} · {e.company}
             </h3>
             <p>
               <time>{e.period}</time> · {e.location}
@@ -82,21 +82,21 @@ export function SeoContent() {
       <ul>
         <li>
           <a href={site.socials.github} rel="me noreferrer">
-            GitHub — haider0072
+            GitHub · haider0072
           </a>
         </li>
         <li>
           <a href={site.socials.linkedin} rel="me noreferrer">
-            LinkedIn — hadralikhan
+            LinkedIn · hadralikhan
           </a>
         </li>
         <li>
           <a href={site.socials.twitter} rel="me noreferrer">
-            Twitter — @hadralikhan
+            Twitter · @hadralikhan
           </a>
         </li>
         <li>
-          <a href={site.socials.email}>Email — {site.email}</a>
+          <a href={site.socials.email}>Email · {site.email}</a>
         </li>
       </ul>
     </div>
