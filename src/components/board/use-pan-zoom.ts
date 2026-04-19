@@ -147,10 +147,27 @@ export function usePanZoom({
       }
     };
     const onWheel = (e: WheelEvent) => {
-      // Only zoom on ctrl/meta OR trackpad pinch — and always zoom for scroll wheel inside canvas
       e.preventDefault();
-      const factor = Math.exp(-e.deltaY * 0.0015);
-      zoomAt(e.clientX, e.clientY, factor);
+      // Figma-style:
+      // - pinch (browsers deliver as wheel with ctrlKey=true) or explicit cmd/ctrl+wheel → zoom
+      // - bare two-finger scroll on trackpad → pan (both axes)
+      if (e.ctrlKey || e.metaKey) {
+        const factor = Math.exp(-e.deltaY * 0.012);
+        zoomAt(e.clientX, e.clientY, factor);
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      setViewport((prev) =>
+        clampViewport(
+          {
+            x: prev.x - e.deltaX,
+            y: prev.y - e.deltaY,
+            scale: prev.scale,
+          },
+          rect.width,
+          rect.height,
+        ),
+      );
     };
 
     el.addEventListener("pointerdown", onPointerDown);
