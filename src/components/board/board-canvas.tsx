@@ -12,7 +12,7 @@ import type { BoardCard, Viewport } from "./types";
 import type { GithubStats } from "@/lib/github";
 
 const STORAGE_KEY = "haider.board.layout.v1";
-const DRAG_THRESHOLD = 5;
+const DRAG_THRESHOLD = 8;
 
 type Positions = Record<string, { x: number; y: number }>;
 
@@ -143,7 +143,26 @@ export function BoardCanvas({ github }: { github: GithubStats | null }) {
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {}
-    if (d.moved) suppressClickRef.current = true;
+    if (d.moved) {
+      suppressClickRef.current = true;
+    } else {
+      // Pointer capture can make the follow-up click land on this wrapper
+      // instead of the nested ProjectFrame. Bypass the click chain entirely:
+      // if this was a tap (no drag) on a prototype card, open its modal now.
+      const target = e.target as HTMLElement;
+      const frame = target.closest?.('[data-cursor-text="open"]') as HTMLElement | null;
+      if (frame) {
+        // Synthesize a plain click on the frame so its React onClick fires.
+        frame.dispatchEvent(
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            clientX: e.clientX,
+            clientY: e.clientY,
+          }),
+        );
+      }
+    }
     dragRef.current = null;
     setActiveCardId(null);
   };
