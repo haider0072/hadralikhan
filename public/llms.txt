@@ -1,0 +1,61 @@
+# Haider Ali Khan
+
+> Product Designer, Product Manager, and Full-Stack Developer. Available for remote work worldwide. Based in Karachi, Pakistan.
+
+Haider designs products end-to-end and ships the systems underneath — product design, AI agents, web, mobile, backend, and infrastructure. He currently leads product design at DigitalHire, a video-based hiring SaaS, while also migrating backend microservices, building AI chat agents, and shipping Vue/Nuxt and Flutter clients.
+
+## Who to hire him for
+
+- **Remote, worldwide.** Open to full-time, contract, and consulting engagements.
+- **Founding / early-stage product design** — owns design from zero, with engineering fluency.
+- **Design-to-code** — Figma, Framer, shadcn, Tailwind, design systems.
+- **Product management** — roadmap, discovery, prioritization on small teams.
+- **AI product engineering** — LLM agents, MCP, LangChain, prompt design, tool use, RAG.
+- **Full-stack feature ownership** — React/Next.js, Vue/Nuxt, Flutter, NestJS, Kotlin, Python, Go.
+
+## Links
+
+- Portfolio: https://hadralikhan.vercel.app
+- GitHub: https://github.com/haider0072
+- LinkedIn: https://www.linkedin.com/in/hadralikhan
+- Twitter: https://twitter.com/hadralikhan
+- Email: admin@digitalhire.com
+
+## Current work
+
+- **DigitalHire** (Karachi / remote) — Product Designer + Full-Stack. Video-based hiring SaaS. Designed the entire product, migrated 14 microservices into a single NestJS monolith, built the AI Chat Agent end-to-end (UX + frontend + backend), shipped the Vue/Nuxt admin dashboard and Flutter mobile app, and set up the AWS CDK infrastructure with Kafka and data-sync pipelines.
+
+## Past roles
+
+- **iSystematic Inc.** — Experience design, web and mobile product engineering, and business intelligence for enterprise clients. HQ New York, dev center Karachi.
+- **Walletly** (Brisbane) — Loyalty program SaaS. Digital coupons, loyalty cards, membership passes, event tickets, iBeacon proximity marketing, chatbot integrations.
+- **Geek Warehouse** (Karachi) — Cross-platform web, mobile, and desktop applications plus digital marketing work.
+
+## Selected projects
+
+- **Mochi** — Design-system generator. Prompt → code → Figma. TypeScript + AI.
+- **Audora** — Professional music player. FLAC / MP3 / WAV, YouTube integration, equalizer, cloud sync. Next.js + Web Audio.
+- **FlowCraft** — AI-powered sprite-sheet generator for 2D game characters. Next.js + AI.
+- **Ember** — Torrent player with VLC-style streaming while downloading. Flutter + libtorrent.
+- **Trading Bot** — Automated crypto trading with ML-driven prediction on Binance. Python + ML.
+- **Relay** — Multi-channel marketing automation platform. Next.js + NestJS.
+- **WiseSend** — File transfer app, live on the Play Store. Flutter.
+
+## Stack
+
+- **Design** — Figma, Framer, Blender, Rive, design systems, art direction.
+- **Frontend** — React, Next.js (App Router), Vue/Nuxt, TypeScript, Three.js, WebGPU, GSAP, Tailwind CSS, shadcn/ui.
+- **Mobile** — Flutter / Dart, iOS and Android patterns.
+- **Backend** — NestJS, Kotlin / Ktor, FastAPI, Go, Node.js, Postgres.
+- **AI / ML** — Python, LangChain, LLM agents, MCP, prediction models, prompt engineering.
+- **Infra** — AWS CDK (TypeScript), Docker, Kafka, data pipelines, automation.
+
+## Availability
+
+- **Timezone** — UTC+05 (PKT), overlaps most of Asia, all of Europe, and US East-Coast mornings.
+- **Mode** — remote-only.
+- **Languages** — English, Urdu.
+
+## License
+
+Portfolio source: MIT. Content and brand: all rights reserved.
