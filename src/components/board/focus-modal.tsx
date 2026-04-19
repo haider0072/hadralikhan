@@ -71,7 +71,7 @@ export function FocusModal({
           </button>
           <span
             aria-hidden
-            className="absolute top-4 left-4 z-20 font-mono text-[10px] uppercase tracking-[0.22em] text-cream/70 bg-ink/40 backdrop-blur px-2.5 py-1.5 rounded-full"
+            className="absolute bottom-4 right-4 z-20 font-mono text-[9px] uppercase tracking-[0.22em] text-cream/80 bg-ink/55 backdrop-blur px-2.5 py-1 rounded-full pointer-events-none"
           >
             Esc to close
           </span>

@@ -18,6 +18,7 @@ import type {
   QuoteCard,
 } from "./types";
 import { AudoraPrototype } from "./prototypes/audora";
+import { MochiPrototype } from "./prototypes/mochi";
 import type { CardActivity } from "./use-card-activity";
 import {
   ContributionCalendarCard,
@@ -89,6 +90,8 @@ function PrototypeCardView({
   switch (card.slug) {
     case "audora":
       return <AudoraPrototype activity={activity} />;
+    case "mochi":
+      return <MochiPrototype activity={activity} />;
     default:
       return <GhPlaceholder label={`${card.slug} · coming soon`} />;
   }

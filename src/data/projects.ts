@@ -65,14 +65,6 @@ export const projects: Project[] = [
     accent: "ochre",
   },
   {
-    slug: "relay",
-    title: "Relay",
-    tagline: "Multi-channel marketing automation platform.",
-    year: "2025",
-    stack: ["Next.js", "NestJS"],
-    role: "Design & Engineering",
-  },
-  {
     slug: "wisesend",
     title: "WiseSend",
     tagline: "File transfer app — live on Play Store.",
