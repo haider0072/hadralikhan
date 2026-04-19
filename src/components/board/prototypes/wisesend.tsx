@@ -177,7 +177,7 @@ function PhoneMockup({ animated }: { animated: boolean }) {
 
 function MiniQR() {
   const cells = 8;
-  const pattern = useRef<boolean[]>();
+  const pattern = useRef<boolean[] | null>(null);
   if (!pattern.current) {
     pattern.current = Array.from({ length: cells * cells }, () => Math.random() > 0.5);
   }
@@ -515,7 +515,7 @@ function PhoneBig({ phase }: { phase: number }) {
 
 function BigQR({ highlight }: { highlight: boolean }) {
   const cells = 11;
-  const pattern = useRef<boolean[]>();
+  const pattern = useRef<boolean[] | null>(null);
   if (!pattern.current) {
     pattern.current = Array.from(
       { length: cells * cells },
