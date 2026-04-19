@@ -235,12 +235,24 @@ function MochiFocus() {
         </div>
 
         <p className="mt-5 text-[13px] leading-relaxed text-[#6b5a4a]">
-          I work in Claude Code every day. My stuff felt intentional because I
-          set design guidelines first. Everyone else's AI-built apps felt the
-          same: generic, shadcn-default, no soul. Mochi is the tool I wanted —
-          one prompt, one complete design system. Tokens, components, and a
-          Figma file you can actually use.
+          I work in Claude Code every day. My own projects felt intentional
+          because I set design guidelines before prompting. Everyone
+          else&apos;s AI-built apps kept looking the same: generic,
+          shadcn-default, no soul. Mochi is the tool I wanted. One prompt,
+          one complete design system. Tokens, components, and a Figma file
+          you can actually use.
         </p>
+
+        <div className="mt-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#6b5a4a] mb-2">
+            My role
+          </p>
+          <p className="text-[13px] leading-relaxed text-[#6b5a4a]">
+            Solo. System design, the generator, the component library, the
+            Figma plugin. Everything from the empty repo to the published
+            build.
+          </p>
+        </div>
 
         <div className="mt-6">
           <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#6b5a4a] mb-3">
@@ -251,6 +263,17 @@ function MochiFocus() {
             <span className="text-[11px] font-semibold text-[#2a1f17]">Claude Code</span>
             <span className="text-[9px] text-[#a89883] ml-1">from scratch</span>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#6b5a4a] mb-2">
+            What it taught me
+          </p>
+          <p className="text-[13px] leading-relaxed text-[#6b5a4a]">
+            OKLCH is worth the pain. Six tokens done right beat fifty that
+            nobody uses. And Claude writes its best code when you&apos;ve
+            already decided the shape of the output before you prompt.
+          </p>
         </div>
 
         <div className="mt-6">
@@ -680,7 +703,7 @@ function CodeTab({ seed }: { seed: (typeof SEEDS)[number] }) {
   const [framework, setFramework] = useState<"react" | "vue" | "css">("react");
 
   const code = {
-    react: `// Button.tsx — generated
+    react: `// Button.tsx (generated)
 import { cn } from '@/lib/cn';
 
 export function Button({ children, variant = 'primary' }) {
@@ -696,7 +719,7 @@ export function Button({ children, variant = 'primary' }) {
     </button>
   );
 }`,
-    vue: `<!-- Button.vue — generated -->
+    vue: `<!-- Button.vue (generated) -->
 <template>
   <button
     :class="[
@@ -708,7 +731,7 @@ export function Button({ children, variant = 'primary' }) {
     <slot />
   </button>
 </template>`,
-    css: `/* tokens.css — generated */
+    css: `/* tokens.css (generated) */
 :root {
   --primary-500: ${seed.primary};
   --primary-600: ${seed.primary}dd;
@@ -792,7 +815,7 @@ function FigmaTab({ seed }: { seed: (typeof SEEDS)[number] }) {
         Figma plugin · export your tokens
       </p>
       <h3 className="font-serif text-2xl tracking-tight text-[#2a1f17] mb-5">
-        One click — Mochi to Figma
+        One click. Mochi to Figma.
       </h3>
 
       <div className="rounded-2xl bg-white border border-[#3d2f2315] overflow-hidden">

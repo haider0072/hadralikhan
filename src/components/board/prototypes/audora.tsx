@@ -181,10 +181,26 @@ function AudoraFocus() {
         </div>
 
         <p className={cn("mt-5 text-sm leading-relaxed", subtle)}>
-          I buy FLAC tracks. Studio-recorded, not MP3. Qobuz didn't feel right;
-          nothing had the sorting, typography, or backstory I wanted. So I
-          built my own.
+          I buy FLAC tracks. Studio-recorded, not MP3. Qobuz didn&apos;t feel
+          right, nothing had the sorting, typography, or backstory I wanted.
+          So I built my own.
         </p>
+
+        <div className="mt-6">
+          <p
+            className={cn(
+              "text-[10px] font-mono uppercase tracking-[0.22em] mb-2",
+              subtle,
+            )}
+          >
+            My role
+          </p>
+          <p className={cn("text-[13px] leading-relaxed", subtle)}>
+            Solo build. Research, interaction design, every line of code.
+            I spent a week with FLAC files and my own listening habits before
+            designing a single screen.
+          </p>
+        </div>
 
         <div className="mt-6">
           <p
@@ -200,21 +216,38 @@ function AudoraFocus() {
               dark={dark}
               tool="v0"
               Logo={V0Logo}
-              role="Started here — base structure when v0 was new."
+              role="Started here. Base structure and first pass when v0 was new."
             />
             <BuildStep
               dark={dark}
               tool="Cursor"
               Logo={CursorLogo}
-              role="Manual-heavy early features: EQ, YouTube, lyrics."
+              role="Manual heavy early features: EQ, YouTube ingest, lyrics."
             />
             <BuildStep
               dark={dark}
               tool="Claude Code"
               Logo={ClaudeLogo}
-              role="Polish, UI, and the download engine."
+              role="Polish, UI work, and the download engine."
             />
           </div>
+        </div>
+
+        <div className="mt-6">
+          <p
+            className={cn(
+              "text-[10px] font-mono uppercase tracking-[0.22em] mb-2",
+              subtle,
+            )}
+          >
+            What it taught me
+          </p>
+          <p className={cn("text-[13px] leading-relaxed", subtle)}>
+            Waveform rendering and cue syncing taught me more about browsers
+            than two years of React. Also: Qobuz isn&apos;t bad, it just
+            wasn&apos;t built for a listener like me. That was the whole
+            thesis.
+          </p>
         </div>
 
         <div className="mt-6">
@@ -614,7 +647,7 @@ function YouTubeTab({
         setTyping(false);
         setTimeout(() => {
           setLoaded({
-            title: "Hiroshi Yoshimura — Music for Nine Postcards (Full Album)",
+            title: "Hiroshi Yoshimura · Music for Nine Postcards (Full Album)",
             channel: "Light in the Attic Records",
           });
         }, 700);
@@ -802,7 +835,7 @@ function AITab({
   surface: string;
   border: string;
 }) {
-  const story = `"${track.title}" sits in the tradition of Japanese kankyō ongaku — "environmental music" — that ${track.artist} helped crystallize in the late 80s and early 90s. ${track.year === 1993 ? "Recorded in a single afternoon session at the artist's Tokyo apartment" : "Released as part of a small-run cassette"}, the piece leans on a Roland SH-2 drone, long sustains, and spaced silences. What you're hearing is less a song than a room — a thick, slow atmosphere you walk into and out of.`;
+  const story = `"${track.title}" sits in the tradition of Japanese kankyō ongaku, the "environmental music" that ${track.artist} helped crystallize in the late 80s and early 90s. ${track.year === 1993 ? "Recorded in a single afternoon session at the artist's Tokyo apartment" : "Released as part of a small-run cassette"}, the piece leans on a Roland SH-2 drone, long sustains, and spaced silences. What you're hearing is less a song than a room: a thick, slow atmosphere you walk into and out of.`;
 
   const [typed, setTyped] = useState("");
 
@@ -852,9 +885,9 @@ function AITab({
         </p>
         <ul className="space-y-1">
           {[
-            "Hiroshi Yoshimura — Music for Nine Postcards",
-            "Haruomi Hosono — Watering a Flower",
-            "Mariah — Shinzo No Tobira",
+            "Hiroshi Yoshimura · Music for Nine Postcards",
+            "Haruomi Hosono · Watering a Flower",
+            "Mariah · Shinzo No Tobira",
           ].map((t) => (
             <li key={t} className={cn("py-1 flex items-center justify-between", subtle)}>
               <span>{t}</span>
