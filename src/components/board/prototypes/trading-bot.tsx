@@ -845,41 +845,28 @@ const INDICATORS = [
 
 function SignalsTab() {
   return (
-    <div className="h-full overflow-y-auto p-7">
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
+    <div className="h-full overflow-y-auto p-8">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-8">
         <div>
-          <div className="flex items-center gap-3 mb-5">
-            <span className="h-7 px-2.5 rounded-md bg-[#eaf0ff] text-[#0052ff] text-[10px] font-mono uppercase tracking-[0.22em] font-semibold inline-flex items-center">
-              ETH/USDT · 1h
-            </span>
-            <span className="text-xs text-[#5b616e]">
-              latest candle · $3,285 · cycle #128
-            </span>
+          <div className="flex items-baseline gap-3 mb-2">
+            <h3 className="text-2xl font-semibold tracking-tight">ETH/USDT</h3>
+            <span className="text-sm text-[#5b616e]">1h · $3,285 · cycle #128</span>
           </div>
-
-          <h3 className="text-lg font-semibold tracking-tight">
-            TA score 9 of possible 10
-          </h3>
-          <p className="text-sm text-[#5b616e] mt-0.5 leading-relaxed">
-            Seven indicators evaluated against weighted rules from{" "}
-            <span className="font-mono text-[12px] text-[#0a0e27]">
-              core/analyzer.py
-            </span>
-            . Score over 4 is strong_buy. Between 2 and 3 is buy. Below −2 is sell.
+          <p className="text-sm text-[#5b616e] mb-6">
+            TA score 9 of possible 10. Score over 4 is strong_buy.
           </p>
 
-          <div className="mt-5 rounded-2xl border border-[#e6e8ec] overflow-hidden">
-            <div className="grid grid-cols-[1.2fr_0.9fr_1fr_60px_1.4fr] gap-4 px-5 py-3 bg-[#f7f8fa] text-[11px] font-semibold uppercase tracking-[0.1em] text-[#5b616e]">
+          <div className="rounded-2xl border border-[#e6e8ec] overflow-hidden">
+            <div className="grid grid-cols-[1.2fr_1fr_1fr_56px] gap-4 px-5 py-3 bg-[#f7f8fa] text-[11px] font-semibold uppercase tracking-[0.1em] text-[#5b616e]">
               <span>Indicator</span>
               <span>Period</span>
               <span>Value</span>
               <span className="text-right">Score</span>
-              <span>Why it matters</span>
             </div>
             {INDICATORS.map((ind, i) => (
               <div
                 key={i}
-                className="grid grid-cols-[1.2fr_0.9fr_1fr_60px_1.4fr] gap-4 px-5 py-3 items-center text-sm border-t border-[#e6e8ec]"
+                className="grid grid-cols-[1.2fr_1fr_1fr_56px] gap-4 px-5 py-3.5 items-center text-sm border-t border-[#e6e8ec]"
               >
                 <span className="font-semibold" style={{ color: ind.color }}>
                   {ind.name}
@@ -898,67 +885,31 @@ function SignalsTab() {
                 >
                   {ind.score || "—"}
                 </span>
-                <span className="text-xs text-[#5b616e]">{ind.note}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right panel: 3-layer + verdict */}
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-[#e6e8ec] p-5">
+        <div className="space-y-5">
+          <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e] mb-4">
               Three-layer consensus
             </p>
-            <LayerFull
-              label="Technical Analysis"
-              tag="TA"
-              value={0.72}
-              color="#0052ff"
-              bg="#eaf0ff"
-              note="7 indicators, weighted score 9/10"
-            />
-            <div className="h-px bg-[#e6e8ec] my-4" />
-            <LayerFull
-              label="Machine Learning"
-              tag="ML"
-              value={0.78}
-              color="#7e5bef"
-              bg="#f3efff"
-              note="VotingClassifier · xgb + rf + gb · up class 78%"
-            />
-            <div className="h-px bg-[#e6e8ec] my-4" />
-            <LayerFull
-              label="AI reasoning"
-              tag="AI"
-              value={0.68}
-              color="#f5a524"
-              bg="#fff6e5"
-              note="Claude CLI · sonnet · JSON out, technical only"
-            />
+            <LayerFull label="Technical" tag="TA" value={0.72} color="#0052ff" bg="#eaf0ff" />
+            <div className="h-5" />
+            <LayerFull label="Machine Learning" tag="ML" value={0.78} color="#7e5bef" bg="#f3efff" />
+            <div className="h-5" />
+            <LayerFull label="AI reasoning" tag="AI" value={0.68} color="#f5a524" bg="#fff6e5" />
           </div>
 
-          <div className="rounded-2xl border border-[#e6e8ec] p-5">
+          <div className="rounded-2xl bg-[#f7f8fa] p-5">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-              Combined verdict
+              Verdict
             </p>
-            <div className="mt-2 flex items-baseline gap-3">
-              <span className="text-3xl font-bold tracking-tight text-[#00a574]">BUY</span>
-              <span className="text-sm font-medium text-[#5b616e] tabular-nums">
-                72% confidence · weighted 0.47 TA · 0.44 AI · 0.09 ML
-              </span>
-            </div>
-            <div className="mt-4 space-y-2">
-              <RowSmall label="Entry target" value="$3,281.50" />
-              <RowSmall label="Stop loss" value="$3,248.00" sub="−1.02% · 1.5× ATR" subColor="#d01c28" />
-              <RowSmall label="Take profit" value="$3,395.20" sub="+3.46% · 1:3.4 R:R" subColor="#00a574" />
-              <RowSmall label="Position size" value="0.32 ETH" sub="$1,050 · 2% account risk" subColor="#5b616e" />
-            </div>
-          </div>
-
-          <div className="rounded-xl bg-[#f7f8fa] p-4 text-xs leading-relaxed text-[#5b616e]">
-            4h timeframe shows bullish trend, multi-timeframe filter passes. No
-            cooldown active on ETH. Daily loss today: $8.20 of $50 limit.
+            <p className="mt-1 text-3xl font-bold tracking-tight text-[#00a574]">BUY</p>
+            <p className="mt-1 text-sm text-[#5b616e] tabular-nums">
+              72% confidence
+            </p>
           </div>
         </div>
       </div>
@@ -972,14 +923,12 @@ function LayerFull({
   value,
   color,
   bg,
-  note,
 }: {
   label: string;
   tag: string;
   value: number;
   color: string;
   bg: string;
-  note: string;
 }) {
   return (
     <div>
@@ -1003,7 +952,6 @@ function LayerFull({
           style={{ width: `${Math.round(value * 100)}%`, background: color }}
         />
       </div>
-      <p className="mt-1.5 text-[11px] text-[#5b616e]">{note}</p>
     </div>
   );
 }
@@ -1098,118 +1046,63 @@ function MLPipelineTab() {
         </div>
       </div>
 
-      {/* Feature groups */}
-      <div className="rounded-2xl border border-[#e6e8ec] p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-              Feature engineering
-            </p>
-            <h3 className="text-base font-semibold tracking-tight mt-0.5">
-              40 features computed per candle
-            </h3>
-          </div>
-          <span className="text-xs text-[#5b616e]">
-            Target: future return &gt; 0 over 6-hour lookahead
-          </span>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {FEATURES.map((g) => (
-            <div key={g.group} className="rounded-xl border border-[#e6e8ec] p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-semibold" style={{ color: g.color }}>
+      {/* Feature families — horizontal bar count */}
+      <div className="rounded-2xl border border-[#e6e8ec] p-6 mb-6">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
+          Feature families
+        </p>
+        <h3 className="text-base font-semibold tracking-tight mt-0.5 mb-5">
+          40 features across 10 categories
+        </h3>
+        <div className="space-y-2.5">
+          {FEATURES.map((g) => {
+            const pct = (g.items.length / 10) * 100;
+            return (
+              <div key={g.group} className="grid grid-cols-[160px_1fr_40px] gap-3 items-center">
+                <span className="text-xs font-semibold" style={{ color: g.color }}>
                   {g.group}
                 </span>
-                <span className="text-[10px] text-[#5b616e]">{g.items.length} feats</span>
+                <div className="h-2 rounded-full bg-[#f7f8fa] overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${pct}%`, background: g.color }}
+                  />
+                </div>
+                <span className="text-xs text-[#5b616e] tabular-nums text-right">
+                  {g.items.length}
+                </span>
               </div>
-              <div className="flex flex-wrap gap-1">
-                {g.items.map((it) => (
-                  <span
-                    key={it}
-                    className="px-1.5 py-0.5 rounded bg-[#f7f8fa] text-[10px] font-mono text-[#5b616e]"
-                  >
-                    {it}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* Ensemble + CV */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-[#e6e8ec] p-5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-            Voting ensemble
-          </p>
-          <h3 className="text-base font-semibold tracking-tight mt-0.5 mb-4">
-            Three models, soft vote
-          </h3>
-          <ModelRow
-            name="XGBoost"
-            detail="200 trees · depth 4 · lr 0.08"
-            color="#0052ff"
-            weight={0.38}
-          />
-          <ModelRow
-            name="Random Forest"
-            detail="100 trees · depth 6"
-            color="#7e5bef"
-            weight={0.34}
-          />
-          <ModelRow
-            name="Gradient Boosting"
-            detail="100 trees · depth 4 · lr 0.1"
-            color="#f5a524"
-            weight={0.28}
-          />
-          <p className="mt-4 text-[11px] text-[#5b616e] font-mono">
-            VotingClassifier(estimators=[...], voting=&quot;soft&quot;)
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-[#e6e8ec] p-5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
-            Cross-validation
-          </p>
-          <h3 className="text-base font-semibold tracking-tight mt-0.5 mb-4">
-            TimeSeriesSplit with gap
-          </h3>
-          <div className="space-y-2">
-            {[0, 1, 2, 3, 4].map((fold) => (
-              <div key={fold} className="flex items-center gap-2">
-                <span className="w-12 text-[10px] font-mono uppercase tracking-[0.2em] text-[#5b616e]">
-                  fold {fold + 1}
-                </span>
-                <div className="flex-1 h-5 rounded-md overflow-hidden bg-[#f7f8fa] flex text-[9px] font-semibold text-white">
-                  <div
-                    className="bg-[#0052ff] flex items-center justify-center"
-                    style={{ width: `${20 + fold * 15}%` }}
-                  >
-                    train
-                  </div>
-                  <div
-                    className="bg-[#e6e8ec]"
-                    style={{ width: "6%" }}
-                    title="gap"
-                  />
-                  <div
-                    className="bg-[#00a574] flex items-center justify-center"
-                    style={{ width: "12%" }}
-                  >
-                    test
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-[11px] text-[#5b616e] leading-relaxed">
-            Gap equals lookahead plus 5 bars. Prevents label leakage. Test
-            accuracy sits in the 52–55% band, which is enough with good
-            position sizing and trailing exits.
-          </p>
-        </div>
+      {/* Ensemble — single card */}
+      <div className="rounded-2xl border border-[#e6e8ec] p-6">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e]">
+          Voting ensemble · TimeSeriesSplit
+        </p>
+        <h3 className="text-base font-semibold tracking-tight mt-0.5 mb-5">
+          Three models, soft vote. 5 folds, gap to prevent leakage.
+        </h3>
+        <ModelRow
+          name="XGBoost"
+          detail="200 trees · depth 4 · lr 0.08"
+          color="#0052ff"
+          weight={0.38}
+        />
+        <ModelRow
+          name="Random Forest"
+          detail="100 trees · depth 6"
+          color="#7e5bef"
+          weight={0.34}
+        />
+        <ModelRow
+          name="Gradient Boosting"
+          detail="100 trees · depth 4 · lr 0.1"
+          color="#f5a524"
+          weight={0.28}
+        />
       </div>
     </div>
   );
@@ -1268,55 +1161,47 @@ function ModelRow({
 function RulesTab() {
   const groups = [
     {
-      phase: "Entry gates",
-      count: "5 checks",
+      phase: "Entry",
       items: [
-        "Hourly scan across the top 25 coins by volume and momentum",
-        "TA score at or above 2 with confidence over 55%",
-        "AI and TA must agree direction, or TA alone must be strong enough",
-        "Risk manager passes (daily loss, max trades, cooldown)",
-        "4h timeframe is not bearish. Multi-timeframe veto is strict.",
-        "Limit order 0.1% below market, market order fallback after 60s",
+        "TA score ≥ 2, confidence ≥ 55%",
+        "AI agrees direction, or TA alone strong",
+        "Risk manager passes",
+        "4h timeframe not bearish",
+        "Limit order, market fallback after 60s",
       ],
     },
     {
-      phase: "Risk controls",
-      count: "6 guards",
+      phase: "Risk",
       items: [
-        "Spot only. No leverage. No margin. No futures. Halal constraint, enforced in code.",
-        "Stop loss at 1.5× ATR so volatile coins get wider stops automatically",
-        "Minimum risk to reward 1:2 required before an order is placed",
-        "Daily loss limit $50 by default. Bot halts entries when hit.",
-        "Max 3 open positions. One hour cooldown after 3 consecutive losses.",
-        "Kill switch via Redis and file fallback. `/stop` halts, `/resume` restarts.",
+        "Spot only. Halal constraint in code.",
+        "Stop at 1.5× ATR",
+        "Minimum 1:2 risk to reward",
+        "Daily loss cap $50",
+        "Max 3 positions, 1h cooldown after losses",
       ],
     },
     {
-      phase: "Exit logic",
-      count: "4 phases",
+      phase: "Exit",
       items: [
-        "Phase 1 (0–2% profit): stop stays at entry minus 2%",
-        "Phase 2 (2–4% profit): stop moves to entry. Breakeven locked.",
-        "Phase 3 (4%+ profit): trailing stop tracks highest minus 1.5%",
-        "Kill switch or `/closeall` force-closes every open position",
+        "0–2% profit: stop at entry − 2%",
+        "2–4% profit: breakeven stop",
+        "4%+ profit: trailing at highest − 1.5%",
+        "/closeall force-closes everything",
       ],
     },
   ];
 
   return (
-    <div className="h-full overflow-y-auto p-7">
-      <div className="grid grid-cols-3 gap-4">
+    <div className="h-full overflow-y-auto p-8">
+      <div className="grid grid-cols-3 gap-5">
         {groups.map((g) => (
-          <div key={g.phase} className="rounded-2xl border border-[#e6e8ec] p-5">
-            <div className="flex items-center gap-2 mb-5">
-              <span className="h-6 px-2 rounded-md text-[10px] font-mono uppercase tracking-[0.22em] font-semibold inline-flex items-center bg-[#eaf0ff] text-[#0052ff]">
-                {g.phase}
-              </span>
-              <span className="text-xs text-[#5b616e]">{g.count}</span>
-            </div>
+          <div key={g.phase} className="rounded-2xl border border-[#e6e8ec] p-6">
+            <span className="inline-flex h-6 px-2.5 rounded-md text-[10px] font-mono uppercase tracking-[0.22em] font-semibold items-center bg-[#eaf0ff] text-[#0052ff] mb-5">
+              {g.phase}
+            </span>
             <ul className="space-y-3">
               {g.items.map((item, i) => (
-                <li key={i} className="flex gap-3 text-[13px] leading-snug text-[#0a0e27]">
+                <li key={i} className="flex gap-3 text-sm leading-snug text-[#0a0e27]">
                   <span className="shrink-0 h-5 w-5 rounded-full bg-[#f7f8fa] text-[#5b616e] text-[10px] font-bold flex items-center justify-center mt-0.5">
                     {i + 1}
                   </span>
@@ -1326,18 +1211,6 @@ function RulesTab() {
             </ul>
           </div>
         ))}
-      </div>
-
-      <div className="mt-6 rounded-2xl bg-[#f7f8fa] border border-[#e6e8ec] p-5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b616e] mb-3">
-          Adaptive weights
-        </p>
-        <p className="text-[13px] text-[#5b616e] leading-relaxed">
-          Every Sunday the bot reviews its last 20 closed trades and updates
-          the TA / AI / ML weights based on rolling accuracy. Update is
-          smoothed at 70% inertia and 30% fresh. Without this smoothing the
-          strategy whipsawed between layers as markets shifted.
-        </p>
       </div>
     </div>
   );
