@@ -271,8 +271,8 @@ export const cards: BoardCard[] = [
   {
     id: "sticker-circle",
     kind: "sticker",
-    x: 2470,
-    y: 2620,
+    x: 2920,
+    y: 2940,
     rotation: 0,
     depth: 3,
     symbol: "○",
