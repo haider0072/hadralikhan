@@ -42,7 +42,7 @@ function WiseSendPeek({
   return (
     <ProjectFrame
       meta={{
-        year: "2023",
+        year: "2025",
         title: "WiseSend",
         tagline:
           "Files stay on your device. Share by QR, no cloud, no sign-up.",
@@ -53,8 +53,8 @@ function WiseSendPeek({
     >
       <div className="absolute inset-0 bg-gradient-to-br from-white via-[#f6f7fb] to-[#e7f2ff]" />
 
-      <div className="relative h-full flex items-center justify-center px-6">
-        <PhoneMockup animated={activity === "active"} />
+      <div className="relative h-full flex items-center justify-center px-4 pt-10">
+        <PeekStage animated={activity === "active"} />
       </div>
 
       <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
@@ -83,92 +83,315 @@ function WiseSendPeek({
   );
 }
 
-function PhoneMockup({ animated }: { animated: boolean }) {
+type PeekPhase = "waiting" | "connected" | "transferring" | "done";
+
+const PEEK_FILES = [
+  { name: "trip.mov", color: "#50fa7b" },
+  { name: "report.pdf", color: "#ff5555" },
+  { name: "notes.md", color: "#bd93f9" },
+];
+
+function PeekStage({ animated }: { animated: boolean }) {
+  const [phase, setPhase] = useState<PeekPhase>("waiting");
+  const [progress, setProgress] = useState([0, 0, 0]);
+
+  useEffect(() => {
+    if (!animated) {
+      setPhase("waiting");
+      setProgress([0, 0, 0]);
+      return;
+    }
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    let progressInterval: ReturnType<typeof setInterval> | null = null;
+
+    const loop = () => {
+      setPhase("waiting");
+      setProgress([0, 0, 0]);
+      timers.push(setTimeout(() => setPhase("connected"), 1400));
+      timers.push(
+        setTimeout(() => {
+          setPhase("transferring");
+          progressInterval = setInterval(() => {
+            setProgress((prev) => {
+              const next = prev.map((p, i) => {
+                const speed = [3, 4.5, 6][i];
+                return Math.min(100, p + speed);
+              });
+              if (next.every((p) => p >= 100) && progressInterval) {
+                clearInterval(progressInterval);
+              }
+              return next;
+            });
+          }, 80);
+        }, 2600),
+      );
+      timers.push(setTimeout(() => setPhase("done"), 5200));
+      timers.push(setTimeout(loop, 7000));
+    };
+    loop();
+
+    return () => {
+      timers.forEach(clearTimeout);
+      if (progressInterval) clearInterval(progressInterval);
+    };
+  }, [animated]);
+
   return (
-    <div className="relative">
+    <div className="flex items-center gap-2">
+      <Phone phase={phase} progress={progress} animated={animated} />
+
+      {/* Transfer arrow + packets */}
+      <div className="relative h-20 w-10 flex items-center justify-center shrink-0">
+        <svg width="40" height="20" viewBox="0 0 40 20" fill="none" className="opacity-60">
+          <path
+            d="M2 10h32m0 0-5-5m5 5-5 5"
+            stroke="#0084ff"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {animated && (phase === "connected" || phase === "transferring") && (
+          <>
+            <span
+              className="absolute top-1/2 -translate-y-1/2 left-0 h-1.5 w-1.5 rounded-full bg-[#50fa7b] wisesend-packet"
+              style={{ animationDelay: "0s" }}
+            />
+            <span
+              className="absolute top-1/2 -translate-y-1/2 left-0 h-1.5 w-1.5 rounded-full bg-[#ff5555] wisesend-packet"
+              style={{ animationDelay: "0.4s" }}
+            />
+            <span
+              className="absolute top-1/2 -translate-y-1/2 left-0 h-1.5 w-1.5 rounded-full bg-[#bd93f9] wisesend-packet"
+              style={{ animationDelay: "0.8s" }}
+            />
+          </>
+        )}
+      </div>
+
+      <BrowserMini phase={phase} progress={progress} />
+
+      <style jsx>{`
+        @keyframes wisesend-packet {
+          0% { transform: translate(0, -50%) scale(1); opacity: 0; }
+          15% { opacity: 1; }
+          85% { opacity: 1; }
+          100% { transform: translate(40px, -50%) scale(0.5); opacity: 0; }
+        }
+        :global(.wisesend-packet) {
+          animation: wisesend-packet 1.2s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function Phone({
+  phase,
+  progress,
+  animated,
+}: {
+  phase: PeekPhase;
+  progress: number[];
+  animated: boolean;
+}) {
+  return (
+    <div className="relative shrink-0">
       <div className="h-[180px] w-[96px] rounded-[18px] bg-[#0a0d12] p-1 shadow-[0_20px_40px_-10px_rgba(10,13,18,0.35)] ring-1 ring-black/10">
         <div className="h-full w-full rounded-[14px] bg-[#282a36] relative overflow-hidden flex flex-col">
-          {/* Status bar */}
           <div className="h-3 flex items-center justify-center">
             <span className="h-[3px] w-10 rounded-full bg-[#0a0d12]" />
           </div>
 
-          {/* Header */}
           <div className="px-2 pt-1">
             <p className="text-[6px] font-semibold text-white leading-none">
               Send file
             </p>
             <p className="text-[5px] text-[#6272a4] mt-0.5">
-              Scan from any browser
+              {phase === "waiting"
+                ? "Scan from any browser"
+                : phase === "connected"
+                  ? "Device connected · tap send"
+                  : phase === "transferring"
+                    ? "Transferring..."
+                    : "Done · safe to close"}
             </p>
           </div>
 
-          {/* QR Card */}
-          <div className="mx-2 mt-2 rounded-md bg-[#44475a] p-1.5 flex items-center justify-center">
+          {/* QR Card with scanning sweep */}
+          <div
+            className={cn(
+              "mx-2 mt-2 rounded-md bg-[#44475a] p-1.5 flex items-center justify-center relative overflow-hidden transition-all",
+              phase === "connected" && "ring-1 ring-[#50fa7b]/50",
+            )}
+          >
             <MiniQR />
+            {animated && phase === "waiting" && (
+              <span className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#0084ff] to-transparent wisesend-sweep" />
+            )}
+            {animated && phase === "connected" && (
+              <span className="absolute inset-0 bg-[#50fa7b]/15 animate-pulse" />
+            )}
           </div>
 
-          {/* URL */}
-          <div className="mx-2 mt-1.5 rounded bg-[#0084ff]/15 px-1.5 py-0.5">
-            <p className="text-[5px] font-mono text-[#0084ff] truncate">
-              192.168.1.18:8080
+          {/* URL or connected badge */}
+          <div
+            className={cn(
+              "mx-2 mt-1.5 rounded px-1.5 py-0.5 transition-colors",
+              phase === "waiting"
+                ? "bg-[#0084ff]/15"
+                : "bg-[#50fa7b]/15",
+            )}
+          >
+            <p
+              className={cn(
+                "text-[5px] font-mono truncate transition-colors",
+                phase === "waiting" ? "text-[#0084ff]" : "text-[#50fa7b]",
+              )}
+            >
+              {phase === "waiting"
+                ? "192.168.1.18:8080"
+                : "Haider's iPhone · 1 device"}
             </p>
           </div>
 
-          {/* File list */}
+          {/* File list with progress */}
           <div className="mx-2 mt-1.5 space-y-0.5 flex-1">
-            {["report.pdf", "trip.mov", "notes.md"].map((f, i) => (
+            {PEEK_FILES.map((f, i) => (
               <div
-                key={f}
-                className="flex items-center gap-1 rounded-sm bg-[#0a0d12]/40 px-1 py-0.5"
+                key={f.name}
+                className="rounded-sm bg-[#0a0d12]/40 px-1 py-0.5"
               >
-                <span
-                  className="h-1 w-1 rounded-full"
-                  style={{
-                    background:
-                      i === 0 ? "#ff5555" : i === 1 ? "#50fa7b" : "#bd93f9",
-                  }}
-                />
-                <span className="text-[5px] text-[#f8f8f2] truncate">{f}</span>
+                <div className="flex items-center gap-1">
+                  <span
+                    className="h-1 w-1 rounded-full shrink-0"
+                    style={{ background: f.color }}
+                  />
+                  <span className="text-[5px] text-[#f8f8f2] truncate flex-1">
+                    {f.name}
+                  </span>
+                  {phase === "transferring" && progress[i] < 100 && (
+                    <span className="text-[4px] font-mono text-[#6272a4] tabular-nums">
+                      {Math.round(progress[i])}%
+                    </span>
+                  )}
+                  {(phase === "done" || progress[i] >= 100) && phase !== "waiting" && (
+                    <span className="text-[4px] text-[#50fa7b]">✓</span>
+                  )}
+                </div>
+                {(phase === "transferring" || phase === "done") && (
+                  <div className="mt-[1px] h-[1px] bg-[#0a0d12] rounded-full overflow-hidden">
+                    <div
+                      className="h-full transition-all duration-100"
+                      style={{
+                        width: `${phase === "done" ? 100 : progress[i]}%`,
+                        background: f.color,
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
-          {/* Connected dot */}
-          {animated && (
-            <div className="absolute bottom-1.5 left-2 flex items-center gap-1">
-              <span className="h-1 w-1 rounded-full bg-[#50fa7b] animate-pulse" />
-              <span className="text-[5px] text-[#50fa7b]">connected</span>
-            </div>
-          )}
+          {/* Status bar */}
+          <div className="px-2 py-1 flex items-center gap-0.5">
+            <span
+              className={cn(
+                "h-1 w-1 rounded-full transition-colors",
+                phase === "waiting"
+                  ? "bg-[#6272a4]"
+                  : phase === "done"
+                    ? "bg-[#50fa7b]"
+                    : "bg-[#50fa7b] animate-pulse",
+              )}
+            />
+            <span
+              className="text-[5px]"
+              style={{
+                color:
+                  phase === "waiting"
+                    ? "#6272a4"
+                    : phase === "done"
+                      ? "#50fa7b"
+                      : "#50fa7b",
+              }}
+            >
+              {phase === "waiting"
+                ? "waiting"
+                : phase === "connected"
+                  ? "1 device"
+                  : phase === "transferring"
+                    ? "sending"
+                    : "complete"}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Orbiting dot showing data transfer */}
-      {animated && (
-        <div
-          className="absolute top-1/2 -right-3 h-[26px] w-[26px] rounded-full bg-white shadow-md ring-1 ring-[#0084ff]/15 flex items-center justify-center"
-          style={{ transform: "translateY(-50%)" }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path
-              d="M4 12h12m0 0-4-4m4 4-4 4"
-              stroke="#0084ff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <rect
-              x="16"
-              y="4"
-              width="5"
-              height="16"
-              rx="1"
-              stroke="#0084ff"
-              strokeWidth="1.5"
-              fill="none"
-            />
-          </svg>
+      <style jsx>{`
+        @keyframes wisesend-sweep {
+          0% { top: 0; opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+        :global(.wisesend-sweep) {
+          animation: wisesend-sweep 2.2s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function BrowserMini({
+  phase,
+  progress,
+}: {
+  phase: PeekPhase;
+  progress: number[];
+}) {
+  return (
+    <div
+      className={cn(
+        "h-[100px] w-[72px] rounded-md bg-white ring-1 ring-black/5 shadow-[0_8px_24px_-8px_rgba(10,13,18,0.22)] p-1.5 transition-all shrink-0",
+        phase === "waiting" ? "opacity-60 scale-95" : "opacity-100 scale-100",
+      )}
+    >
+      <div className="h-2.5 flex items-center gap-0.5 mb-1">
+        <span className="h-[4px] w-[4px] rounded-full bg-[#ff5f57]" />
+        <span className="h-[4px] w-[4px] rounded-full bg-[#febc2e]" />
+        <span className="h-[4px] w-[4px] rounded-full bg-[#28c840]" />
+      </div>
+      <div className="h-[2px] rounded bg-[#eceef2] mb-1.5" />
+      {phase === "waiting" ? (
+        <div className="flex items-center justify-center h-[66px] text-center">
+          <p className="text-[5px] text-[#9ca3af] leading-tight">
+            waiting<br />for scan
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-1">
+          <p className="text-[5px] font-semibold text-[#111216]">
+            Haider&apos;s iPhone
+          </p>
+          {PEEK_FILES.map((f, i) => (
+            <div key={f.name} className="flex items-center gap-1">
+              <span
+                className="h-1 w-1 rounded-full shrink-0"
+                style={{ background: f.color }}
+              />
+              <div className="flex-1 h-[2px] bg-[#eceef2] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-150"
+                  style={{
+                    width: `${phase === "done" ? 100 : phase === "transferring" ? progress[i] : 0}%`,
+                    background: f.color,
+                  }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -236,7 +459,7 @@ function Sidebar() {
         <div>
           <p className="font-semibold tracking-tight text-base leading-none">WiseSend</p>
           <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#6b7280] mt-1">
-            2023 · File sharing
+            2025 · File sharing
           </p>
         </div>
       </div>
@@ -253,9 +476,10 @@ function Sidebar() {
           My role
         </p>
         <p className="text-[13px] leading-relaxed text-[#4b5563]">
-          Originator, product design, Flutter app shell and the flows
-          people actually see. I built the first version solo in a
-          cable-less afternoon. My friend{" "}
+          Originator, product design, the Flutter app, the local HTTP
+          server, and the browser UI that opens on the other end. Built
+          the first version solo in a cable-less afternoon, then kept
+          growing it. My friend{" "}
           <a
             href="https://github.com/ishaquehassan"
             target="_blank"
@@ -264,7 +488,7 @@ function Sidebar() {
           >
             Ishaque
           </a>{" "}
-          joined shortly after and we have been co-building since.
+          joined in and we have been co-building since.
         </p>
       </div>
 
@@ -273,9 +497,19 @@ function Sidebar() {
           Ishaque built
         </p>
         <p className="text-[13px] leading-relaxed text-[#4b5563]">
-          The browser side that opens after the QR scan, the server
-          endpoints that talk to it, and most recently an Android-on-
-          desktop port that is in the oven for a future release.
+          The public landing at{" "}
+          <a
+            href="https://wisesend.xrlabs.app"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-[#0084ff] hover:underline"
+          >
+            wisesend.xrlabs.app
+          </a>{" "}
+          so a phone camera can scan a QR and connect without anyone
+          ever typing a local URL. Before that, the receiver had to key
+          in 192.168.x.x by hand. He is also currently cooking an
+          Android-on-desktop port for a future release.
         </p>
       </div>
 
@@ -831,7 +1065,7 @@ function StoryTab() {
     {
       label: "The friend",
       title: "Ishaque saw it and leaned in.",
-      body: "I showed the first version to my friend Ishaque (@ishaquehassan). He got excited and joined. He took on the browser-side experience that opens after the QR scan, plus the server routes it talks to.",
+      body: "I showed the first version to my friend Ishaque (@ishaquehassan). He got excited and joined. His biggest contribution: the public landing at wisesend.xrlabs.app that lets a phone scan a QR and connect straight through, so the receiver never has to type a local IP again.",
     },
     {
       label: "The months",
@@ -846,8 +1080,8 @@ function StoryTab() {
   ];
 
   const stats = [
-    { label: "On Play Store", value: "2 years" },
-    { label: "Install count", value: "10+" },
+    { label: "Built", value: "2025" },
+    { label: "Installs", value: "10+" },
     { label: "Ads", value: "none" },
     { label: "Sign-up", value: "never" },
   ];
