@@ -309,38 +309,75 @@ function SpriteCell({ state }: { state: number }) {
 }
 
 function GrisSilhouette() {
-  // simple hooded figure silhouette, Gris-adjacent
+  // Gris-inspired character — long hair, flowing cape, no visible face
   return (
     <svg
-      viewBox="0 0 52 78"
+      viewBox="0 0 100 150"
       className="absolute inset-0 w-full h-full"
+      preserveAspectRatio="xMidYMax meet"
       aria-hidden
     >
       <defs>
-        <linearGradient id="fc-char" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="fc-cape" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#f4e8dd" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#e8d8c7" stopOpacity="0.6" />
+          <stop offset="60%" stopColor="#e8d8c7" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#c4b8a0" stopOpacity="0.75" />
+        </linearGradient>
+        <linearGradient id="fc-hair" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1a1420" />
+          <stop offset="100%" stopColor="#2a1f2e" />
         </linearGradient>
       </defs>
-      {/* hair/hood */}
+
+      {/* Long hair cascading behind shoulders */}
       <path
-        d="M 20 20 Q 17 12 26 10 Q 36 12 33 22 L 34 30 L 18 30 Z"
-        fill={FC.ink}
-        opacity="0.85"
+        d="M 36 38 Q 30 60 32 90 L 44 88 L 44 40 Z"
+        fill="url(#fc-hair)"
       />
-      {/* dress flare */}
       <path
-        d="M 18 30 L 34 30 L 40 66 Q 26 72 12 66 Z"
-        fill="url(#fc-char)"
+        d="M 64 38 Q 70 60 68 90 L 56 88 L 56 40 Z"
+        fill="url(#fc-hair)"
       />
-      {/* shadow under dress */}
+
+      {/* Cape/dress — flowing, widest at floor */}
       <path
-        d="M 14 64 Q 26 70 38 64 L 40 68 Q 26 74 12 68 Z"
-        fill={FC.ink}
-        opacity="0.3"
+        d="M 40 58 L 60 58 Q 66 78 72 110 Q 78 138 80 148 L 20 148 Q 22 138 28 110 Q 34 78 40 58 Z"
+        fill="url(#fc-cape)"
       />
-      {/* face hint */}
-      <circle cx="26" cy="22" r="3.5" fill="#f4e8dd" opacity="0.7" />
+
+      {/* Cape highlight (soft light from the left) */}
+      <path
+        d="M 40 58 L 50 58 Q 48 90 42 120 L 32 135 Q 34 100 40 58 Z"
+        fill="#ffffff"
+        opacity="0.18"
+      />
+
+      {/* Shadow at hem */}
+      <path
+        d="M 22 140 Q 50 148 78 140 L 80 148 L 20 148 Z"
+        fill="#2a1f2e"
+        opacity="0.35"
+      />
+
+      {/* Head — small, with hood */}
+      <path
+        d="M 38 30 Q 38 18 50 18 Q 62 18 62 30 L 62 42 Q 50 46 38 42 Z"
+        fill="url(#fc-hair)"
+      />
+
+      {/* Hood shadow across face */}
+      <path
+        d="M 40 30 Q 50 34 60 30 L 60 40 Q 50 44 40 40 Z"
+        fill="#000"
+        opacity="0.55"
+      />
+
+      {/* Shoulder seam */}
+      <path
+        d="M 40 58 Q 50 62 60 58 L 58 62 Q 50 65 42 62 Z"
+        fill="#2a1f2e"
+        opacity="0.25"
+      />
     </svg>
   );
 }
@@ -679,9 +716,7 @@ function SpriteTab() {
                   boxShadow: "0 10px 28px -10px rgba(42,31,46,0.35)",
                 }}
               >
-                <div className="absolute inset-0 scale-[2.8] origin-top translate-y-[-14px]">
-                  <GrisSilhouette />
-                </div>
+                <GrisSilhouette />
                 <div className="absolute bottom-2 left-2 text-[9px] font-mono uppercase tracking-[0.14em] text-white/90">
                   reference · 1:1
                 </div>
