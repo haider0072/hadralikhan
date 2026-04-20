@@ -836,232 +836,391 @@ function SceneIcon({ scene, active }: { scene: Scene; active: boolean }) {
 }
 
 // ====================================================================
-// SCENE 1 — VIDEO RESUME (the product's signature surface)
+// SCENE 1 — VIDEO RESUME
+// Real product is a question-based flow (3+ prompts per resume).
+// States follow the Flutter view model: preRecording · postRecording ·
+// preview. Chrome is minimal: dark surface, rounded 24, an X to exit,
+// and a 'Show/Hide question' pill. No invented face-lock or waveform.
 // ====================================================================
 
-function VideoResumeScene() {
-  const [recording, setRecording] = useState(true);
-  const [elapsed, setElapsed] = useState(0);
-  const [barPhase, setBarPhase] = useState(0);
-  useEffect(() => {
-    if (!recording) return;
-    const id = setInterval(() => {
-      setElapsed((t) => (t >= 60 ? 60 : t + 1));
-      setBarPhase((p) => (p + 1) % 1000);
-    }, 1000);
-    return () => clearInterval(id);
-  }, [recording]);
+const RESUME_QUESTIONS = [
+  {
+    short: "Introduce yourself",
+    full: "Give us a quick introduction. Where you are, what you do, and what kind of role you're looking for next.",
+  },
+  {
+    short: "A project you're proud of",
+    full: "Walk us through a project you shipped recently. What was your role, and what did you learn from it?",
+  },
+  {
+    short: "Why this role",
+    full: "What makes you excited about this role? One specific thing is better than three vague ones.",
+  },
+];
 
-  const transcript = [
-    "Hi, I'm Haider.",
-    "I've been designing products for six years,",
-    "shipping for three of those as a PM.",
-    "Recently I've been deep in AI chat surfaces…",
-  ];
-  const shown = Math.min(transcript.length, Math.floor(elapsed / 3) + 1);
+type ResumeState = "preRecording" | "postRecording" | "preview";
+
+function VideoResumeScene() {
+  const [qIdx, setQIdx] = useState(0);
+  const [state, setState] = useState<ResumeState>("preRecording");
+  const [questionVisible, setQuestionVisible] = useState(true);
+  const [recorded, setRecorded] = useState<boolean[]>([false, false, false]);
+
+  const isLast = qIdx === RESUME_QUESTIONS.length - 1;
+  const allDone = recorded.every(Boolean);
+
+  const onRecord = () => {
+    setRecorded((r) => r.map((v, i) => (i === qIdx ? true : v)));
+    setState("postRecording");
+  };
+  const onReattempt = () => setState("preRecording");
+  const onNext = () => {
+    if (isLast) {
+      setState("preview");
+    } else {
+      setQIdx((i) => i + 1);
+      setState("preRecording");
+    }
+  };
+  const onExit = () => {
+    setQIdx(0);
+    setState("preRecording");
+    setRecorded([false, false, false]);
+  };
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-[960px] mx-auto px-10 py-8 grid grid-cols-[1.15fr_1fr] gap-6">
-        {/* Camera frame */}
-        <div
-          className="rounded-2xl overflow-hidden relative aspect-[4/3]"
-          style={{
-            background: "linear-gradient(135deg, #0f172a 0%, #1f2937 100%)",
-            boxShadow: "0 24px 60px -28px rgba(15,23,42,0.6)",
-          }}
-        >
-          {/* Soft blob "subject" behind face marker so it feels like a real viewfinder */}
+      <div className="max-w-[960px] mx-auto px-10 py-8 grid grid-cols-[1.1fr_1fr] gap-7">
+        {/* Camera frame — portrait 9/16, dark surface, rounded 24 */}
+        <div className="flex justify-center">
           <div
-            className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full"
-            style={{ background: "#e2e8f0", opacity: 0.08, filter: "blur(40px)" }}
-          />
-          {/* Grid */}
-          <svg
-            viewBox="0 0 100 75"
-            preserveAspectRatio="none"
-            className="absolute inset-0 w-full h-full opacity-20"
+            className="relative overflow-hidden flex flex-col"
+            style={{
+              width: 296,
+              height: 520,
+              borderRadius: 24,
+              background: "#030712", // surfaceDark
+              boxShadow: "0 28px 70px -30px rgba(3,7,18,0.65)",
+            }}
           >
-            <path d="M33 0V75M66 0V75M0 25H100M0 50H100" stroke="#fff" strokeWidth="0.15" />
-          </svg>
-          {/* Face marker */}
-          <svg
-            viewBox="0 0 400 300"
-            className="absolute inset-0 w-full h-full"
-          >
-            <rect
-              x="135"
-              y="65"
-              width="130"
-              height="160"
-              rx="18"
-              fill="none"
-              stroke={DH.primary}
-              strokeWidth="2"
-              strokeDasharray="6 8"
-              opacity="0.85"
-            />
-            <circle cx="175" cy="125" r="4" fill={DH.primary} />
-            <circle cx="225" cy="125" r="4" fill={DH.primary} />
-            <path
-              d="M 170 170 Q 200 190 230 170"
-              stroke={DH.primary}
-              strokeWidth="2.5"
-              fill="none"
-              strokeLinecap="round"
-            />
-            <text
-              x="135"
-              y="55"
-              fill={DH.primary}
-              fontSize="11"
-              fontFamily="ui-monospace, monospace"
-              letterSpacing="2"
-            >
-              FACE · LOCKED
-            </text>
-          </svg>
-
-          {/* Top bar */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
+            {/* Subtle radial glow so dark surface doesn't look dead */}
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-[0.22em]"
-              style={{ background: DH.danger, color: "#fff" }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              {recording ? "rec" : "paused"}
-            </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-[0.22em]"
-              style={{ background: "rgba(255,255,255,0.12)", color: "#fff", backdropFilter: "blur(8px)" }}
-            >
-              <span>00:{(60 - elapsed).toString().padStart(2, "0")}</span>
-              <span className="opacity-60">/ 01:00</span>
-            </div>
-          </div>
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(120% 80% at 50% 20%, rgba(255,255,255,0.06), transparent 60%)",
+              }}
+            />
 
-          {/* Waveform */}
-          <div className="absolute bottom-4 left-4 right-4 h-[32px] flex items-end gap-[2px]">
-            {Array.from({ length: 44 }).map((_, i) => {
-              const h =
-                6 +
-                Math.abs(Math.sin((barPhase + i * 24) / 36)) * 26 +
-                Math.abs(Math.sin((barPhase + i * 15) / 22)) * 6;
-              return (
-                <div
-                  key={i}
-                  className="flex-1 rounded-full transition-[height] duration-150"
-                  style={{
-                    height: recording ? `${h}px` : "6px",
-                    background: DH.primary,
-                    opacity: 0.85,
-                  }}
-                />
-              );
-            })}
+            {/* Top chrome: X to exit + question counter */}
+            <div className="relative flex items-center justify-between px-4 pt-4">
+              <button
+                onClick={onExit}
+                className="h-7 w-7 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.1)" }}
+                aria-label="Exit"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M3 3l6 6M9 3l-6 6"
+                    stroke="#fff"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+              <div className="flex items-center gap-1">
+                {RESUME_QUESTIONS.map((_, i) => (
+                  <span
+                    key={i}
+                    className="h-1 rounded-full transition-all"
+                    style={{
+                      width: i === qIdx ? 20 : 4,
+                      background:
+                        recorded[i] || i === qIdx
+                          ? DH.primary
+                          : "rgba(255,255,255,0.25)",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Body */}
+            {state === "preRecording" && (
+              <div className="flex-1 relative">
+                {/* Viewfinder placeholder — subtle head silhouette */}
+                <div className="absolute inset-0 flex items-end justify-center pb-24">
+                  <div
+                    className="w-28 h-28 rounded-full"
+                    style={{
+                      background:
+                        "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)",
+                    }}
+                  />
+                </div>
+
+                {/* Question overlay */}
+                {questionVisible && (
+                  <div className="absolute left-4 right-4 top-20">
+                    <div
+                      className="rounded-2xl px-4 py-3"
+                      style={{
+                        background: "rgba(255,255,255,0.08)",
+                        backdropFilter: "blur(14px)",
+                        border: "1px solid rgba(255,255,255,0.14)",
+                      }}
+                    >
+                      <p
+                        className="text-[10px] font-mono uppercase tracking-[0.2em] mb-1.5"
+                        style={{ color: "rgba(255,255,255,0.6)" }}
+                      >
+                        Question {qIdx + 1}
+                      </p>
+                      <p
+                        className="text-[14px] leading-[1.45]"
+                        style={{ color: "#fff" }}
+                      >
+                        {RESUME_QUESTIONS[qIdx].full}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show/hide question pill + record button */}
+                <div className="absolute left-0 right-0 bottom-6 flex flex-col items-center gap-3">
+                  <button
+                    onClick={() => setQuestionVisible((v) => !v)}
+                    className="px-3 py-1.5 rounded-full text-[12px]"
+                    style={{
+                      background: "rgba(255,255,255,0.1)",
+                      color: "#fff",
+                    }}
+                  >
+                    {questionVisible ? "Hide question" : "Show question"}
+                  </button>
+                  <button
+                    onClick={onRecord}
+                    className="h-14 w-14 rounded-full flex items-center justify-center transition-transform hover:scale-105"
+                    style={{
+                      background: "#fff",
+                      boxShadow: "0 0 0 4px rgba(255,255,255,0.15)",
+                    }}
+                    aria-label="Record"
+                  >
+                    <span
+                      className="block h-10 w-10 rounded-full"
+                      style={{ background: DH.danger }}
+                    />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {state === "postRecording" && (
+              <div className="flex-1 relative">
+                {/* Playback placeholder */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div
+                    className="h-14 w-14 rounded-full flex items-center justify-center"
+                    style={{ background: "rgba(255,255,255,0.14)" }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="#fff">
+                      <polygon points="4,2 15,9 4,16" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="absolute left-0 right-0 bottom-6 flex items-center justify-center gap-2.5 px-4">
+                  <button
+                    onClick={onReattempt}
+                    className="h-10 px-4 rounded-full text-[13px] font-medium"
+                    style={{
+                      background: "rgba(255,255,255,0.14)",
+                      color: "#fff",
+                    }}
+                  >
+                    Re-attempt
+                  </button>
+                  <button
+                    onClick={onNext}
+                    className="h-10 px-4 rounded-full text-[13px] font-semibold flex items-center gap-1.5"
+                    style={{ background: DH.primary, color: "#fff" }}
+                  >
+                    {isLast ? "Final Preview" : "Next Question"}
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {state === "preview" && (
+              <div className="flex-1 relative px-4 py-5 flex flex-col gap-2">
+                <p
+                  className="text-[10px] font-mono uppercase tracking-[0.22em]"
+                  style={{ color: "rgba(255,255,255,0.55)" }}
+                >
+                  Your resume · {RESUME_QUESTIONS.length} clips
+                </p>
+                <div className="space-y-1.5 mt-1">
+                  {RESUME_QUESTIONS.map((q, i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl px-3 py-2 flex items-center gap-2.5"
+                      style={{ background: "rgba(255,255,255,0.07)" }}
+                    >
+                      <span
+                        className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-mono"
+                        style={{
+                          background: "rgba(255,255,255,0.14)",
+                          color: "#fff",
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                      <p
+                        className="text-[12px] leading-snug"
+                        style={{ color: "#fff" }}
+                      >
+                        {q.short}
+                      </p>
+                      <span
+                        className="ml-auto text-[10px] font-mono"
+                        style={{ color: "rgba(255,255,255,0.5)" }}
+                      >
+                        00:{(20 + i * 3).toString().padStart(2, "0")}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={onNext}
+                  className="mt-auto h-11 rounded-full text-[13px] font-semibold flex items-center justify-center gap-1.5"
+                  style={{ background: DH.primary, color: "#fff" }}
+                  disabled
+                >
+                  Confirm
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M2.5 6.5l2.5 2.5 4.5-5"
+                      stroke="#fff"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Controls + transcript */}
-        <div className="flex flex-col gap-4">
+        {/* Right rail: context */}
+        <div className="flex flex-col gap-4 pt-2">
           <div>
             <p
-              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1"
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1.5"
               style={{ color: DH.aiPurple }}
             >
-              The product&apos;s signature surface
+              {state === "preview"
+                ? "Final preview before upload"
+                : state === "postRecording"
+                  ? "Playback · accept or re-attempt"
+                  : `Question ${qIdx + 1} of ${RESUME_QUESTIONS.length}`}
             </p>
-            <h3 className="text-[22px] font-semibold leading-tight tracking-tight" style={{ color: DH.ink }}>
-              Video resumes, sixty seconds, with a live transcript.
+            <h3
+              className="text-[22px] font-semibold leading-tight tracking-tight"
+              style={{ color: DH.ink }}
+            >
+              {state === "preview"
+                ? "Three short clips become one resume."
+                : "A resume is a few short answers on camera."}
             </h3>
+            <p
+              className="mt-2 text-[13.5px] leading-relaxed"
+              style={{ color: DH.inkSoft }}
+            >
+              Applicants answer a short list of questions on camera, one
+              at a time. Re-attempt until each clip feels right, then
+              confirm the set. No editing timeline, no uploads from disk.
+            </p>
           </div>
 
-          {/* Controls */}
+          {/* Step rail */}
           <div
-            className="rounded-2xl p-4 flex items-center gap-3"
+            className="rounded-2xl p-2"
             style={{ background: DH.card, border: `1px solid ${DH.border}` }}
           >
-            <button
-              onClick={() => setRecording((r) => !r)}
-              className="h-11 w-11 rounded-full flex items-center justify-center transition-transform hover:scale-105"
-              style={{
-                background: DH.danger,
-                boxShadow: `0 10px 22px -10px ${DH.danger}aa`,
-              }}
-              aria-label={recording ? "pause" : "record"}
-            >
-              {recording ? (
-                <svg width="14" height="14" viewBox="0 0 14 14">
-                  <rect x="3" y="3" width="3" height="8" rx="1" fill="#fff" />
-                  <rect x="8" y="3" width="3" height="8" rx="1" fill="#fff" />
-                </svg>
-              ) : (
-                <div className="h-3.5 w-3.5 rounded-full bg-white" />
-              )}
-            </button>
-            <button
-              onClick={() => setElapsed(0)}
-              className="h-11 px-4 rounded-full text-[13px] font-medium transition-colors"
-              style={{
-                background: DH.paper,
-                border: `1px solid ${DH.border}`,
-                color: DH.inkSoft,
-              }}
-            >
-              Retake
-            </button>
-            <div className="ml-auto text-right">
-              <p className="text-[10px] font-mono uppercase tracking-[0.22em]" style={{ color: DH.muted }}>
-                target
-              </p>
-              <p className="text-[14px] font-semibold" style={{ color: DH.ink }}>
-                60s max
-              </p>
-            </div>
-          </div>
-
-          {/* Transcript */}
-          <div
-            className="rounded-2xl p-4 flex-1"
-            style={{ background: DH.card, border: `1px solid ${DH.border}` }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <span
-                className="h-2 w-2 rounded-full animate-pulse"
-                style={{ background: DH.primary }}
-              />
-              <p
-                className="text-[10px] font-mono uppercase tracking-[0.22em]"
-                style={{ color: DH.muted }}
-              >
-                Live transcript · whisper streaming
-              </p>
-            </div>
-            <div className="space-y-1.5">
-              {transcript.slice(0, shown).map((line, i) => (
-                <p
-                  key={i}
-                  className="text-[13px] leading-relaxed"
+            {RESUME_QUESTIONS.map((q, i) => {
+              const active = i === qIdx;
+              return (
+                <button
+                  key={q.short}
+                  onClick={() => {
+                    setQIdx(i);
+                    setState("preRecording");
+                  }}
+                  className="w-full text-left rounded-xl px-3 py-2.5 flex items-center gap-3 transition-colors"
                   style={{
-                    color: i === shown - 1 ? DH.ink : DH.inkSoft,
-                    opacity: i === shown - 1 ? 1 : 0.7,
+                    background: active ? DH.primarySofter : "transparent",
                   }}
                 >
-                  {line}
-                </p>
-              ))}
-              {shown < transcript.length && (
-                <span
-                  className="inline-block w-2 h-[14px] align-middle"
-                  style={{ background: DH.ink }}
-                />
-              )}
-            </div>
+                  <span
+                    className="h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-semibold"
+                    style={{
+                      background: recorded[i]
+                        ? DH.primary
+                        : active
+                          ? DH.paper
+                          : DH.paperAlt,
+                      color: recorded[i]
+                        ? "#fff"
+                        : active
+                          ? DH.ink
+                          : DH.inkSoft,
+                      border: `1px solid ${recorded[i] ? "transparent" : DH.border}`,
+                    }}
+                  >
+                    {recorded[i] ? (
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                        <path
+                          d="M2.5 6.5l2.5 2.5 4.5-5"
+                          stroke="#fff"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    ) : (
+                      i + 1
+                    )}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-[13px] font-medium leading-snug"
+                      style={{ color: DH.ink }}
+                    >
+                      {q.short}
+                    </p>
+                    <p
+                      className="text-[11px] leading-snug mt-0.5 truncate"
+                      style={{ color: DH.muted }}
+                    >
+                      {recorded[i] ? "Recorded · tap to re-attempt" : "Pending"}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
-          <p className="text-[11px]" style={{ color: DH.muted }}>
-            Face-lock overlay uses the product&apos;s own face_marker
-            asset. Transcript streams over the same SSE pipe the chat
-            service uses.
+          <p
+            className="text-[11px]"
+            style={{ color: allDone ? DH.primaryDark : DH.muted }}
+          >
+            {allDone
+              ? "All three clips captured. Confirm to upload."
+              : "Record one clip at a time. Re-attempt freely until it's right."}
           </p>
         </div>
       </div>
@@ -1070,524 +1229,963 @@ function VideoResumeScene() {
 }
 
 // ====================================================================
-// SCENE 2 — JOB COMPOSER (taxonomy tokens click into a live card)
+// SCENE 2 — JOB COMPOSER
+// Real flow is a nine-step wizard (title → workplace → type → level →
+// education → compensation → location → skills → benefits). Each step
+// has a PageTitle, a helper, an input, and a progress bar at the
+// bottom. This scene lets the viewer click through the same steps with
+// the same staged page-title/helper/input layout, and the accumulated
+// draft card rebuilds as they go.
 // ====================================================================
 
-const TAXONOMY = [
-  { token: "workplaceType", bg: DH.workplaceType, options: ["Remote", "Hybrid", "On-site"] },
-  { token: "jobType", bg: DH.jobType, options: ["Full-time", "Part-time", "Contract"] },
-  { token: "experienceLevel", bg: DH.experienceLevel, options: ["Junior", "Mid", "Mid-senior", "Senior"] },
-  { token: "compensation", bg: DH.compensation, options: ["$80k — $120k", "$120k — $160k", "$160k+"] },
-  { token: "education", bg: DH.education, options: ["Bachelor's+", "Master's+", "Any"] },
+type JobStep = {
+  key: string;
+  label: string;
+  title: string;
+  helper: string;
+  hint: string;
+  value: string;
+  chipBg?: string;
+};
+
+const JOB_STEPS: JobStep[] = [
+  {
+    key: "title",
+    label: "Title",
+    title: "Which position are you looking to fill?",
+    helper:
+      "This information will assist us in crafting your job description.",
+    hint: "Add the job title you are hiring for",
+    value: "Senior Frontend Engineer",
+  },
+  {
+    key: "workplace",
+    label: "Workplace",
+    title: "Remote, hybrid, or on-site?",
+    helper:
+      "This tells applicants how their day-to-day will feel before they read a single line.",
+    hint: "Pick the arrangement for this role",
+    value: "Remote",
+    chipBg: DH.workplaceType,
+  },
+  {
+    key: "type",
+    label: "Type",
+    title: "Is this a full-time, part-time, or contract role?",
+    helper: "We use this to route the post to the right talent pools.",
+    hint: "Select the employment type",
+    value: "Full-time",
+    chipBg: DH.jobType,
+  },
+  {
+    key: "experience",
+    label: "Experience",
+    title: "How senior is this role?",
+    helper: "Level filtering is the #1 thing candidates use to self-qualify.",
+    hint: "Choose a level",
+    value: "Mid-senior",
+    chipBg: DH.experienceLevel,
+  },
+  {
+    key: "compensation",
+    label: "Compensation",
+    title: "What's the pay range?",
+    helper:
+      "Posts with a salary band get 3× more applications on DigitalHire.",
+    hint: "Set a min and max",
+    value: "$120k — $160k",
+    chipBg: DH.compensation,
+  },
+  {
+    key: "education",
+    label: "Education",
+    title: "Any education requirement?",
+    helper:
+      "Don't filter people out unless you really mean it. &ldquo;Any&rdquo; is a fine answer.",
+    hint: "Pick one",
+    value: "Bachelor's+",
+    chipBg: DH.education,
+  },
+  {
+    key: "location",
+    label: "Location",
+    title: "Where is this role based?",
+    helper: "Even remote roles usually have a region or a timezone.",
+    hint: "City, country, or region",
+    value: "Karachi, PK · remote-friendly",
+  },
+  {
+    key: "skills",
+    label: "Skills",
+    title: "Which skills matter most?",
+    helper:
+      "Add three to six. We'll use them to match candidates against the brief.",
+    hint: "Type a skill and press enter",
+    value: "TypeScript · React · Design systems",
+  },
+  {
+    key: "benefits",
+    label: "Benefits",
+    title: "Anything candidates should get excited about?",
+    helper:
+      "Equity, time off, learning budget, flexible hours — whatever makes your offer real.",
+    hint: "Comma-separated list",
+    value: "Equity · Annual learning budget · Flexible hours",
+  },
 ];
 
 function JobComposerScene() {
-  const [picks, setPicks] = useState<Record<string, string>>({
-    workplaceType: "Remote",
-    jobType: "Full-time",
-    experienceLevel: "Mid-senior",
-    compensation: "$120k — $160k",
-    education: "Bachelor's+",
+  const [stepIdx, setStepIdx] = useState(0);
+  const [filled, setFilled] = useState<Record<string, boolean>>({
+    title: true,
+    workplace: true,
+    type: true,
+    experience: true,
+    compensation: true,
   });
+  const step = JOB_STEPS[stepIdx];
+  const progress = stepIdx / (JOB_STEPS.length - 1);
+
+  const next = () => {
+    setFilled((f) => ({ ...f, [step.key]: true }));
+    setStepIdx((i) => Math.min(i + 1, JOB_STEPS.length - 1));
+  };
+  const back = () => setStepIdx((i) => Math.max(i - 1, 0));
+
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-[960px] mx-auto px-10 py-8 grid grid-cols-[1fr_1.1fr] gap-6">
-        {/* Left: token pickers */}
-        <div>
-          <p
-            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1"
-            style={{ color: DH.aiPurple }}
+      <div className="max-w-[960px] mx-auto px-10 py-8 grid grid-cols-[1fr_0.95fr] gap-7">
+        {/* Left: the live wizard screen */}
+        <div
+          className="rounded-[20px] flex flex-col overflow-hidden"
+          style={{
+            background: DH.paper,
+            border: `1px solid ${DH.border}`,
+            minHeight: 520,
+            boxShadow: "0 20px 44px -28px rgba(15,23,42,0.18)",
+          }}
+        >
+          {/* Mini app bar */}
+          <div
+            className="flex items-center justify-between px-4 h-12"
+            style={{ borderBottom: `1px solid ${DH.borderSoft}` }}
           >
-            Click a chip — watch the card rebuild
-          </p>
-          <h3 className="text-[22px] font-semibold leading-tight tracking-tight mb-4" style={{ color: DH.ink }}>
-            Every job post is five tokens.
-          </h3>
+            <button
+              className="h-7 w-7 rounded-full flex items-center justify-center"
+              style={{ background: DH.paperAlt }}
+              aria-label="Cancel"
+            >
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <path
+                  d="M3 3l6 6M9 3l-6 6"
+                  stroke={DH.inkSoft}
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+            <p
+              className="text-[11px] font-mono uppercase tracking-[0.22em]"
+              style={{ color: DH.muted }}
+            >
+              Step {stepIdx + 1} of {JOB_STEPS.length}
+            </p>
+            <span className="h-7 w-7" />
+          </div>
 
-          <div className="space-y-3">
-            {TAXONOMY.map((row) => (
-              <div
-                key={row.token}
-                className="rounded-xl p-3"
-                style={{ background: DH.card, border: `1px solid ${DH.border}` }}
+          {/* Body — matches the Flutter PageTitle/PageDescription/AppInputField stack */}
+          <div key={step.key} className="flex-1 px-5 pt-6 pb-4 flex flex-col">
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+              style={{ color: DH.primary }}
+            >
+              {step.label}
+            </p>
+            <h4
+              className="text-[20px] font-semibold leading-[1.2] tracking-tight"
+              style={{ color: DH.ink }}
+            >
+              {step.title}
+            </h4>
+            <p
+              className="mt-2 text-[13px] leading-relaxed"
+              style={{ color: DH.muted }}
+              dangerouslySetInnerHTML={{ __html: step.helper }}
+            />
+
+            {/* Input field — styled to mirror AppInputField */}
+            <div className="mt-5">
+              <p
+                className="text-[10.5px] font-mono uppercase tracking-[0.18em] mb-1.5"
+                style={{ color: DH.muted }}
               >
-                <p
-                  className="text-[10px] font-mono mb-2"
-                  style={{ color: DH.muted }}
+                {step.hint}
+              </p>
+              <div
+                className="rounded-xl px-3.5 py-2.5 flex items-center justify-between"
+                style={{
+                  background: DH.paper,
+                  border: `1px solid ${filled[step.key] ? DH.primary : DH.border}`,
+                  boxShadow: filled[step.key]
+                    ? `0 0 0 3px ${DH.primary}18`
+                    : "none",
+                }}
+              >
+                <span
+                  className="text-[14px]"
+                  style={{
+                    color: filled[step.key] ? DH.ink : DH.muted,
+                  }}
                 >
-                  {row.token}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {row.options.map((opt) => {
-                    const active = picks[row.token] === opt;
-                    return (
-                      <button
-                        key={opt}
-                        onClick={() =>
-                          setPicks((p) => ({ ...p, [row.token]: opt }))
-                        }
-                        className="text-[11.5px] px-2.5 py-1 rounded-md transition-all"
-                        style={{
-                          background: active ? row.bg : DH.paper,
-                          color: DH.ink,
-                          border: `1px solid ${active ? "transparent" : DH.border}`,
-                          boxShadow: active
-                            ? `0 4px 12px -6px rgba(15,23,42,0.18)`
-                            : "none",
-                          transform: active ? "translateY(-1px)" : "none",
-                        }}
-                      >
-                        {opt}
-                      </button>
-                    );
-                  })}
-                </div>
+                  {filled[step.key] ? step.value : step.hint}
+                </span>
+                {step.chipBg && filled[step.key] && (
+                  <span
+                    className="text-[11px] px-2 py-[3px] rounded-md"
+                    style={{ background: step.chipBg, color: DH.ink }}
+                  >
+                    selected
+                  </span>
+                )}
               </div>
-            ))}
+            </div>
+
+            {/* Quick-pick chips on taxonomy steps */}
+            {step.chipBg && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {getChipOptions(step.key).map((opt) => {
+                  const active = step.value === opt;
+                  return (
+                    <button
+                      key={opt}
+                      onClick={() => {
+                        step.value = opt;
+                        setFilled((f) => ({ ...f, [step.key]: true }));
+                      }}
+                      className="text-[12px] px-2.5 py-1 rounded-md"
+                      style={{
+                        background: active ? step.chipBg : DH.paper,
+                        color: DH.ink,
+                        border: `1px solid ${active ? "transparent" : DH.border}`,
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Progress bar */}
+          <div
+            className="h-[3px] relative"
+            style={{ background: DH.borderSoft }}
+          >
+            <div
+              className="absolute inset-y-0 left-0 transition-all duration-300"
+              style={{
+                width: `${progress * 100}%`,
+                background: DH.primary,
+              }}
+            />
+          </div>
+
+          {/* Footer — Back + Next */}
+          <div
+            className="flex items-center justify-between px-5 h-14"
+            style={{ borderTop: `1px solid ${DH.borderSoft}` }}
+          >
+            <button
+              onClick={back}
+              disabled={stepIdx === 0}
+              className="h-9 px-4 rounded-full text-[12.5px] font-medium transition-opacity"
+              style={{
+                background: DH.paperAlt,
+                border: `1px solid ${DH.border}`,
+                color: DH.inkSoft,
+                opacity: stepIdx === 0 ? 0.4 : 1,
+              }}
+            >
+              Back
+            </button>
+            <button
+              onClick={next}
+              className="h-9 px-4 rounded-full text-[12.5px] font-semibold text-white flex items-center gap-1.5"
+              style={{ background: DH.primary }}
+            >
+              {stepIdx === JOB_STEPS.length - 1 ? "Generate draft" : "Next"}
+              <span>→</span>
+            </button>
           </div>
         </div>
 
-        {/* Right: live card */}
-        <div className="flex flex-col gap-4">
-          <p
-            className="text-[10px] font-mono uppercase tracking-[0.22em]"
-            style={{ color: DH.muted }}
-          >
-            Preview · AiJobCardItem
-          </p>
+        {/* Right: context + draft card that rebuilds as steps complete */}
+        <div className="flex flex-col gap-4 pt-2">
+          <div>
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1.5"
+              style={{ color: DH.aiPurple }}
+            >
+              The post flow, one question at a time
+            </p>
+            <h3
+              className="text-[22px] font-semibold leading-tight tracking-tight"
+              style={{ color: DH.ink }}
+            >
+              Nine steps, one page each, no giant form to abandon.
+            </h3>
+            <p
+              className="mt-2 text-[13.5px] leading-relaxed"
+              style={{ color: DH.inkSoft }}
+            >
+              The employer flow is a staged wizard. Every step has a
+              single question, a single input, and a progress bar. The
+              AI drafts the long-form description after step nine.
+            </p>
+          </div>
+
+          {/* Live draft card */}
           <div
-            className="rounded-2xl p-5"
+            className="rounded-[20px] p-4"
             style={{
               background: DH.card,
               border: `1px solid ${DH.border}`,
-              boxShadow: "0 18px 40px -22px rgba(15,23,42,0.25)",
+              boxShadow: "0 14px 34px -22px rgba(15,23,42,0.18)",
             }}
           >
-            <p className="text-[15px] font-semibold" style={{ color: DH.ink }}>
-              Senior Frontend Engineer{" "}
-              <span className="font-normal" style={{ color: DH.inkSoft }}>
-                at Acme Studios
-              </span>
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+              style={{ color: DH.muted }}
+            >
+              Draft · assembling
             </p>
-            <div className="mt-1.5 flex items-center gap-1.5 text-[12px]" style={{ color: DH.muted }}>
-              <span>{picks.workplaceType}</span>
+            <p className="text-[15px] font-semibold" style={{ color: DH.ink }}>
+              {filled["title"] ? JOB_STEPS[0].value : "—"}
+            </p>
+            <div
+              className="mt-1 flex items-center gap-1.5 text-[12px]"
+              style={{ color: DH.muted }}
+            >
+              <span>
+                {filled["workplace"] ? JOB_STEPS[1].value : "workplace"}
+              </span>
               <span className="h-[3px] w-[3px] rounded-full" style={{ background: DH.muted }} />
-              <span>Karachi or remote</span>
+              <span>
+                {filled["type"] ? JOB_STEPS[2].value : "type"}
+              </span>
               <span className="h-[3px] w-[3px] rounded-full" style={{ background: DH.muted }} />
-              <span>{picks.jobType}</span>
+              <span>
+                {filled["experience"] ? JOB_STEPS[3].value : "level"}
+              </span>
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {TAXONOMY.map((row) => (
+              {JOB_STEPS.filter((s) => s.chipBg && filled[s.key]).map((s) => (
                 <span
-                  key={row.token}
+                  key={s.key}
                   className="text-[11px] px-2 py-[3px] rounded-md"
-                  style={{ background: row.bg, color: DH.ink }}
+                  style={{ background: s.chipBg, color: DH.ink }}
                 >
-                  {picks[row.token]}
+                  {s.value}
                 </span>
               ))}
             </div>
-            <div
-              className="mt-4 pt-3 flex items-center justify-between"
-              style={{ borderTop: `1px solid ${DH.border}` }}
-            >
-              <span className="text-[11px]" style={{ color: DH.muted }}>
-                4 days ago
-              </span>
-              <span
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px]"
-                style={{ background: DH.primarySoft, color: DH.primaryDark }}
+            {filled["location"] && (
+              <p
+                className="mt-3 text-[11.5px]"
+                style={{ color: DH.inkSoft }}
               >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: DH.primary }} />
-                Actively hiring
-              </span>
-            </div>
+                📍 {JOB_STEPS[6].value}
+              </p>
+            )}
+            {filled["skills"] && (
+              <p
+                className="mt-1.5 text-[11.5px]"
+                style={{ color: DH.inkSoft }}
+              >
+                {JOB_STEPS[7].value}
+              </p>
+            )}
+            {filled["benefits"] && (
+              <p
+                className="mt-1.5 text-[11.5px]"
+                style={{ color: DH.inkSoft }}
+              >
+                {JOB_STEPS[8].value}
+              </p>
+            )}
           </div>
 
-          <button
-            className="rounded-xl px-4 py-3 text-[14px] font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-2"
-            style={{
-              background: DH.primary,
-              boxShadow: `0 10px 24px -10px ${DH.primary}aa`,
-            }}
-          >
-            Post this job
-            <span>→</span>
-          </button>
-
-          <p className="text-[11px]" style={{ color: DH.muted }}>
-            Tokens are named after meaning, not color. A junior designer
-            can&apos;t pick the &ldquo;wrong pink&rdquo; by accident.
-          </p>
+          <div className="flex items-center gap-2">
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: DH.aiPurple }}
+            />
+            <p
+              className="text-[11px] font-mono uppercase tracking-[0.22em]"
+              style={{ color: DH.aiPurple }}
+            >
+              AI drafts the description after the last step
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
+}
+
+function getChipOptions(key: string): string[] {
+  switch (key) {
+    case "workplace":
+      return ["Remote", "Hybrid", "On-site"];
+    case "type":
+      return ["Full-time", "Part-time", "Contract"];
+    case "experience":
+      return ["Junior", "Mid", "Mid-senior", "Senior"];
+    case "compensation":
+      return ["$80k — $120k", "$120k — $160k", "$160k+"];
+    case "education":
+      return ["Bachelor's+", "Master's+", "Any"];
+    default:
+      return [];
+  }
 }
 
 // ====================================================================
 // SCENE 3 — AI CHAT
+// Real empty state from ai_chat_room_mobile_view.dart: a warm greeting
+// with the user's first name + a wave emoji, centered, over a subtle
+// white → #F0FFF6 gradient. Suggestion chips with leading icons are
+// the real offerings the product ships. Clicking a chip fills the
+// input and fires the corresponding tool call.
 // ====================================================================
 
 type Persona = "employer" | "applicant";
 
-const PROMPTS: Record<Persona, { text: string; tool: string; result: string }[]> = {
+type Suggestion = {
+  icon: "search" | "globe" | "bot" | "question" | "briefcase";
+  label: string;
+  tool: string;
+};
+
+const SUGGESTIONS: Record<Persona, Suggestion[]> = {
   employer: [
     {
-      text: "find senior frontend candidates in Karachi",
+      icon: "search",
+      label: "Help me recruit talent",
       tool: "searchApplicant",
-      result: "Found 24 candidates · top 3 shown below",
     },
     {
-      text: "draft a job post for a senior product designer",
-      tool: "createJobAd",
-      result: "Drafted · review before posting",
+      icon: "globe",
+      label: "Hire vetted offshore talent",
+      tool: "searchApplicant",
     },
     {
-      text: "book an interview with Ayesha at 3pm Friday",
-      tool: "createInterviewRequest",
-      result: "Interview scheduled · invite sent",
+      icon: "bot",
+      label: "Build a custom AI agent",
+      tool: "createAgent",
     },
   ],
   applicant: [
     {
-      text: "help me prep for a frontend interview",
-      tool: "answerFAQ",
-      result: "Here are the three things I&apos;d practice first",
+      icon: "search",
+      label: "Find me jobs related to frontend",
+      tool: "searchJob",
     },
     {
-      text: "show remote roles hiring this week",
+      icon: "question",
+      label: "How do I create a video resume?",
+      tool: "answerFAQ",
+    },
+    {
+      icon: "briefcase",
+      label: "Show remote roles hiring this week",
       tool: "searchJob",
-      result: "12 remote roles · sorted by recency",
     },
   ],
 };
 
 function AiChatScene() {
   const [persona, setPersona] = useState<Persona>("employer");
-  const [activeIdx, setActiveIdx] = useState(0);
-  const prompts = PROMPTS[persona];
-  const active = prompts[activeIdx];
+  const [selected, setSelected] = useState<Suggestion | null>(null);
+  const suggestions = SUGGESTIONS[persona];
+  const greeting =
+    persona === "employer"
+      ? "Hey Haider! 👋"
+      : "Hello! Are you hiring or job hunting?";
+  const subline =
+    persona === "employer"
+      ? "How can I assist you today?"
+      : "I've got you either way.";
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-[960px] mx-auto px-10 py-8">
-        {/* Persona switcher */}
-        <div className="flex items-center gap-2 mb-5">
-          {(["employer", "applicant"] as Persona[]).map((p) => {
-            const sel = persona === p;
-            return (
-              <button
-                key={p}
-                onClick={() => {
-                  setPersona(p);
-                  setActiveIdx(0);
-                }}
-                className="h-10 px-4 rounded-full text-[13px] font-medium transition-all flex items-center gap-2"
-                style={{
-                  background: sel ? DH.ink : DH.paper,
-                  color: sel ? "#fff" : DH.inkSoft,
-                  border: `1px solid ${sel ? "transparent" : DH.border}`,
-                }}
-              >
-                <span
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: sel ? DH.primary : DH.muted }}
-                />
-                {p === "employer" ? "Employer" : "Applicant"} persona
-              </button>
-            );
-          })}
-          <span className="ml-auto text-[11px]" style={{ color: DH.muted }}>
-            ~80% of traffic hits keyword routing, never touches the LLM
-          </span>
+    <div
+      className="h-full overflow-y-auto"
+      style={{
+        background: "linear-gradient(180deg, #ffffff 0%, #F0FFF6 100%)",
+      }}
+    >
+      <div className="max-w-[860px] mx-auto px-10 pt-8 pb-6 flex flex-col min-h-full">
+        {/* Top row: persona toggle + chat history hint */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {(["employer", "applicant"] as Persona[]).map((p) => {
+              const sel = persona === p;
+              return (
+                <button
+                  key={p}
+                  onClick={() => {
+                    setPersona(p);
+                    setSelected(null);
+                  }}
+                  className="h-9 px-3.5 rounded-full text-[12.5px] font-medium transition-all flex items-center gap-2"
+                  style={{
+                    background: sel ? DH.ink : DH.paper,
+                    color: sel ? "#fff" : DH.inkSoft,
+                    border: `1px solid ${sel ? "transparent" : DH.border}`,
+                  }}
+                >
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: sel ? DH.primary : DH.muted }}
+                  />
+                  {p === "employer" ? "Employer" : "Applicant"}
+                </button>
+              );
+            })}
+          </div>
+          <div
+            className="flex items-center gap-2 h-9 px-3 rounded-full"
+            style={{ background: DH.paper, border: `1px solid ${DH.border}` }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M2 4h12M2 8h12M2 12h8"
+                stroke={DH.muted}
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span
+              className="text-[11px] font-medium"
+              style={{ color: DH.inkSoft }}
+            >
+              Chat history
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-[1fr_1fr] gap-4">
-          {/* Left: prompt pills */}
-          <div
-            className="rounded-2xl p-4"
-            style={{ background: DH.card, border: `1px solid ${DH.border}` }}
-          >
+        {/* Hero greeting */}
+        {!selected && (
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-10">
+            <h3
+              className="text-[34px] font-semibold leading-[1.15] tracking-tight"
+              style={{ color: DH.ink }}
+            >
+              {greeting}
+            </h3>
             <p
-              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
+              className="mt-1.5 text-[18px]"
+              style={{ color: DH.inkSoft }}
+            >
+              {subline}
+            </p>
+
+            {/* Suggestion chips — AppChipType.aiSuggestion */}
+            <div className="mt-8 flex flex-wrap justify-center gap-2 max-w-[560px]">
+              {suggestions.map((s) => (
+                <button
+                  key={s.label}
+                  onClick={() => setSelected(s)}
+                  className="h-9 pl-2.5 pr-3.5 rounded-full text-[12.5px] font-medium flex items-center gap-2 transition-all hover:-translate-y-[1px]"
+                  style={{
+                    background: DH.aiPurpleSoft,
+                    border: `1px solid ${DH.aiPurple}44`,
+                    color: DH.aiPurple,
+                  }}
+                >
+                  <SuggestionIcon kind={s.icon} />
+                  {s.label}
+                </button>
+              ))}
+            </div>
+
+            <p
+              className="mt-10 text-[11px] font-mono uppercase tracking-[0.22em]"
               style={{ color: DH.muted }}
             >
-              Try a prompt
+              Keyword router handles ~80% of prompts before the LLM sees them
             </p>
-            <div className="space-y-2">
-              {prompts.map((p, i) => {
-                const sel = i === activeIdx;
-                return (
-                  <button
-                    key={p.text}
-                    onClick={() => setActiveIdx(i)}
-                    className="w-full text-left rounded-xl px-3.5 py-2.5 transition-all"
-                    style={{
-                      background: sel ? DH.paper : DH.paperAlt,
-                      border: `1px solid ${sel ? DH.ink : DH.border}`,
-                    }}
-                  >
-                    <p className="text-[13px]" style={{ color: DH.ink }}>
-                      &ldquo;{p.text}&rdquo;
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
           </div>
+        )}
 
-          {/* Right: chat surface */}
-          <div
-            className="rounded-2xl p-4 flex flex-col gap-3"
-            style={{ background: DH.paper, border: `1px solid ${DH.border}`, minHeight: 300 }}
-          >
-            <div className="flex items-center gap-2 pb-3" style={{ borderBottom: `1px solid ${DH.borderSoft}` }}>
-              <div
-                className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                style={{ background: DH.ink }}
-              >
-                {persona === "employer" ? "E" : "A"}
-              </div>
-              <p className="text-[12.5px]" style={{ color: DH.inkSoft }}>
-                {persona === "employer" ? "Employer" : "Applicant"} · with DigitalHire
-              </p>
-              <span className="ml-auto text-[10px] font-mono" style={{ color: DH.muted }}>
-                via chat-management-service-v2
-              </span>
-            </div>
-
+        {/* Conversation view after a suggestion is picked */}
+        {selected && (
+          <div className="mt-8 space-y-4 flex-1">
+            {/* User message */}
             <div className="flex justify-end">
               <div
-                className="text-[13px] leading-snug px-3 py-2 rounded-xl max-w-[80%] text-right"
+                className="text-[14px] leading-snug px-4 py-2.5 rounded-2xl max-w-[72%]"
                 style={{ background: DH.primary, color: "#fff" }}
               >
-                {active.text}
+                {selected.label}
               </div>
             </div>
 
+            {/* Tool chip */}
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md self-start"
-              style={{ background: DH.aiPurpleSoft, border: `1px solid ${DH.aiPurple}55` }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md self-start w-fit"
+              style={{
+                background: DH.aiPurpleSoft,
+                border: `1px solid ${DH.aiPurple}55`,
+              }}
             >
-              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: DH.success }} />
-              <span className="text-[11px] font-mono" style={{ color: DH.aiPurple }}>
-                {active.tool}
+              <span
+                className="h-1.5 w-1.5 rounded-full animate-pulse"
+                style={{ background: DH.success }}
+              />
+              <span
+                className="text-[11px] font-mono"
+                style={{ color: DH.aiPurple }}
+              >
+                {selected.tool}
               </span>
               <span className="text-[10px] font-mono" style={{ color: DH.muted }}>
                 · tool call
               </span>
             </div>
 
+            {/* AI response bubble */}
             <div className="flex justify-start">
               <div
-                className="text-[13px] leading-snug px-3 py-2 rounded-xl max-w-[85%]"
-                style={{ background: DH.paperAlt, color: DH.ink, border: `1px solid ${DH.border}` }}
-                dangerouslySetInnerHTML={{ __html: active.result }}
-              />
-            </div>
-
-            <div
-              className="mt-auto pt-3 flex items-center gap-2"
-              style={{ borderTop: `1px solid ${DH.borderSoft}` }}
-            >
-              <div
-                className="flex-1 rounded-full px-3 py-2 text-[12px]"
+                className="text-[14px] leading-relaxed px-4 py-3 rounded-2xl max-w-[78%]"
                 style={{
                   background: DH.paper,
-                  border: `1px solid ${DH.aiPurple}55`,
-                  boxShadow: `0 0 0 3px ${DH.aiPurple}10`,
-                  color: DH.muted,
+                  border: `1px solid ${DH.border}`,
+                  color: DH.ink,
                 }}
               >
-                ask me anything…
-              </div>
-              <div
-                className="h-9 w-9 rounded-full flex items-center justify-center text-white"
-                style={{ background: DH.aiPurple }}
-              >
-                ↑
+                {aiReplyFor(selected)}
               </div>
             </div>
+
+            {/* Reset */}
+            <button
+              onClick={() => setSelected(null)}
+              className="text-[11.5px] font-medium"
+              style={{ color: DH.muted }}
+            >
+              ← back to suggestions
+            </button>
           </div>
+        )}
+
+        {/* Input field — mimics AiChatMessageInputField */}
+        <div
+          className="mt-6 flex items-center gap-2 p-1.5 rounded-full"
+          style={{
+            background: DH.paper,
+            border: `1px solid ${DH.aiPurple}44`,
+            boxShadow: `0 0 0 4px ${DH.aiPurple}10`,
+          }}
+        >
+          <div
+            className="flex-1 px-3 text-[13px]"
+            style={{ color: DH.muted }}
+          >
+            Ask DigitalHire anything…
+          </div>
+          <button
+            className="h-9 w-9 rounded-full flex items-center justify-center"
+            style={{ background: DH.aiPurple }}
+            aria-label="Send"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 13V3M3 8l5-5 5 5"
+                stroke="#fff"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
+function aiReplyFor(s: Suggestion): string {
+  switch (s.tool) {
+    case "searchApplicant":
+      return "On it. Let me pull a shortlist — I'll show three to start, tap View All for the full match set.";
+    case "createAgent":
+      return "Love that. An agent needs a name, a scope, and a tone. Want to start with a recruiter agent tuned to your hiring brief?";
+    case "searchJob":
+      return "Found 12 roles this week. Want them ranked by match, recency, or compensation?";
+    case "answerFAQ":
+      return "Three clips, sixty seconds each, straight from your phone. I'll walk you through the questions.";
+    default:
+      return "On it.";
+  }
+}
+
+function SuggestionIcon({
+  kind,
+}: {
+  kind: Suggestion["icon"];
+}) {
+  const stroke = DH.aiPurple;
+  if (kind === "search")
+    return (
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <circle cx="7" cy="7" r="4.5" stroke={stroke} strokeWidth="1.5" />
+        <path d="M10.5 10.5L14 14" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  if (kind === "globe")
+    return (
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6" stroke={stroke} strokeWidth="1.5" />
+        <path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12" stroke={stroke} strokeWidth="1.5" />
+      </svg>
+    );
+  if (kind === "bot")
+    return (
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <rect x="3" y="5" width="10" height="8" rx="2" stroke={stroke} strokeWidth="1.5" />
+        <path d="M8 3v2M6 9h.01M10 9h.01" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  if (kind === "question")
+    return (
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6" stroke={stroke} strokeWidth="1.5" />
+        <path d="M6 6a2 2 0 114 0c0 1-1 1.5-2 2v1M8 11.5h.01" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="5" width="12" height="8" rx="1.5" stroke={stroke} strokeWidth="1.5" />
+      <path d="M6 5V3.5a1 1 0 011-1h2a1 1 0 011 1V5" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // ====================================================================
-// SCENE 4 — CANDIDATE MATCH (Employer dashboard with a live match feed)
+// SCENE 4 — CANDIDATE MATCH
+// Not a standalone dashboard — the product surfaces candidates inside
+// the AI chat as an AiChatCandidateSearchPreviewCard. White outer card
+// with a subtle green-tinted shadow, each row a F8FBFE chip with
+// initials avatar + name + (video icon if hasVideo) + title + location.
+// Footer: 'Found X candidates' + 'View All' primary button. No match
+// bars, no inline skip/book actions.
 // ====================================================================
 
 const CANDIDATES = [
   {
     name: "Ayesha Khan",
-    role: "Senior Frontend Engineer",
-    exp: "6 yrs · Karachi · Remote OK",
-    match: 94,
-    skills: ["TypeScript", "React", "Design systems"],
+    title: "Senior Frontend Engineer",
+    location: "Karachi, PK",
+    hasVideo: true,
   },
   {
     name: "Daniyal Rashid",
-    role: "Senior Frontend Engineer",
-    exp: "5 yrs · Lahore · Hybrid",
-    match: 89,
-    skills: ["React", "Next.js", "GraphQL"],
+    title: "Senior Frontend Engineer",
+    location: "Lahore, PK",
+    hasVideo: true,
   },
   {
     name: "Hira Naseem",
-    role: "Mid-senior FE",
-    exp: "4 yrs · Islamabad · Remote",
-    match: 81,
-    skills: ["Vue", "TypeScript"],
+    title: "Mid-senior Frontend Engineer",
+    location: "Islamabad, PK",
+    hasVideo: false,
   },
 ];
 
 function CandidateMatchScene() {
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-[960px] mx-auto px-10 py-8">
-        <div className="flex items-end justify-between mb-5">
-          <div>
-            <p
-              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1"
-              style={{ color: DH.aiPurple }}
-            >
-              Employer side · live match feed
-            </p>
-            <h3 className="text-[22px] font-semibold leading-tight tracking-tight" style={{ color: DH.ink }}>
-              Matches stream in the moment a job goes live.
-            </h3>
-          </div>
-          <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-            style={{ background: DH.primarySoft, border: `1px solid ${DH.primary}33` }}
+    <div
+      className="h-full overflow-y-auto"
+      style={{
+        background: "linear-gradient(180deg, #ffffff 0%, #F0FFF6 100%)",
+      }}
+    >
+      <div className="max-w-[860px] mx-auto px-10 pt-8 pb-6 flex flex-col gap-4">
+        {/* Context */}
+        <div>
+          <p
+            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1.5"
+            style={{ color: DH.aiPurple }}
           >
-            <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: DH.primary }} />
-            <span className="text-[11px] font-medium" style={{ color: DH.primaryDark }}>
-              24 new today
-            </span>
+            How results show up in chat
+          </p>
+          <h3
+            className="text-[22px] font-semibold leading-tight tracking-tight"
+            style={{ color: DH.ink }}
+          >
+            The AI doesn&apos;t send you to a page. It drops the match inline.
+          </h3>
+          <p
+            className="mt-2 text-[13.5px] leading-relaxed max-w-[620px]"
+            style={{ color: DH.inkSoft }}
+          >
+            When the chat fires <code style={{ color: DH.aiPurple, fontFamily: "ui-monospace, monospace" }}>searchApplicant</code>,
+            the tool response comes back as a preview card rendered right in
+            the conversation. Three candidates, a fade for overflow, one
+            primary &ldquo;View All&rdquo; action. No modal, no page switch.
+          </p>
+        </div>
+
+        {/* User message */}
+        <div className="flex justify-end">
+          <div
+            className="text-[14px] leading-snug px-4 py-2.5 rounded-2xl max-w-[72%]"
+            style={{ background: DH.primary, color: "#fff" }}
+          >
+            find senior frontend engineers in Karachi
           </div>
         </div>
 
-        {/* Candidate rows */}
-        <div className="space-y-2">
-          {CANDIDATES.map((c, i) => (
-            <div
-              key={c.name}
-              className="rounded-2xl p-4 grid grid-cols-[auto_1fr_auto_auto] items-center gap-4"
-              style={{
-                background: i === 0 ? DH.primarySofter : DH.card,
-                border: `1px solid ${i === 0 ? `${DH.primary}33` : DH.border}`,
-              }}
-            >
-              {/* Video thumb — uniform, monochrome */}
-              <div
-                className="h-14 w-14 rounded-xl overflow-hidden relative flex items-center justify-center text-white font-semibold"
-                style={{ background: `linear-gradient(135deg, #1f2937, #0f172a)` }}
-              >
-                <span>{c.name.charAt(0)}</span>
-                <span
-                  className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(255,255,255,0.18)" }}
-                >
-                  <svg width="8" height="8" viewBox="0 0 10 10" fill="#fff">
-                    <polygon points="2,1 9,5 2,9" />
-                  </svg>
-                </span>
-              </div>
-              {/* Name + skills */}
-              <div className="min-w-0">
-                <p className="text-[14px] font-semibold" style={{ color: DH.ink }}>
-                  {c.name}
-                </p>
-                <p className="text-[12px]" style={{ color: DH.muted }}>
-                  {c.role} · {c.exp}
-                </p>
-                <div className="mt-1.5 flex flex-wrap gap-1">
-                  {c.skills.map((s) => (
-                    <span
-                      key={s}
-                      className="text-[10px] px-1.5 py-0.5 rounded"
-                      style={{
-                        background: DH.paper,
-                        border: `1px solid ${DH.border}`,
-                        color: DH.inkSoft,
-                      }}
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              {/* Match bar — uniform green */}
-              <div className="w-32">
-                <div
-                  className="h-1.5 rounded-full overflow-hidden"
-                  style={{ background: DH.paperAlt }}
-                >
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${c.match}%`, background: DH.primary }}
-                  />
-                </div>
-                <p
-                  className="mt-1 text-[10px] font-mono uppercase tracking-[0.18em]"
-                  style={{ color: DH.muted }}
-                >
-                  match · {c.match}%
-                </p>
-              </div>
-              {/* Actions */}
-              <div className="flex items-center gap-1.5">
-                <button
-                  className="h-9 px-3 rounded-full text-[11px] font-medium"
-                  style={{
-                    background: DH.paper,
-                    border: `1px solid ${DH.border}`,
-                    color: DH.inkSoft,
-                  }}
-                >
-                  Skip
-                </button>
-                <button
-                  className="h-9 px-3.5 rounded-full text-[11px] font-semibold text-white"
-                  style={{
-                    background: i === 0 ? DH.primary : DH.ink,
-                  }}
-                >
-                  Book interview
-                </button>
-              </div>
-            </div>
-          ))}
+        {/* Tool chip */}
+        <div
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md self-start w-fit"
+          style={{
+            background: DH.aiPurpleSoft,
+            border: `1px solid ${DH.aiPurple}55`,
+          }}
+        >
+          <span
+            className="h-1.5 w-1.5 rounded-full animate-pulse"
+            style={{ background: DH.success }}
+          />
+          <span
+            className="text-[11px] font-mono"
+            style={{ color: DH.aiPurple }}
+          >
+            searchApplicant
+          </span>
+          <span className="text-[10px] font-mono" style={{ color: DH.muted }}>
+            · tool call
+          </span>
         </div>
 
-        {/* Metric strip — single ink tone */}
-        <div className="mt-6 grid grid-cols-4 gap-3">
-          <DashStat label="jobs live" value="312" />
-          <DashStat label="applications this week" value="1.4k" />
-          <DashStat label="interviews scheduled" value="78" />
-          <DashStat label="median time-to-reply" value="6h" />
+        {/* Actual preview card pattern from the Flutter source */}
+        <div
+          className="rounded-[20px] py-2"
+          style={{
+            background: DH.paper,
+            border: `1px solid ${DH.border}`,
+            boxShadow: "0 4px 12px rgba(5,67,30,0.05), 0 4px 8px rgba(5,67,30,0.05)",
+            maxWidth: 480,
+          }}
+        >
+          {/* Candidate rows */}
+          <div className="px-2 py-1.5 relative">
+            <div className="space-y-2">
+              {CANDIDATES.map((c) => (
+                <CandidatePreviewItem key={c.name} c={c} />
+              ))}
+            </div>
+            {/* Fade gradient — the card truncates at 3 */}
+            <div
+              className="absolute bottom-0 left-0 right-0 h-10 rounded-b-[16px] pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 100%)",
+              }}
+            />
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between px-4 py-2">
+            <p className="text-[13px]" style={{ color: DH.ink }}>
+              <span className="font-medium">Found 24 candidates</span>
+            </p>
+            <button
+              className="h-8 px-3.5 rounded-full text-[12px] font-semibold text-white"
+              style={{ background: DH.primary }}
+            >
+              View All
+            </button>
+          </div>
         </div>
+
+        <p
+          className="mt-2 text-[11px] font-mono uppercase tracking-[0.22em]"
+          style={{ color: DH.muted }}
+        >
+          Same pattern for jobs, interviews, profile previews — each tool returns a card like this
+        </p>
       </div>
     </div>
   );
 }
 
-function DashStat({ label, value }: { label: string; value: string }) {
+function CandidatePreviewItem({
+  c,
+}: {
+  c: (typeof CANDIDATES)[number];
+}) {
+  const initials = c.name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
   return (
     <div
-      className="rounded-xl p-3"
+      className="rounded-2xl px-3 py-2.5 flex items-center gap-3"
       style={{ background: DH.card, border: `1px solid ${DH.border}` }}
     >
-      <p className="text-[20px] font-semibold leading-none" style={{ color: DH.ink }}>
-        {value}
-      </p>
-      <p className="mt-1.5 text-[10.5px]" style={{ color: DH.muted }}>
-        {label}
-      </p>
+      {/* 44x44 circular avatar with initials */}
+      <div
+        className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
+        style={{
+          background: DH.border,
+          color: DH.muted,
+          fontSize: 14,
+          fontWeight: 500,
+        }}
+      >
+        {initials}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <p
+            className="text-[14px] font-medium leading-tight truncate"
+            style={{ color: DH.ink }}
+          >
+            {c.name}
+          </p>
+          {c.hasVideo && (
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="4" width="9" height="8" rx="1.5" stroke={DH.primary} strokeWidth="1.5" />
+              <path d="M10.5 7l4-2v6l-4-2" stroke={DH.primary} strokeWidth="1.5" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+        <p
+          className="mt-0.5 text-[13px] truncate"
+          style={{ color: DH.inkSoft }}
+        >
+          {c.title}
+        </p>
+        <div className="mt-0.5 flex items-center gap-1">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M6 1.5c-2 0-3.5 1.5-3.5 3.5 0 2.5 3.5 5.5 3.5 5.5s3.5-3 3.5-5.5c0-2-1.5-3.5-3.5-3.5z"
+              stroke={DH.muted}
+              strokeWidth="1.1"
+            />
+            <circle cx="6" cy="5" r="1.2" stroke={DH.muted} strokeWidth="1.1" />
+          </svg>
+          <p className="text-[11.5px]" style={{ color: DH.muted }}>
+            {c.location}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
