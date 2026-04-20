@@ -95,8 +95,7 @@ export const cards: BoardCard[] = [
   },
 
   // ──────────────────────────────────────────────────────────────
-  // TOP BAND — Contact floats at the very top, DigitalHire as the
-  // current-work hero sits just below it, Mochi + Audora flank wider.
+  // TOP BAND — Contact floats at the very top, Mochi + Audora flank.
   // ──────────────────────────────────────────────────────────────
   {
     id: "contact",
@@ -107,15 +106,6 @@ export const cards: BoardCard[] = [
     depth: 2,
     w: 420,
     h: 220,
-  },
-  {
-    id: "project-digitalhire",
-    kind: "prototype",
-    slug: "digitalhire",
-    x: 2700,
-    y: 1240,
-    rotation: 1.5,
-    depth: 1,
   },
   {
     id: "project-mochi",

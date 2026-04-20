@@ -86,8 +86,7 @@ export type PrototypeCard = CardBase & {
     | "trading-bot"
     | "ember"
     | "relay"
-    | "wisesend"
-    | "digitalhire";
+    | "wisesend";
 };
 
 export type GhCalendarCard = CardBase & { kind: "gh-calendar" };
