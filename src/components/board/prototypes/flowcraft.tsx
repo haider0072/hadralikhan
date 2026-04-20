@@ -753,13 +753,35 @@ function Sidebar() {
 
       <div className="mt-6 space-y-2">
         <a
-          href="https://github.com/haider0072/flowcraft"
+          href="https://flowcraft-mu.vercel.app/"
           target="_blank"
           rel="noreferrer"
           className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           style={{
             background: `linear-gradient(135deg, ${FC.violet} 0%, ${FC.rose} 100%)`,
             boxShadow: "0 8px 24px -8px rgba(139,123,181,0.5)",
+          }}
+        >
+          <span className="flex items-center gap-2">
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-white animate-pulse"
+              aria-hidden
+            />
+            Try it live
+          </span>
+          <span className="transition-transform group-hover:translate-x-1">
+            →
+          </span>
+        </a>
+        <a
+          href="https://github.com/haider0072/flowcraft"
+          target="_blank"
+          rel="noreferrer"
+          className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-colors"
+          style={{
+            background: FC.surfaceHi,
+            border: `1px solid ${FC.border}`,
+            color: "#2a1f2e",
           }}
         >
           <span className="flex items-center gap-2">

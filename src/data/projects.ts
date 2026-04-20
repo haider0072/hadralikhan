@@ -36,12 +36,14 @@ export const projects: Project[] = [
   {
     slug: "flowcraft",
     title: "FlowCraft",
-    tagline: "AI-powered sprite-sheet generator for 2D game characters.",
-    year: "2025",
-    stack: ["Next.js", "AI", "WebGL"],
+    tagline:
+      "AI creative platform. Sprite sheets, node-based workflows, video gen.",
+    year: "2026",
+    stack: ["Next.js", "React Flow", "OpenRouter", "Supabase"],
     role: "Design & Engineering",
     featured: true,
     accent: "sage",
+    href: "https://flowcraft-mu.vercel.app/",
   },
   {
     slug: "ember",
