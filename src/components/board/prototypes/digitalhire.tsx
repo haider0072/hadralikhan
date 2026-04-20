@@ -6,22 +6,35 @@ import { ProjectFrame } from "../project-frame";
 import { FocusModal } from "../focus-modal";
 import { cn } from "@/lib/cn";
 
-// DigitalHire palette — deep indigo with AI-purple accents, pulled from
-// the Flutter design tokens (aiPurple, aiGrammar). This is the one piece
-// of work on the board where "current, still shipping" is the whole point.
+// Real DigitalHire palette, pulled from the Flutter app's lightThemeColors.
+// Green primary, specific AI-purple accent, and the semantic pastels the
+// product uses for job taxonomy tags. Kept light on purpose so the case
+// study reads like the product it is about.
 const DH = {
-  bg: "#0f1020",
-  surface: "#181a2e",
-  surfaceHi: "#20243e",
-  border: "#2d3152",
-  primary: "#6366f1",
-  aiPurple: "#a78bfa",
-  aiGrammar: "#22d3ee",
-  success: "#34d399",
-  warn: "#fbbf24",
-  text: "#f5f5f7",
-  muted: "#9ca3af",
-  soft: "#cbd5e1",
+  bg: "#f7faf9",
+  paper: "#ffffff",
+  paperAlt: "#f1f5f2",
+  border: "#e5e7eb",
+  borderSoft: "#eef2ee",
+  ink: "#0f172a",
+  inkSoft: "#374151",
+  muted: "#64748b",
+  primary: "#00BA52", // green700
+  primaryDark: "#005C28", // green900
+  primarySoft: "#E5FAEE", // green100
+  aiPurple: "#870CE8",
+  aiPurpleSoft: "#F3E8FF",
+  aiGrammar: "#E0F2FE", // blue100
+  aiGrammarBorder: "#0369A1", // blue700
+  // Category chip tokens
+  workplaceType: "#FADCDB",
+  jobType: "#E3F3E4",
+  experienceLevel: "#F0DEF2",
+  compensation: "#FFEFD6",
+  education: "#D6F5FF",
+  critical: "#E11D48",
+  success: "#059669",
+  warning: "#CA8A04",
 };
 
 export function DigitalHirePrototype({ activity }: { activity: CardActivity }) {
@@ -59,18 +72,19 @@ function DigitalHirePeek({
         tagline:
           "3.5 years of one role turning into three. Designer, then PM, then development too.",
       }}
-      innerClassName="bg-[#0f1020]"
+      innerClassName="bg-white"
       onOpen={onOpen}
       tape="top-right"
     >
+      {/* Soft green-purple wash */}
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute -top-16 -right-10 w-56 h-56 rounded-full"
-          style={{ background: DH.aiPurple, filter: "blur(90px)", opacity: 0.35 }}
+          style={{ background: DH.aiPurple, filter: "blur(100px)", opacity: 0.18 }}
         />
         <div
           className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full"
-          style={{ background: DH.primary, filter: "blur(80px)", opacity: 0.3 }}
+          style={{ background: DH.primary, filter: "blur(90px)", opacity: 0.22 }}
         />
       </div>
 
@@ -82,25 +96,25 @@ function DigitalHirePeek({
         <div className="flex items-center gap-2">
           <DHMark size={28} />
           <div>
-            <p className="text-[11px] font-semibold text-white leading-none">
+            <p className="text-[11px] font-semibold leading-none" style={{ color: DH.ink }}>
               DigitalHire
             </p>
-            <p className="text-[9px] text-[#9ca3af] mt-0.5">
-              design · product · engineering
+            <p className="text-[9px] mt-0.5" style={{ color: DH.muted }}>
+              integrated talent engine
             </p>
           </div>
         </div>
         <div
           className="text-[8px] font-mono uppercase tracking-[0.18em] px-2 py-1 rounded-full flex items-center gap-1.5"
           style={{
-            background: "rgba(167,139,250,0.12)",
-            border: `1px solid ${DH.aiPurple}55`,
-            color: DH.aiPurple,
+            background: DH.primarySoft,
+            border: `1px solid ${DH.primary}55`,
+            color: DH.primaryDark,
           }}
         >
           <span
             className="h-1.5 w-1.5 rounded-full animate-pulse"
-            style={{ background: DH.aiPurple }}
+            style={{ background: DH.primary }}
           />
           current work
         </div>
@@ -116,8 +130,8 @@ function DHMark({ size = 32 }: { size?: number }) {
       style={{
         width: size,
         height: size,
-        background: `linear-gradient(135deg, ${DH.primary} 0%, ${DH.aiPurple} 100%)`,
-        boxShadow: "0 6px 18px -8px rgba(99,102,241,0.5)",
+        background: `linear-gradient(135deg, ${DH.primary} 0%, ${DH.primaryDark} 100%)`,
+        boxShadow: `0 6px 18px -8px ${DH.primary}aa`,
       }}
     >
       <svg viewBox="0 0 32 32" width={size} height={size}>
@@ -132,17 +146,16 @@ function DHMark({ size = 32 }: { size?: number }) {
   );
 }
 
-// ---- Peek animation: mini chat streaming ---------------------------------
+// ---- Peek: mini chat streaming -----------------------------------------
 
 const USER_MSG = "create a job post for a senior frontend engineer";
-const AI_REPLY =
-  "On it. I'll draft it now and flag what to review.";
+const AI_REPLY = "On it. I'll draft it now and flag what to review.";
 const JOB_TITLE = "Senior Frontend Engineer";
 
 function ChatStreamStage({ animated }: { animated: boolean }) {
-  const [phase, setPhase] = useState<"idle" | "user" | "thinking" | "reply" | "tool" | "done">(
-    "idle",
-  );
+  const [phase, setPhase] = useState<
+    "idle" | "user" | "thinking" | "reply" | "tool" | "done"
+  >("idle");
   const [userChars, setUserChars] = useState(0);
   const [replyChars, setReplyChars] = useState(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -161,36 +174,27 @@ function ChatStreamStage({ animated }: { animated: boolean }) {
       setUserChars(0);
       setReplyChars(0);
 
-      // User typing
       schedule(() => setPhase("user"), 300);
       for (let i = 1; i <= USER_MSG.length; i++) {
         schedule(() => setUserChars(i), 300 + i * 28);
       }
-
       const userDone = 300 + USER_MSG.length * 28 + 200;
 
-      // Thinking
       schedule(() => setPhase("thinking"), userDone);
 
-      // Reply streaming
       const replyStart = userDone + 600;
       schedule(() => setPhase("reply"), replyStart);
       for (let i = 1; i <= AI_REPLY.length; i++) {
         schedule(() => setReplyChars(i), replyStart + i * 22);
       }
-
       const replyDone = replyStart + AI_REPLY.length * 22 + 200;
 
-      // Tool call
       schedule(() => setPhase("tool"), replyDone);
-
-      // Done, hold, loop
       schedule(() => setPhase("done"), replyDone + 900);
       schedule(run, replyDone + 3200);
     };
 
     run();
-
     return () => {
       alive = false;
       timers.current.forEach(clearTimeout);
@@ -202,9 +206,9 @@ function ChatStreamStage({ animated }: { animated: boolean }) {
     <div
       className="relative w-full max-w-[240px] rounded-xl p-2 flex flex-col gap-1.5"
       style={{
-        background: DH.surface,
+        background: DH.paper,
         border: `1px solid ${DH.border}`,
-        boxShadow: "0 18px 40px -16px rgba(0,0,0,0.6)",
+        boxShadow: "0 12px 30px -14px rgba(15,23,42,0.18)",
       }}
     >
       {/* User bubble (right-aligned) */}
@@ -228,7 +232,7 @@ function ChatStreamStage({ animated }: { animated: boolean }) {
         </div>
       </div>
 
-      {/* AI thinking indicator */}
+      {/* Thinking */}
       {phase === "thinking" && (
         <div className="flex items-center gap-1 pl-1">
           <span
@@ -246,14 +250,14 @@ function ChatStreamStage({ animated }: { animated: boolean }) {
         </div>
       )}
 
-      {/* AI reply bubble (left-aligned) */}
+      {/* AI reply */}
       {(phase === "reply" || phase === "tool" || phase === "done") && (
         <div className="flex justify-start">
           <div
             className="text-[9px] leading-tight px-2 py-1.5 rounded-lg max-w-[90%]"
             style={{
-              background: DH.surfaceHi,
-              color: DH.text,
+              background: DH.paperAlt,
+              color: DH.ink,
               border: `1px solid ${DH.border}`,
             }}
           >
@@ -261,22 +265,20 @@ function ChatStreamStage({ animated }: { animated: boolean }) {
             {phase === "reply" && replyChars < AI_REPLY.length && (
               <span
                 className="inline-block w-[1px] h-[9px] ml-0.5 align-middle"
-                style={{ background: DH.text }}
+                style={{ background: DH.ink }}
               />
             )}
           </div>
         </div>
       )}
 
-      {/* Tool call chip */}
+      {/* Tool chip */}
       {(phase === "tool" || phase === "done") && (
         <div
           className="flex items-center gap-1 px-2 py-1 rounded-md self-start"
           style={{
-            background: "rgba(167,139,250,0.12)",
+            background: DH.aiPurpleSoft,
             border: `1px solid ${DH.aiPurple}55`,
-            opacity: phase === "tool" ? 1 : 0.95,
-            transition: "opacity 200ms",
           }}
         >
           <span
@@ -298,13 +300,12 @@ function ChatStreamStage({ animated }: { animated: boolean }) {
         </div>
       )}
 
-      {/* Role strip */}
       <div
         className="mt-1 pt-1.5 flex items-center justify-between text-[7px] font-mono uppercase tracking-[0.14em]"
-        style={{ borderTop: `1px solid ${DH.border}`, color: DH.muted }}
+        style={{ borderTop: `1px solid ${DH.borderSoft}`, color: DH.muted }}
       >
         <span>designer · pm · dev</span>
-        <span style={{ color: DH.aiGrammar }}>3.5 yrs</span>
+        <span style={{ color: DH.primary }}>3.5 yrs</span>
       </div>
     </div>
   );
@@ -314,23 +315,23 @@ function ChatStreamStage({ animated }: { animated: boolean }) {
 // FOCUS MODAL
 // ====================================================================
 
-type Tab = "story" | "chat" | "system" | "backend";
+type Tab = "story" | "design" | "chat" | "engineering";
 
 function DigitalHireFocus() {
-  const [tab, setTab] = useState<Tab>("story");
+  const [tab, setTab] = useState<Tab>("design");
   return (
     <div
       className="w-[min(1240px,96vw)] h-[min(780px,92vh)] grid grid-cols-[380px_1fr] overflow-hidden font-sans"
-      style={{ background: DH.bg, color: DH.text }}
+      style={{ background: DH.bg, color: DH.ink }}
     >
       <Sidebar />
       <section className="flex flex-col overflow-hidden min-w-0">
         <TabBar tab={tab} setTab={setTab} />
         <div className="flex-1 overflow-hidden">
           {tab === "story" && <StoryTab />}
+          {tab === "design" && <DesignTab />}
           {tab === "chat" && <ChatTab />}
-          {tab === "system" && <SystemTab />}
-          {tab === "backend" && <BackendTab />}
+          {tab === "engineering" && <EngineeringTab />}
         </div>
       </section>
     </div>
@@ -342,23 +343,23 @@ function Sidebar() {
     <aside
       className="p-7 overflow-y-auto border-r"
       style={{
-        background: DH.surface,
+        background: DH.paper,
         borderColor: DH.border,
       }}
     >
       <div className="flex items-center gap-3">
         <DHMark size={48} />
         <div>
-          <p className="font-semibold tracking-tight text-base leading-none text-white">
+          <p className="font-semibold tracking-tight text-base leading-none" style={{ color: DH.ink }}>
             DigitalHire
           </p>
-          <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#9ca3af] mt-1">
-            2022 — now · recruitment saas
+          <p className="text-[10px] font-mono uppercase tracking-[0.22em] mt-1" style={{ color: DH.muted }}>
+            2022 — now · talent engine
           </p>
         </div>
       </div>
 
-      <p className="mt-5 text-[13px] leading-relaxed" style={{ color: DH.soft }}>
+      <p className="mt-5 text-[13px] leading-relaxed" style={{ color: DH.inkSoft }}>
         The longest thread in my career so far. I came in as the sole
         product designer, rebuilt the product from scratch on the back of
         an in-house engineering team, ended up as PM because I was
@@ -367,10 +368,10 @@ function Sidebar() {
       </p>
 
       <div className="mt-6">
-        <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#9ca3af] mb-2">
+        <p className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2" style={{ color: DH.muted }}>
           My roles, in the order they happened
         </p>
-        <ul className="space-y-2 text-[13px]" style={{ color: DH.soft }}>
+        <ul className="space-y-2 text-[13px]" style={{ color: DH.inkSoft }}>
           <li className="flex items-center gap-2">
             <span
               className="h-1.5 w-1.5 rounded-full"
@@ -388,7 +389,7 @@ function Sidebar() {
           <li className="flex items-center gap-2">
             <span
               className="h-1.5 w-1.5 rounded-full"
-              style={{ background: DH.aiGrammar }}
+              style={{ background: DH.aiGrammarBorder }}
             />
             Full-stack dev, picked up when it mattered
           </li>
@@ -396,48 +397,16 @@ function Sidebar() {
       </div>
 
       <div className="mt-6">
-        <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#9ca3af] mb-2">
-          Stack across the three surfaces
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {[
-            "Flutter",
-            "Next.js",
-            "NestJS 11",
-            "TypeORM",
-            "MySQL",
-            "BullMQ",
-            "Redis",
-            "OpenAI",
-            "AWS ECS",
-            "Stripe",
-            "Firebase",
-          ].map((s) => (
-            <span
-              key={s}
-              className="text-[10px] px-2 py-0.5 rounded border"
-              style={{
-                borderColor: DH.border,
-                background: DH.surfaceHi,
-                color: DH.soft,
-              }}
-            >
-              {s}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#9ca3af] mb-2">
+        <p className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2" style={{ color: DH.muted }}>
           Credits
         </p>
-        <p className="text-[12px] leading-relaxed" style={{ color: DH.soft }}>
+        <p className="text-[12px] leading-relaxed" style={{ color: DH.inkSoft }}>
           <a
             href="https://github.com/mohsinraza-fdev"
             target="_blank"
             rel="noreferrer"
-            className="underline decoration-dotted hover:text-white"
+            className="underline decoration-dotted"
+            style={{ color: DH.ink }}
           >
             Mohsin Raza
           </a>{" "}
@@ -446,7 +415,8 @@ function Sidebar() {
             href="https://github.com/ishaquehassan"
             target="_blank"
             rel="noreferrer"
-            className="underline decoration-dotted hover:text-white"
+            className="underline decoration-dotted"
+            style={{ color: DH.ink }}
           >
             Ishaque Hassan
           </a>{" "}
@@ -458,8 +428,8 @@ function Sidebar() {
       <div
         className="mt-6 p-3 rounded-xl text-xs leading-relaxed"
         style={{
-          background: "rgba(167,139,250,0.1)",
-          color: DH.soft,
+          background: DH.aiPurpleSoft,
+          color: DH.inkSoft,
           border: `1px solid ${DH.aiPurple}33`,
         }}
       >
@@ -469,13 +439,13 @@ function Sidebar() {
 
       <div className="mt-6 space-y-2">
         <a
-          href="https://www.figma.com/design/8x94SC1c5SvGyjP6DKdP4p/Updated"
+          href="https://digitalhire.com"
           target="_blank"
           rel="noreferrer"
           className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           style={{
-            background: `linear-gradient(135deg, ${DH.primary} 0%, ${DH.aiPurple} 100%)`,
-            boxShadow: "0 8px 24px -8px rgba(99,102,241,0.5)",
+            background: `linear-gradient(135deg, ${DH.primary} 0%, ${DH.primaryDark} 100%)`,
+            boxShadow: `0 8px 24px -8px ${DH.primary}88`,
           }}
         >
           <span className="flex items-center gap-2">
@@ -483,24 +453,40 @@ function Sidebar() {
               className="h-1.5 w-1.5 rounded-full bg-white animate-pulse"
               aria-hidden
             />
-            View the Figma file
+            Visit the live product
           </span>
           <span className="transition-transform group-hover:translate-x-1">
             →
           </span>
         </a>
         <a
-          href="https://digitalhire.com"
+          href="https://play.google.com/store/apps/details?id=com.digitalhire"
           target="_blank"
           rel="noreferrer"
           className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-colors"
           style={{
-            background: DH.surfaceHi,
+            background: DH.paperAlt,
             border: `1px solid ${DH.border}`,
-            color: DH.text,
+            color: DH.ink,
           }}
         >
-          <span>Visit digitalhire.com</span>
+          <span>Android app on Play Store</span>
+          <span className="transition-transform group-hover:translate-x-1">
+            →
+          </span>
+        </a>
+        <a
+          href="https://www.figma.com/design/8x94SC1c5SvGyjP6DKdP4p/Updated"
+          target="_blank"
+          rel="noreferrer"
+          className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-colors"
+          style={{
+            background: DH.paperAlt,
+            border: `1px solid ${DH.border}`,
+            color: DH.ink,
+          }}
+        >
+          <span>Open the Figma file</span>
           <span className="transition-transform group-hover:translate-x-1">
             →
           </span>
@@ -512,15 +498,15 @@ function Sidebar() {
 
 function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
   const items: { id: Tab; label: string }[] = [
+    { id: "design", label: "Design system" },
+    { id: "chat", label: "The AI chat" },
+    { id: "engineering", label: "Engineering" },
     { id: "story", label: "Story" },
-    { id: "chat", label: "The chat rewrite" },
-    { id: "system", label: "Design system" },
-    { id: "backend", label: "Backend migration" },
   ];
   return (
     <nav
       className="h-14 flex items-center pl-7 pr-24 gap-1 shrink-0 border-b"
-      style={{ borderColor: DH.border, background: DH.surface }}
+      style={{ borderColor: DH.border, background: DH.paper }}
     >
       {items.map((item) => {
         const active = tab === item.id;
@@ -530,8 +516,8 @@ function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
             onClick={() => setTab(item.id)}
             className={cn(
               "relative h-14 px-4 text-sm font-medium transition-colors",
-              active ? "text-white" : "text-[#9ca3af] hover:text-white",
             )}
+            style={{ color: active ? DH.ink : DH.muted }}
           >
             {item.label}
             {active && (
@@ -550,6 +536,828 @@ function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
 }
 
 // ====================================================================
+// DESIGN TAB — the hero tab
+// ====================================================================
+
+const CATEGORY_CHIPS = [
+  { name: "workplaceType", bg: DH.workplaceType, label: "Remote" },
+  { name: "jobType", bg: DH.jobType, label: "Full-time" },
+  { name: "experienceLevel", bg: DH.experienceLevel, label: "Mid-senior" },
+  { name: "compensation", bg: DH.compensation, label: "$120k — $160k" },
+  { name: "education", bg: DH.education, label: "Bachelor's or higher" },
+];
+
+const PRIMARY_RAMP = [
+  { n: "50", c: "#F2FDF7" },
+  { n: "100", c: "#E5FAEE" },
+  { n: "200", c: "#CBF6DE" },
+  { n: "300", c: "#A0EEC3" },
+  { n: "400", c: "#74E7A7" },
+  { n: "500", c: "#49DF8B" },
+  { n: "600", c: "#25D070" },
+  { n: "700", c: "#00BA52" },
+  { n: "800", c: "#008F3F" },
+  { n: "900", c: "#005C28" },
+];
+
+const TYPE_SCALE = [
+  { name: "c10", weight: 400, size: 10, label: "caption" },
+  { name: "c12", weight: 400, size: 12, label: "caption" },
+  { name: "l10", weight: 500, size: 10, label: "label" },
+  { name: "l12", weight: 500, size: 12, label: "label" },
+  { name: "t13", weight: 500, size: 13, label: "title" },
+  { name: "t14", weight: 500, size: 14, label: "title" },
+  { name: "t16", weight: 500, size: 16, label: "title" },
+  { name: "t20", weight: 600, size: 20, label: "title" },
+];
+
+function DesignTab() {
+  return (
+    <div className="h-full overflow-y-auto">
+      <div className="max-w-[960px] mx-auto px-10 py-12">
+        <p
+          className="text-[11px] font-mono uppercase tracking-[0.22em]"
+          style={{ color: DH.aiPurple }}
+        >
+          Day one decision, long payoff
+        </p>
+        <h3 className="mt-1 text-2xl font-semibold tracking-tight" style={{ color: DH.ink }}>
+          The design system came before the first screen.
+        </h3>
+        <p
+          className="mt-2 text-sm leading-relaxed max-w-[720px]"
+          style={{ color: DH.inkSoft }}
+        >
+          Web, iOS, and Android all draw from the same tokens. Names
+          describe what a thing means in the product, not what color it
+          happens to be. A new feature today is still a small design
+          job, not a redesign.
+        </p>
+
+        {/* Primary color ramp */}
+        <div className="mt-10">
+          <div className="flex items-baseline justify-between mb-3">
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em]"
+              style={{ color: DH.muted }}
+            >
+              Primary — green
+            </p>
+            <p className="text-[11px] font-mono" style={{ color: DH.muted }}>
+              primary = green700 · #00BA52
+            </p>
+          </div>
+          <div className="grid grid-cols-10 gap-1 rounded-lg overflow-hidden">
+            {PRIMARY_RAMP.map((c) => (
+              <div
+                key={c.n}
+                className="aspect-[2/3] flex items-end justify-center pb-2"
+                style={{ background: c.c }}
+              >
+                <span
+                  className="text-[9px] font-mono"
+                  style={{
+                    color: parseInt(c.n) >= 500 ? "#fff" : DH.ink,
+                  }}
+                >
+                  {c.n}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Category tokens with real component */}
+        <div className="mt-10 grid grid-cols-[1.2fr_1fr] gap-6">
+          <div>
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
+              style={{ color: DH.muted }}
+            >
+              Taxonomy tokens — the job-post DNA
+            </p>
+            <p
+              className="text-sm leading-relaxed mb-4"
+              style={{ color: DH.inkSoft }}
+            >
+              Every job post on the platform uses the same five
+              categories. The tokens are named after what they mean, so
+              a junior designer can&apos;t pick the &ldquo;wrong
+              pink&rdquo; by accident.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORY_CHIPS.map((c) => (
+                <div key={c.name} className="flex flex-col gap-1">
+                  <span
+                    className="inline-flex px-3 py-1.5 rounded-md text-[12px] font-medium"
+                    style={{ background: c.bg, color: DH.ink }}
+                  >
+                    {c.label}
+                  </span>
+                  <span
+                    className="text-[9px] font-mono text-center"
+                    style={{ color: DH.muted }}
+                  >
+                    {c.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Live job card preview using the tokens */}
+          <div
+            className="rounded-2xl p-5"
+            style={{
+              background: DH.paper,
+              border: `1px solid ${DH.border}`,
+              boxShadow: "0 4px 14px -8px rgba(15,23,42,0.08)",
+            }}
+          >
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
+              style={{ color: DH.muted }}
+            >
+              Composed
+            </p>
+            <p className="text-[15px] font-semibold" style={{ color: DH.ink }}>
+              Senior Frontend Engineer
+            </p>
+            <p className="text-[12px] mt-0.5" style={{ color: DH.muted }}>
+              Acme Studios · Karachi or remote
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {CATEGORY_CHIPS.map((c) => (
+                <span
+                  key={c.name}
+                  className="text-[10px] px-2 py-0.5 rounded"
+                  style={{ background: c.bg, color: DH.ink }}
+                >
+                  {c.label}
+                </span>
+              ))}
+            </div>
+            <div
+              className="mt-4 pt-3 flex items-center justify-between text-[11px]"
+              style={{ borderTop: `1px solid ${DH.border}`, color: DH.muted }}
+            >
+              <span>4 days ago</span>
+              <span
+                className="px-2 py-0.5 rounded"
+                style={{ background: DH.primarySoft, color: DH.primaryDark }}
+              >
+                Actively hiring
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Typography */}
+        <div className="mt-12">
+          <div className="flex items-baseline justify-between mb-3">
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em]"
+              style={{ color: DH.muted }}
+            >
+              Typography — Poppins · 400 · 500 · 600
+            </p>
+            <p className="text-[11px] font-mono" style={{ color: DH.muted }}>
+              c = caption · l = label · t = title
+            </p>
+          </div>
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{
+              background: DH.paper,
+              border: `1px solid ${DH.border}`,
+            }}
+          >
+            {TYPE_SCALE.map((t, i) => (
+              <div
+                key={t.name}
+                className="grid grid-cols-[80px_80px_1fr_80px] gap-4 px-5 py-3 items-baseline"
+                style={{
+                  borderTop: i === 0 ? "none" : `1px solid ${DH.border}`,
+                }}
+              >
+                <span
+                  className="text-[11px] font-mono"
+                  style={{ color: DH.muted }}
+                >
+                  {t.name}
+                </span>
+                <span
+                  className="text-[11px] font-mono"
+                  style={{ color: DH.muted }}
+                >
+                  {t.weight}
+                </span>
+                <span
+                  style={{
+                    fontSize: `${t.size}px`,
+                    fontWeight: t.weight,
+                    color: DH.ink,
+                    fontFamily: "var(--font-poppins), Poppins, system-ui",
+                  }}
+                >
+                  A senior frontend engineer who cares about craft.
+                </span>
+                <span
+                  className="text-[11px] font-mono text-right"
+                  style={{ color: DH.muted }}
+                >
+                  {t.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AI component showcase */}
+        <div className="mt-12">
+          <p
+            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
+            style={{ color: DH.muted }}
+          >
+            Components designed for AI feedback
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: DH.paper,
+                border: `1px solid ${DH.aiPurple}55`,
+                boxShadow: `0 0 0 3px ${DH.aiPurpleSoft}`,
+              }}
+            >
+              <p
+                className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+                style={{ color: DH.aiPurple }}
+              >
+                AI input · aiPurple focus
+              </p>
+              <div
+                className="rounded-lg px-3 py-2.5 text-[13px] flex items-center gap-2"
+                style={{ background: DH.aiPurpleSoft }}
+              >
+                <span
+                  className="h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                  style={{ background: DH.aiPurple }}
+                >
+                  ✦
+                </span>
+                <span style={{ color: DH.ink }}>
+                  Summarize this candidate in 2 sentences
+                </span>
+              </div>
+            </div>
+
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: DH.paper,
+                border: `1px solid ${DH.aiGrammarBorder}55`,
+              }}
+            >
+              <p
+                className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+                style={{ color: DH.aiGrammarBorder }}
+              >
+                AI grammar · aiGrammar hint
+              </p>
+              <p className="text-[13px]" style={{ color: DH.ink }}>
+                We are looking for a{" "}
+                <span
+                  className="px-1 rounded"
+                  style={{
+                    background: DH.aiGrammar,
+                    boxShadow: `inset 0 -2px 0 ${DH.aiGrammarBorder}`,
+                  }}
+                >
+                  seasoned
+                </span>{" "}
+                engineer.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Scale footer */}
+        <div className="mt-10 grid grid-cols-4 gap-3">
+          {[
+            { k: "Surfaces", v: "Web · iOS · Android" },
+            { k: "Tokens", v: "200+ semantic" },
+            { k: "Feature modules", v: "17 on mobile" },
+            { k: "Named routes", v: "80+" },
+          ].map((s) => (
+            <div
+              key={s.k}
+              className="rounded-xl p-4"
+              style={{
+                background: DH.paper,
+                border: `1px solid ${DH.border}`,
+              }}
+            >
+              <p
+                className="text-[9px] font-mono uppercase tracking-[0.22em]"
+                style={{ color: DH.muted }}
+              >
+                {s.k}
+              </p>
+              <p className="mt-1 text-sm font-semibold" style={{ color: DH.ink }}>
+                {s.v}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <p
+          className="mt-5 text-xs italic"
+          style={{ color: DH.muted }}
+        >
+          Handoff was easy because I still thought like a developer. The
+          tokens are named after what they mean in the product, not
+          after colors.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ====================================================================
+// CHAT TAB — reframed around the product decision
+// ====================================================================
+
+const ROUTER_PATTERNS: {
+  re: RegExp;
+  label: string;
+  target: "employer" | "applicant";
+}[] = [
+  { re: /\b(hire|hiring|job post|recruit|candidate)\b/i, label: "hire / hiring / recruit / candidate", target: "employer" },
+  { re: /\b(create|post|publish)\b.*\b(job|role|position)\b/i, label: "create / post + job / role", target: "employer" },
+  { re: /\b(interview|assess|screen)\b/i, label: "interview / assess / screen", target: "employer" },
+  { re: /\b(apply|application|resume|cv)\b/i, label: "apply / application / resume", target: "applicant" },
+  { re: /\b(looking for|find me)\b.*\b(job|role)\b/i, label: "looking for + job / role", target: "applicant" },
+];
+
+type RouterDecision =
+  | { kind: "match"; pattern: string; target: "employer" | "applicant" }
+  | { kind: "fallback" };
+
+function decide(input: string): RouterDecision {
+  for (const p of ROUTER_PATTERNS) {
+    if (p.re.test(input)) {
+      return { kind: "match", pattern: p.label, target: p.target };
+    }
+  }
+  return { kind: "fallback" };
+}
+
+function ChatTab() {
+  const [input, setInput] = useState("I'm hiring a senior frontend engineer");
+  const decision = decide(input);
+
+  return (
+    <div className="h-full overflow-y-auto">
+      <div className="max-w-[960px] mx-auto px-10 py-12">
+        <p
+          className="text-[11px] font-mono uppercase tracking-[0.22em]"
+          style={{ color: DH.aiPurple }}
+        >
+          Forms to chat, and back to craft
+        </p>
+        <h3 className="mt-1 text-2xl font-semibold tracking-tight" style={{ color: DH.ink }}>
+          The AI chat is a product surface, not a chatbot demo.
+        </h3>
+        <p
+          className="mt-2 text-sm leading-relaxed max-w-[720px]"
+          style={{ color: DH.inkSoft }}
+        >
+          When the chat-first shift hit, we could have bolted a bubble
+          onto the existing forms. Instead we designed the conversation
+          as the primary surface and let it fall back to forms when
+          structure helped. Two personas, five clear things it can do,
+          a visible tool call when it acts on your behalf.
+        </p>
+
+        {/* Two persona cards */}
+        <div className="mt-8 grid grid-cols-2 gap-4">
+          <div
+            className="rounded-2xl p-5"
+            style={{
+              background: DH.paper,
+              border: `1px solid ${DH.primary}44`,
+              boxShadow: `0 0 0 4px ${DH.primarySoft}55`,
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p
+                className="text-[10px] font-mono uppercase tracking-[0.22em]"
+                style={{ color: DH.primaryDark }}
+              >
+                Employer persona
+              </p>
+              <span
+                className="text-[9px] font-mono px-2 py-0.5 rounded-full"
+                style={{ background: DH.primarySoft, color: DH.primaryDark }}
+              >
+                sharp, fast
+              </span>
+            </div>
+            <p className="text-sm font-semibold" style={{ color: DH.ink }}>
+              &ldquo;I&apos;m hiring a senior frontend engineer&rdquo;
+            </p>
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: DH.inkSoft }}>
+              Speaks like a recruiter. Assumes you know the role.
+              Always offers to draft and save without making you wait
+              through a form.
+            </p>
+          </div>
+
+          <div
+            className="rounded-2xl p-5"
+            style={{
+              background: DH.paper,
+              border: `1px solid ${DH.aiGrammarBorder}44`,
+              boxShadow: `0 0 0 4px ${DH.aiGrammar}88`,
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p
+                className="text-[10px] font-mono uppercase tracking-[0.22em]"
+                style={{ color: DH.aiGrammarBorder }}
+              >
+                Applicant persona
+              </p>
+              <span
+                className="text-[9px] font-mono px-2 py-0.5 rounded-full"
+                style={{ background: DH.aiGrammar, color: DH.aiGrammarBorder }}
+              >
+                warm, coach
+              </span>
+            </div>
+            <p className="text-sm font-semibold" style={{ color: DH.ink }}>
+              &ldquo;Can you help me prep for my interview?&rdquo;
+            </p>
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: DH.inkSoft }}>
+              Calm, supportive, never pushy. Suggests next steps
+              instead of asking more questions. Knows when to let the
+              candidate breathe.
+            </p>
+          </div>
+        </div>
+
+        {/* Tool chips — show what chat can actually do */}
+        <div className="mt-8">
+          <p
+            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
+            style={{ color: DH.muted }}
+          >
+            The five things chat can do · shown as live tool chips
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "createJobAd",
+              "createInterviewCreateRequest",
+              "searchApplicantRequest",
+              "searchJobRequest",
+              "answerFAQ",
+            ].map((t) => (
+              <div
+                key={t}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                style={{
+                  background: DH.aiPurpleSoft,
+                  border: `1px solid ${DH.aiPurple}44`,
+                }}
+              >
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: DH.success }}
+                />
+                <span
+                  className="text-[12px] font-mono"
+                  style={{ color: DH.aiPurple }}
+                >
+                  {t}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* The keyword router — reframed as a product decision */}
+        <div
+          className="mt-8 rounded-2xl overflow-hidden"
+          style={{
+            background: DH.paper,
+            border: `1px solid ${DH.border}`,
+          }}
+        >
+          <div className="p-5">
+            <div className="flex items-baseline justify-between mb-2">
+              <p
+                className="text-[10px] font-mono uppercase tracking-[0.22em]"
+                style={{ color: DH.aiPurple }}
+              >
+                The UX-first router
+              </p>
+              <p className="text-[11px]" style={{ color: DH.muted }}>
+                fast-path before token spend
+              </p>
+            </div>
+            <p className="text-sm mb-4" style={{ color: DH.inkSoft }}>
+              Chat should feel instant for the obvious stuff. A keyword
+              scan routes 80% of requests in milliseconds. Only the
+              genuinely ambiguous prompts touch the LLM.
+            </p>
+
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type anything a user might say..."
+              className="w-full rounded-lg px-4 py-3 text-sm font-mono outline-none"
+              style={{
+                background: DH.paperAlt,
+                border: `1px solid ${DH.border}`,
+                color: DH.ink,
+              }}
+            />
+
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <RouterStep
+                label="Keyword scan"
+                sub="37 patterns"
+                state="done"
+              />
+              <RouterStep
+                label={
+                  decision.kind === "match" ? "Fast-path hit" : "No match"
+                }
+                sub={
+                  decision.kind === "match"
+                    ? decision.pattern
+                    : "falls through"
+                }
+                state={decision.kind === "match" ? "done" : "skipped"}
+              />
+              <RouterStep
+                label={
+                  decision.kind === "match"
+                    ? `Route to ${decision.target}`
+                    : "LLM classifier"
+                }
+                sub={
+                  decision.kind === "match"
+                    ? "instant, no tokens"
+                    : "gpt-4o-mini · 1 call"
+                }
+                state={decision.kind === "match" ? "done" : "pending"}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Small engineering nod, but compact */}
+        <div
+          className="mt-6 rounded-xl p-4 text-[12px] leading-relaxed"
+          style={{
+            background: DH.paperAlt,
+            border: `1px solid ${DH.border}`,
+            color: DH.inkSoft,
+          }}
+        >
+          <span className="font-semibold" style={{ color: DH.ink }}>
+            What we decided not to build:
+          </span>{" "}
+          LangChain, LangGraph, a RAG pipeline, a vector database, an
+          embedding store, agentic loops. Chat in this product is
+          persona + tool calls + five intents. The rest would have been
+          scaffolding for our resume, not the user&apos;s flow.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RouterStep({
+  label,
+  sub,
+  state,
+}: {
+  label: string;
+  sub: string;
+  state: "done" | "skipped" | "pending";
+}) {
+  const color =
+    state === "done"
+      ? DH.success
+      : state === "skipped"
+        ? DH.muted
+        : DH.aiPurple;
+  return (
+    <div
+      className="rounded-lg p-3"
+      style={{
+        background: DH.paper,
+        border: `1px solid ${state === "pending" ? DH.aiPurple + "55" : DH.border}`,
+      }}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{
+            background: color,
+            boxShadow:
+              state === "pending" ? `0 0 10px ${DH.aiPurple}` : undefined,
+          }}
+        />
+        <span
+          className="text-[10px] font-mono uppercase tracking-[0.14em]"
+          style={{ color: state === "skipped" ? DH.muted : DH.ink }}
+        >
+          {label}
+        </span>
+      </div>
+      <p className="text-[11px]" style={{ color: DH.muted }}>
+        {sub}
+      </p>
+    </div>
+  );
+}
+
+// ====================================================================
+// ENGINEERING TAB — compact, supports the designer story
+// ====================================================================
+
+const MODULES = [
+  { name: "recruitment", note: "jobs, interviews · 41 entities" },
+  { name: "applicant", note: "profiles, resumes" },
+  { name: "company", note: "org, teams" },
+  { name: "media", note: "signed video + files" },
+  { name: "subscription", note: "Stripe billing" },
+  { name: "notification", note: "push · email · Slack" },
+  { name: "chat-agent", note: "thin proxy to chat service" },
+  { name: "integrations", note: "Postmark, Stripe, external" },
+  { name: "audit", note: "request + audit trail" },
+  { name: "aggregator-bff", note: "BFF for the apps" },
+  { name: "content", note: "SEO, sitemap" },
+  { name: "auth", note: "RS512 JWT, permissions" },
+  { name: "health", note: "liveness, separate port" },
+];
+
+function EngineeringTab() {
+  return (
+    <div className="h-full overflow-y-auto">
+      <div className="max-w-[960px] mx-auto px-10 py-12">
+        <p
+          className="text-[11px] font-mono uppercase tracking-[0.22em]"
+          style={{ color: DH.aiPurple }}
+        >
+          The quiet work behind the product
+        </p>
+        <h3 className="mt-1 text-2xl font-semibold tracking-tight" style={{ color: DH.ink }}>
+          Two services under the chat rebuild, one ongoing monolith
+          migration.
+        </h3>
+        <p
+          className="mt-2 text-sm leading-relaxed max-w-[720px]"
+          style={{ color: DH.inkSoft }}
+        >
+          This is the part that lets the design work keep shipping. I
+          keep it visible here because it is part of the job, not
+          because the engineering is the product.
+        </p>
+
+        {/* Two service cards */}
+        <div className="mt-8 grid grid-cols-2 gap-4">
+          <div
+            className="rounded-2xl p-5"
+            style={{
+              background: DH.paper,
+              border: `1px solid ${DH.aiPurple}44`,
+            }}
+          >
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+              style={{ color: DH.aiPurple }}
+            >
+              chat-management-service-v2
+            </p>
+            <p className="text-sm font-semibold" style={{ color: DH.ink }}>
+              The chat brain
+            </p>
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: DH.inkSoft }}>
+              NestJS 11 · OpenAI SDK via OpenRouter · SSE streaming ·
+              9 modules · 13 HTTP endpoints · 71 files · ~9,900 LOC ·
+              4,148 lines of tests.
+            </p>
+          </div>
+          <div
+            className="rounded-2xl p-5"
+            style={{
+              background: DH.paper,
+              border: `1px solid ${DH.primary}44`,
+            }}
+          >
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+              style={{ color: DH.primaryDark }}
+            >
+              dh-backend-v2 · in flight
+            </p>
+            <p className="text-sm font-semibold" style={{ color: DH.ink }}>
+              The monolith migration
+            </p>
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: DH.inkSoft }}>
+              NestJS 11 · MySQL via TypeORM · BullMQ + Redis · 13
+              feature modules · 84 entities · 469 files · ~59k LOC ·
+              daily commits.
+            </p>
+          </div>
+        </div>
+
+        {/* Module grid */}
+        <div className="mt-8">
+          <p
+            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
+            style={{ color: DH.muted }}
+          >
+            Backend modules · 13
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {MODULES.map((m, i) => (
+              <div
+                key={m.name}
+                className="rounded-lg px-3 py-2 flex items-center gap-3"
+                style={{
+                  background: DH.paper,
+                  border: `1px solid ${DH.border}`,
+                }}
+              >
+                <span
+                  className="text-[10px] font-mono shrink-0"
+                  style={{ color: DH.muted }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12px] font-semibold" style={{ color: DH.ink }}>
+                    {m.name}
+                  </p>
+                  <p
+                    className="text-[10px] truncate"
+                    style={{ color: DH.muted }}
+                  >
+                    {m.note}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Infra chips */}
+        <div className="mt-8">
+          <p
+            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
+            style={{ color: DH.muted }}
+          >
+            Infra
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "AWS ECS",
+              "MySQL 8",
+              "Redis",
+              "BullMQ · 4 queues",
+              "CloudFront signed URLs",
+              "AWS Secrets Manager",
+              "S3 · R2 · Minio abstraction",
+              "RS512 JWT",
+              "Request ID + audit subscriber",
+            ].map((x) => (
+              <span
+                key={x}
+                className="text-[11px] px-2.5 py-1 rounded-md"
+                style={{
+                  background: DH.paperAlt,
+                  border: `1px solid ${DH.border}`,
+                  color: DH.inkSoft,
+                }}
+              >
+                {x}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ====================================================================
 // STORY TAB
 // ====================================================================
 
@@ -560,7 +1368,7 @@ const BEATS = [
     title:
       "Sole designer. Redesigned every surface from scratch. Shipped web and mobile in parallel.",
     copy: "DigitalHire had been outsourced before I arrived. The product worked, in the way old outsourced products work. The company made the call to build an in-house engineering team and re-platform everything. I was the first designer. A consultant was kept on standby. He was never needed. I ran stakeholder discovery, built the design system on day one so handoff stayed fast, and kept the design developer-friendly because I still thought like one.",
-    color: "#6366f1",
+    color: DH.primary,
   },
   {
     year: "2023",
@@ -568,7 +1376,7 @@ const BEATS = [
     title:
       "Forms to chat. The whole product paradigm changed and I designed the new one.",
     copy: "The old flow was a form. Fill in a job, AI generates a post. Fill in an interview, AI generates questions. When chat-first AI became the expectation, the whole pattern had to flip. Conversations instead of forms. Personas instead of branching UIs. I took the redesign end-to-end while still shipping the existing app.",
-    color: "#a78bfa",
+    color: DH.aiPurple,
   },
   {
     year: "2024",
@@ -576,15 +1384,14 @@ const BEATS = [
     title:
       "A title I never asked for. People kept coming to me because I knew the product better than anyone.",
     copy: "I designed it, communicated every change, talked to every stakeholder, sat in every review. At some point the company formalized what was already true and gave me the PM title. Still the only designer. Now also the one writing the specs and running the sprint.",
-    color: "#22d3ee",
+    color: DH.aiGrammarBorder,
   },
   {
     year: "2025",
     label: "The dev pivot",
-    title:
-      "Design was done, engineering was stuck. I picked up the code.",
+    title: "Design was done, engineering was stuck. I picked up the code.",
     copy: "The chat rewrite was blocked. The old service was overengineered with layers that the business did not need. Ishaque pushed me to own it. Mohsin took the client. I rebuilt the service on NestJS with a stack matched to the requirements, not to a buzzword. Daily internal testing. We shipped on time. The President called it the smoothest launch DigitalHire has ever had. I have been in the codebase since.",
-    color: "#34d399",
+    color: DH.success,
   },
 ];
 
@@ -598,12 +1405,12 @@ function StoryTab() {
         >
           3.5 years, one thread
         </p>
-        <h3 className="mt-1 text-2xl font-semibold tracking-tight text-white">
+        <h3 className="mt-1 text-2xl font-semibold tracking-tight" style={{ color: DH.ink }}>
           The same job turned into three jobs. None of them by plan.
         </h3>
         <p
           className="mt-2 text-sm leading-relaxed max-w-[680px]"
-          style={{ color: DH.soft }}
+          style={{ color: DH.inkSoft }}
         >
           Each beat below is the moment the role quietly widened. I did
           not negotiate for any of them. They were asked for because I
@@ -642,12 +1449,12 @@ function StoryTab() {
                     · {b.year}
                   </span>
                 </div>
-                <p className="text-lg font-semibold tracking-tight text-white leading-snug">
+                <p className="text-lg font-semibold tracking-tight leading-snug" style={{ color: DH.ink }}>
                   {b.title}
                 </p>
                 <p
                   className="mt-2 text-sm leading-relaxed"
-                  style={{ color: DH.soft }}
+                  style={{ color: DH.inkSoft }}
                 >
                   {b.copy}
                 </p>
@@ -659,17 +1466,17 @@ function StoryTab() {
         <div
           className="mt-8 p-5 rounded-2xl"
           style={{
-            background: "rgba(52,211,153,0.08)",
-            border: `1px solid ${DH.success}33`,
+            background: DH.primarySoft,
+            border: `1px solid ${DH.primary}44`,
           }}
         >
           <p
             className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
-            style={{ color: DH.success }}
+            style={{ color: DH.primaryDark }}
           >
             Stakeholder note
           </p>
-          <p className="text-lg font-serif italic text-white leading-relaxed">
+          <p className="text-lg font-serif italic leading-relaxed" style={{ color: DH.ink }}>
             &ldquo;The smoothest launch DigitalHire has ever had.&rdquo;
           </p>
           <p
@@ -691,7 +1498,7 @@ function StoryTab() {
               key={s.k}
               className="rounded-xl p-4"
               style={{
-                background: DH.surface,
+                background: DH.paper,
                 border: `1px solid ${DH.border}`,
               }}
             >
@@ -701,630 +1508,12 @@ function StoryTab() {
               >
                 {s.k}
               </p>
-              <p className="mt-1 text-base font-semibold text-white">
+              <p className="mt-1 text-base font-semibold" style={{ color: DH.ink }}>
                 {s.v}
               </p>
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-// ====================================================================
-// CHAT TAB — the engineering case study
-// ====================================================================
-
-// Keyword router fixture — a tiny slice of the real 37-pattern set, so
-// the demo feels honest without shipping the production regex.
-const ROUTER_PATTERNS: {
-  re: RegExp;
-  label: string;
-  target: "employer" | "applicant";
-}[] = [
-  { re: /\b(hire|hiring|job post|recruit|candidate)\b/i, label: "hire / hiring / recruit / candidate", target: "employer" },
-  { re: /\b(create|post|publish)\b.*\b(job|role|position)\b/i, label: "create / post + job / role", target: "employer" },
-  { re: /\b(interview|assess|screen)\b/i, label: "interview / assess / screen", target: "employer" },
-  { re: /\b(apply|application|resume|cv)\b/i, label: "apply / application / resume", target: "applicant" },
-  { re: /\b(looking for|find me)\b.*\b(job|role)\b/i, label: "looking for + job / role", target: "applicant" },
-];
-
-type RouterDecision =
-  | { kind: "match"; pattern: string; target: "employer" | "applicant" }
-  | { kind: "fallback" };
-
-function decide(input: string): RouterDecision {
-  for (const p of ROUTER_PATTERNS) {
-    if (p.re.test(input)) {
-      return { kind: "match", pattern: p.label, target: p.target };
-    }
-  }
-  return { kind: "fallback" };
-}
-
-function ChatTab() {
-  const [input, setInput] = useState("I'm hiring a senior frontend engineer");
-  const decision = decide(input);
-
-  return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-[940px] mx-auto px-10 py-12">
-        <p
-          className="text-[11px] font-mono uppercase tracking-[0.22em]"
-          style={{ color: DH.aiPurple }}
-        >
-          The rewrite that made the simpler thing win
-        </p>
-        <h3 className="mt-1 text-2xl font-semibold tracking-tight text-white">
-          We removed more than we added. That was the whole point.
-        </h3>
-        <p
-          className="mt-2 text-sm leading-relaxed max-w-[720px]"
-          style={{ color: DH.soft }}
-        >
-          The previous chat service ran on direct AI APIs wrapped in
-          LangChain, LangGraph, and a RAG layer. The business did not
-          need any of it. I rewrote the service on NestJS with a stack
-          tuned to what chat actually does in this product.
-        </p>
-
-        <div className="mt-8 grid grid-cols-2 gap-4">
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background: DH.surface,
-              border: `1px solid ${DH.border}`,
-            }}
-          >
-            <p
-              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
-              style={{ color: "#f87171" }}
-            >
-              Removed
-            </p>
-            <ul className="space-y-1.5 text-sm" style={{ color: DH.soft }}>
-              {[
-                "LangChain",
-                "LangGraph",
-                "RAG pipeline",
-                "Vector database",
-                "Embedding store",
-                "Agentic loops",
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <span
-                    className="text-[#f87171] text-[13px] font-mono"
-                    style={{ textDecorationLine: "line-through" }}
-                  >
-                    ×
-                  </span>
-                  <span
-                    style={{
-                      textDecoration: "line-through",
-                      textDecorationColor: "#f8717188",
-                    }}
-                  >
-                    {item}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background: DH.surface,
-              border: `1px solid ${DH.border}`,
-            }}
-          >
-            <p
-              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
-              style={{ color: DH.success }}
-            >
-              Kept, built, tuned
-            </p>
-            <ul className="space-y-1.5 text-sm" style={{ color: DH.soft }}>
-              <li>Direct OpenAI SDK, 350-line wrapper</li>
-              <li>Keyword-first router (37 regex patterns)</li>
-              <li>26KB system prompt, 3 personas</li>
-              <li>5 native function-calling tools</li>
-              <li>SSE streaming with backpressure tweaks</li>
-              <li>Hardcoded nudges for vague prompts</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Interactive router demo */}
-        <div
-          className="mt-8 rounded-2xl overflow-hidden"
-          style={{
-            background: DH.surface,
-            border: `1px solid ${DH.border}`,
-          }}
-        >
-          <div className="p-5">
-            <p
-              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
-              style={{ color: DH.aiPurple }}
-            >
-              The keyword-first path, live
-            </p>
-            <p className="text-sm mb-4" style={{ color: DH.soft }}>
-              Type anything a user might. If the keyword router matches
-              before the LLM gets involved, that request never costs us
-              a token.
-            </p>
-
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type a message..."
-              className="w-full rounded-lg px-4 py-3 text-sm font-mono outline-none"
-              style={{
-                background: DH.bg,
-                border: `1px solid ${DH.border}`,
-                color: DH.text,
-              }}
-            />
-
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              <RouterStep
-                label="Keyword scan"
-                sub="37 patterns"
-                state="done"
-              />
-              <RouterStep
-                label={
-                  decision.kind === "match" ? "Fast-path hit" : "No match"
-                }
-                sub={
-                  decision.kind === "match"
-                    ? decision.pattern
-                    : "falls through"
-                }
-                state={decision.kind === "match" ? "done" : "skipped"}
-              />
-              <RouterStep
-                label={
-                  decision.kind === "match"
-                    ? `Route to ${decision.target}`
-                    : "LLM classifier"
-                }
-                sub={
-                  decision.kind === "match"
-                    ? "no tokens spent"
-                    : "gpt-4o-mini · 1 call"
-                }
-                state={decision.kind === "match" ? "done" : "pending"}
-              />
-            </div>
-          </div>
-
-          <div
-            className="px-5 py-3 text-xs font-mono flex items-center justify-between"
-            style={{
-              background: DH.bg,
-              borderTop: `1px solid ${DH.border}`,
-              color: DH.muted,
-            }}
-          >
-            <span>modules/agent/agent.service.ts</span>
-            <span>
-              {decision.kind === "match"
-                ? `persona: ${decision.target}`
-                : "persona: UNKNOWN"}
-            </span>
-          </div>
-        </div>
-
-        <p
-          className="mt-6 text-xs font-mono"
-          style={{ color: DH.muted }}
-        >
-          71 files · ~9,900 LOC · 4,148 lines of tests · 13 HTTP endpoints
-          · no queues, no Redis, no background jobs
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function RouterStep({
-  label,
-  sub,
-  state,
-}: {
-  label: string;
-  sub: string;
-  state: "done" | "skipped" | "pending";
-}) {
-  const color =
-    state === "done"
-      ? DH.success
-      : state === "skipped"
-        ? DH.muted
-        : DH.aiPurple;
-  return (
-    <div
-      className="rounded-lg p-3"
-      style={{
-        background: DH.surfaceHi,
-        border: `1px solid ${state === "pending" ? DH.aiPurple + "55" : DH.border}`,
-      }}
-    >
-      <div className="flex items-center gap-2 mb-1">
-        <span
-          className="h-1.5 w-1.5 rounded-full"
-          style={{
-            background: color,
-            boxShadow:
-              state === "pending" ? `0 0 10px ${DH.aiPurple}` : undefined,
-          }}
-        />
-        <span
-          className="text-[10px] font-mono uppercase tracking-[0.14em]"
-          style={{ color: state === "skipped" ? DH.muted : DH.text }}
-        >
-          {label}
-        </span>
-      </div>
-      <p className="text-[11px]" style={{ color: DH.muted }}>
-        {sub}
-      </p>
-    </div>
-  );
-}
-
-// ====================================================================
-// SYSTEM TAB — design system + mobile
-// ====================================================================
-
-const TOKENS: { name: string; color: string }[] = [
-  { name: "primary", color: "#6366f1" },
-  { name: "aiPurple", color: "#a78bfa" },
-  { name: "aiGrammar", color: "#22d3ee" },
-  { name: "workplaceType", color: "#fbbf24" },
-  { name: "jobType", color: "#60a5fa" },
-  { name: "experienceLevel", color: "#f472b6" },
-  { name: "compensation", color: "#34d399" },
-  { name: "education", color: "#c084fc" },
-  { name: "critical", color: "#f87171" },
-  { name: "success", color: "#34d399" },
-  { name: "warning", color: "#fbbf24" },
-  { name: "borderAiCritical", color: "#ef4444" },
-];
-
-function SystemTab() {
-  return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-[940px] mx-auto px-10 py-12">
-        <p
-          className="text-[11px] font-mono uppercase tracking-[0.22em]"
-          style={{ color: DH.aiPurple }}
-        >
-          Design system, early decision, long payoff
-        </p>
-        <h3 className="mt-1 text-2xl font-semibold tracking-tight text-white">
-          One system, three surfaces, one designer.
-        </h3>
-        <p
-          className="mt-2 text-sm leading-relaxed max-w-[720px]"
-          style={{ color: DH.soft }}
-        >
-          The web, the iOS app, and the Android app all draw from the
-          same tokens. Setting this up on day one meant every new
-          feature two years later was still a small design job, not a
-          redesign.
-        </p>
-
-        <div className="mt-8">
-          <p
-            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
-            style={{ color: DH.muted }}
-          >
-            Semantic tokens · a slice of 200+
-          </p>
-          <div className="grid grid-cols-4 gap-3">
-            {TOKENS.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-lg p-3 flex items-center gap-3"
-                style={{
-                  background: DH.surface,
-                  border: `1px solid ${DH.border}`,
-                }}
-              >
-                <span
-                  className="h-8 w-8 rounded-md shrink-0"
-                  style={{
-                    background: t.color,
-                    boxShadow: `0 4px 12px -4px ${t.color}`,
-                  }}
-                />
-                <span
-                  className="text-[11px] font-mono truncate"
-                  style={{ color: DH.soft }}
-                >
-                  {t.name}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-10 grid grid-cols-3 gap-4">
-          {[
-            {
-              surface: "Web",
-              stack: "Next.js + Tailwind",
-              detail: "Marketing, recruiter dashboard, admin.",
-            },
-            {
-              surface: "iOS · Android",
-              stack: "Flutter 3.38 · Stacked MVVM",
-              detail:
-                "Candidate + employer app. Dev and prod flavors. 80+ named routes. Chat module plugs into the new service.",
-            },
-            {
-              surface: "Backend",
-              stack: "NestJS 11 · TypeORM · MySQL",
-              detail:
-                "Modular monolith. 13 feature modules. BullMQ for async work.",
-            },
-          ].map((s) => (
-            <div
-              key={s.surface}
-              className="rounded-2xl p-5"
-              style={{
-                background: DH.surface,
-                border: `1px solid ${DH.border}`,
-              }}
-            >
-              <p
-                className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1"
-                style={{ color: DH.aiPurple }}
-              >
-                {s.surface}
-              </p>
-              <p className="text-sm font-semibold text-white mb-2">
-                {s.stack}
-              </p>
-              <p className="text-xs leading-relaxed" style={{ color: DH.soft }}>
-                {s.detail}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-8 grid grid-cols-5 gap-3">
-          {[
-            { k: "Dart files", v: "2,503" },
-            { k: "Lines of code", v: "246k" },
-            { k: "Feature modules", v: "17" },
-            { k: "Named routes", v: "80+" },
-            { k: "Test files", v: "171" },
-          ].map((s) => (
-            <div
-              key={s.k}
-              className="rounded-xl p-3"
-              style={{
-                background: DH.surfaceHi,
-                border: `1px solid ${DH.border}`,
-              }}
-            >
-              <p
-                className="text-[9px] font-mono uppercase tracking-[0.22em]"
-                style={{ color: DH.muted }}
-              >
-                {s.k}
-              </p>
-              <p className="mt-1 text-sm font-semibold text-white">{s.v}</p>
-            </div>
-          ))}
-        </div>
-
-        <p
-          className="mt-5 text-xs italic"
-          style={{ color: DH.muted }}
-        >
-          Handoff was easy because I still thought like a developer. The
-          tokens are named after what they mean in the product, not
-          after colors.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ====================================================================
-// BACKEND TAB — migration
-// ====================================================================
-
-const MODULES = [
-  { name: "recruitment", note: "jobs, interviews, screening · 41 entities" },
-  { name: "applicant", note: "profiles, resumes" },
-  { name: "company", note: "org, teams, members" },
-  { name: "media", note: "CloudFront-signed video + files" },
-  { name: "subscription", note: "Stripe billing, plans, coupons" },
-  { name: "notification", note: "push · email · SMS · Slack" },
-  { name: "integrations", note: "Postmark, Stripe, external APIs" },
-  { name: "audit", note: "request log + audit trail" },
-  { name: "chat-agent", note: "thin HTTP proxy, brain is elsewhere" },
-  { name: "aggregator-bff", note: "BFF layer for the apps" },
-  { name: "content", note: "SEO, sitemap, static pages" },
-  { name: "auth", note: "RS512 JWT, token blacklist, permissions" },
-  { name: "health", note: "readiness + liveness, separate port" },
-];
-
-function BackendTab() {
-  return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-[940px] mx-auto px-10 py-12">
-        <p
-          className="text-[11px] font-mono uppercase tracking-[0.22em]"
-          style={{ color: DH.aiPurple }}
-        >
-          The quiet work, still in flight
-        </p>
-        <h3 className="mt-1 text-2xl font-semibold tracking-tight text-white">
-          Migrating a 3-year-old monolith into a cleaner monolith.
-        </h3>
-        <p
-          className="mt-2 text-sm leading-relaxed max-w-[720px]"
-          style={{ color: DH.soft }}
-        >
-          The old backend had grown the way old backends grow. I am
-          rebuilding it on NestJS with a modular monolith layout. Same
-          product, same database, new bones. The goal is not novelty.
-          It is making the next three years of features cheaper to ship.
-        </p>
-
-        <div className="mt-8">
-          <p
-            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
-            style={{ color: DH.muted }}
-          >
-            13 feature modules
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {MODULES.map((m, i) => (
-              <div
-                key={m.name}
-                className="rounded-lg p-3 flex items-center gap-3"
-                style={{
-                  background: DH.surface,
-                  border: `1px solid ${DH.border}`,
-                }}
-              >
-                <span
-                  className="text-[10px] font-mono"
-                  style={{ color: DH.muted }}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white">
-                    {m.name}
-                  </p>
-                  <p
-                    className="text-[11px] truncate"
-                    style={{ color: DH.soft }}
-                  >
-                    {m.note}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <p
-            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-3"
-            style={{ color: DH.muted }}
-          >
-            Infra choices
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {[
-              "AWS ECS",
-              "MySQL 8",
-              "Redis",
-              "BullMQ · 4 queues",
-              "CloudFront signed URLs",
-              "AWS Secrets Manager",
-              "S3 · R2 · Minio abstraction",
-              "RS512 JWT + token blacklist",
-              "Health port 8081",
-              "Request ID + audit subscriber",
-            ].map((x) => (
-              <span
-                key={x}
-                className="text-[11px] px-2.5 py-1 rounded-md"
-                style={{
-                  background: DH.surfaceHi,
-                  border: `1px solid ${DH.border}`,
-                  color: DH.soft,
-                }}
-              >
-                {x}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div
-          className="mt-8 rounded-2xl p-5"
-          style={{
-            background: "rgba(99,102,241,0.08)",
-            border: `1px solid ${DH.primary}44`,
-          }}
-        >
-          <p
-            className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
-            style={{ color: DH.primary }}
-          >
-            The chat-agent module, in full
-          </p>
-          <pre
-            className="text-[12px] leading-relaxed font-mono rounded-lg p-3 overflow-x-auto"
-            style={{
-              background: DH.bg,
-              color: DH.soft,
-              border: `1px solid ${DH.border}`,
-            }}
-          >
-            {`// modules/chat-agent/chat-agent.service.ts
-forward(path, body, headers) {
-  return this.http.post(
-    \`\${env.SVC_CHAT_URL}\${path}\`,
-    body,
-    { headers },
-  );
-}`}
-          </pre>
-          <p className="mt-3 text-xs" style={{ color: DH.soft }}>
-            The chat brain lives in its own service. From this backend&apos;s
-            point of view, chat is a proxy and nothing more. That
-            boundary is the whole reason the chat rewrite was cheap.
-          </p>
-        </div>
-
-        <div className="mt-6 grid grid-cols-4 gap-3">
-          {[
-            { k: "TS files", v: "469" },
-            { k: "LOC", v: "~59k" },
-            { k: "TypeORM entities", v: "84" },
-            { k: "Unit tests", v: "111" },
-          ].map((s) => (
-            <div
-              key={s.k}
-              className="rounded-xl p-3"
-              style={{
-                background: DH.surface,
-                border: `1px solid ${DH.border}`,
-              }}
-            >
-              <p
-                className="text-[9px] font-mono uppercase tracking-[0.22em]"
-                style={{ color: DH.muted }}
-              >
-                {s.k}
-              </p>
-              <p className="mt-1 text-sm font-semibold text-white">{s.v}</p>
-            </div>
-          ))}
-        </div>
-
-        <p
-          className="mt-6 text-xs font-mono"
-          style={{ color: DH.muted }}
-        >
-          In-flight · daily commits · daily reviews with the team
-        </p>
       </div>
     </div>
   );
