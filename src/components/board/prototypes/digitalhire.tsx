@@ -629,6 +629,42 @@ function Sidebar() {
           className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
           style={{ color: DH.muted }}
         >
+          Stack
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            "Flutter",
+            "Next.js",
+            "NestJS 11",
+            "TypeORM",
+            "MySQL",
+            "BullMQ",
+            "Redis",
+            "OpenAI SDK",
+            "Whisper",
+            "Stripe",
+            "AWS",
+          ].map((s) => (
+            <span
+              key={s}
+              className="text-[11px] px-2 py-[3px] rounded-md"
+              style={{
+                background: DH.card,
+                border: `1px solid ${DH.border}`,
+                color: DH.inkSoft,
+              }}
+            >
+              {s}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p
+          className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+          style={{ color: DH.muted }}
+        >
           Shoulders stood on
         </p>
         <p className="text-[12.5px] leading-relaxed" style={{ color: DH.inkSoft }}>
@@ -736,9 +772,9 @@ function SceneSwitcher({
               "h-10 px-4 rounded-xl text-[13px] font-medium transition-all flex items-center gap-2",
             )}
             style={{
-              background: active ? DH.primary : "transparent",
+              background: active ? DH.primary : DH.card,
               color: active ? "#fff" : DH.inkSoft,
-              border: active ? `1px solid ${DH.primary}` : `1px solid ${DH.border}`,
+              border: `1px solid ${active ? DH.primary : DH.border}`,
               boxShadow: active ? `0 6px 16px -8px ${DH.primary}aa` : "none",
             }}
           >
