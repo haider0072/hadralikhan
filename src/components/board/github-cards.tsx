@@ -223,7 +223,7 @@ export function ContributionCalendarCard({
       rel="noreferrer"
       data-no-drag
       data-cursor-text="GitHub"
-      className="block bg-paper border border-ink/10 rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.3)] p-5 w-[520px] hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-10px_rgba(42,31,23,0.4)] transition-all"
+      className="block bg-paper border border-ink/10 rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.3)] p-5 w-[520px] overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-10px_rgba(42,31,23,0.4)] transition-all"
     >
       <div className="flex items-start justify-between mb-3">
         <div>
@@ -244,16 +244,16 @@ export function ContributionCalendarCard({
           </p>
         </div>
       </div>
-      <div className="flex gap-[3px]">
+      <div className="flex gap-[2px]">
         {data.weeks.slice(-52).map((w, wi) => (
-          <div key={wi} className="flex flex-col gap-[3px]">
+          <div key={wi} className="flex flex-col gap-[2px]">
             {Array.from({ length: 7 }).map((_, di) => {
               const d = w.days[di];
               if (!d) {
                 return (
                   <div
                     key={di}
-                    className="w-[9px] h-[9px] rounded-[2px] bg-transparent"
+                    className="w-[7px] h-[7px] rounded-[2px] bg-transparent"
                   />
                 );
               }
@@ -261,7 +261,7 @@ export function ContributionCalendarCard({
                 <div
                   key={di}
                   title={`${d.date}: ${d.count} contribution${d.count !== 1 ? "s" : ""}`}
-                  className="w-[9px] h-[9px] rounded-[2px]"
+                  className="w-[7px] h-[7px] rounded-[2px]"
                   style={{ background: levelBg[d.level] }}
                 />
               );
@@ -276,7 +276,7 @@ export function ContributionCalendarCard({
           {[0, 1, 2, 3, 4].map((l) => (
             <span
               key={l}
-              className="w-[9px] h-[9px] rounded-[2px]"
+              className="w-[7px] h-[7px] rounded-[2px]"
               style={{ background: levelBg[l] }}
             />
           ))}

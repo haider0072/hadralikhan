@@ -106,6 +106,10 @@ export function BoardCanvas({ github }: { github: GithubStats | null }) {
   }, []);
 
   const onCardPointerDown = (e: React.PointerEvent, card: BoardCard) => {
+    // Let native clicks on interactive children (links, buttons) through
+    // without hijacking them into a drag.
+    const t = e.target as HTMLElement | null;
+    if (t && t.closest("a, button")) return;
     try {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     } catch {}
