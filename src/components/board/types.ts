@@ -79,7 +79,15 @@ export type QuoteCard = CardBase & {
 
 export type PrototypeCard = CardBase & {
   kind: "prototype";
-  slug: "audora" | "flowcraft" | "mochi" | "trading-bot" | "ember" | "relay" | "wisesend";
+  slug:
+    | "audora"
+    | "flowcraft"
+    | "mochi"
+    | "trading-bot"
+    | "ember"
+    | "relay"
+    | "wisesend"
+    | "digitalhire";
 };
 
 export type GhCalendarCard = CardBase & { kind: "gh-calendar" };

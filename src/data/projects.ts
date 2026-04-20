@@ -12,6 +12,18 @@ export type Project = {
 
 export const projects: Project[] = [
   {
+    slug: "digitalhire",
+    title: "DigitalHire",
+    tagline:
+      "3.5 years of one role turning into three. Designer, then PM, then development too.",
+    year: "2022 — now",
+    stack: ["Flutter", "Next.js", "NestJS", "TypeORM", "MySQL", "OpenAI"],
+    role: "Design · Product · Engineering",
+    featured: true,
+    accent: "terracotta",
+    href: "https://digitalhire.com",
+  },
+  {
     slug: "mochi",
     title: "Mochi",
     tagline: "Design-system generator. Prompt → code → Figma.",

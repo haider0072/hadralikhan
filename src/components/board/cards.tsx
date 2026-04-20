@@ -23,6 +23,7 @@ import { TradingBotPrototype } from "./prototypes/trading-bot";
 import { WiseSendPrototype } from "./prototypes/wisesend";
 import { EmberPrototype } from "./prototypes/ember";
 import { FlowCraftPrototype } from "./prototypes/flowcraft";
+import { DigitalHirePrototype } from "./prototypes/digitalhire";
 import type { CardActivity } from "./use-card-activity";
 import {
   ContributionCalendarCard,
@@ -104,6 +105,8 @@ function PrototypeCardView({
       return <EmberPrototype activity={activity} />;
     case "flowcraft":
       return <FlowCraftPrototype activity={activity} />;
+    case "digitalhire":
+      return <DigitalHirePrototype activity={activity} />;
     default:
       return <GhPlaceholder label={`${card.slug} · coming soon`} />;
   }

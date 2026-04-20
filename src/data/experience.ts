@@ -10,16 +10,16 @@ export type Experience = {
 export const experience: Experience[] = [
   {
     company: "DigitalHire",
-    role: "Product Designer · Full-Stack",
-    period: "Current",
+    role: "Designer · PM · Developer",
+    period: "2022 — now",
     location: "Karachi",
-    body: "Video-based hiring SaaS. Title says Designer; reality is designer, engineer, and accidental PM across end-to-end product, AI agents, and infrastructure.",
+    body: "Video-first recruitment SaaS. Joined as the sole product designer, became PM because I was already the one nobody could go around, and moved back into the code when the chat rewrite stalled.",
     highlights: [
-      "Designed the entire product surface",
-      "Migrated 14 microservices into one NestJS monolith",
-      "Built the AI Chat Agent across UX, frontend, and backend",
-      "Vue/Nuxt admin · React job-board kit · Flutter mobile",
-      "AWS CDK, Docker, Kafka, data sync pipelines",
+      "Redesigned every surface from scratch, day one design system",
+      "Shipped web, iOS, and Android in parallel, all on one set of tokens",
+      "Designed the pivot from form-based AI to chat-first",
+      "Rewrote the chat service on NestJS, stripped the LangChain stack",
+      "Migrating the legacy backend into a clean NestJS monolith",
     ],
   },
   {
