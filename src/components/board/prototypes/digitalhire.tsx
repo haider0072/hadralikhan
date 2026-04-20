@@ -550,50 +550,110 @@ function Sidebar() {
         2022 — now · video-first recruitment
       </p>
 
-      {/* Metric strip — one accent, not a rainbow */}
       <div className="mt-6 grid grid-cols-3 gap-2">
         <Stat value="70K+" label="users" />
         <Stat value="10K+" label="installs" />
         <Stat value="3.5y" label="on it" />
       </div>
 
-      {/* One confident line instead of the resume bullet list */}
       <p
-        className="mt-6 text-[15px] leading-[1.55] tracking-tight"
+        className="mt-6 text-[15px] leading-[1.5] tracking-tight"
         style={{ color: DH.ink }}
       >
         Designed it. Ran it. Eventually wrote it.{" "}
         <span style={{ color: DH.muted }}>
-          Three roles, one product, the whole time.
+          Same product the whole time.
         </span>
       </p>
 
-      <p
-        className="mt-6 text-[13px] leading-relaxed"
-        style={{ color: DH.muted }}
-      >
-        Built alongside{" "}
-        <a
-          href="https://github.com/mohsinraza-fdev"
-          target="_blank"
-          rel="noreferrer"
-          className="underline decoration-dotted"
-          style={{ color: DH.ink }}
+      <div className="mt-6">
+        <p
+          className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2.5"
+          style={{ color: DH.muted }}
         >
-          Mohsin Raza
-        </a>{" "}
-        and{" "}
-        <a
-          href="https://github.com/ishaquehassan"
-          target="_blank"
-          rel="noreferrer"
-          className="underline decoration-dotted"
-          style={{ color: DH.ink }}
+          The arc
+        </p>
+        <ul className="space-y-2 text-[13px]" style={{ color: DH.inkSoft }}>
+          <li className="flex items-baseline gap-2.5">
+            <span
+              className="text-[10px] font-mono shrink-0"
+              style={{ color: DH.muted }}
+            >
+              2022
+            </span>
+            <span>Sole designer. Rebuilt every surface from zero.</span>
+          </li>
+          <li className="flex items-baseline gap-2.5">
+            <span
+              className="text-[10px] font-mono shrink-0"
+              style={{ color: DH.muted }}
+            >
+              2023
+            </span>
+            <span>Picked up PM because nobody could go around.</span>
+          </li>
+          <li className="flex items-baseline gap-2.5">
+            <span
+              className="text-[10px] font-mono shrink-0"
+              style={{ color: DH.muted }}
+            >
+              2024
+            </span>
+            <span>Designed the pivot from forms to chat-first AI.</span>
+          </li>
+          <li className="flex items-baseline gap-2.5">
+            <span
+              className="text-[10px] font-mono shrink-0"
+              style={{ color: DH.muted }}
+            >
+              2025
+            </span>
+            <span>Rewrote the chat service on NestJS, stripped LangChain.</span>
+          </li>
+          <li className="flex items-baseline gap-2.5">
+            <span
+              className="text-[10px] font-mono shrink-0"
+              style={{ color: DH.primary }}
+            >
+              now
+            </span>
+            <span style={{ color: DH.ink }}>
+              Leading the monolith migration. AI agent layer next.
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div className="mt-6">
+        <p
+          className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+          style={{ color: DH.muted }}
         >
-          Ishaque Hassan
-        </a>
-        .
-      </p>
+          Shoulders stood on
+        </p>
+        <p className="text-[12.5px] leading-relaxed" style={{ color: DH.inkSoft }}>
+          <a
+            href="https://github.com/mohsinraza-fdev"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted"
+            style={{ color: DH.ink }}
+          >
+            Mohsin Raza
+          </a>{" "}
+          held the frontend together, especially the chat client.{" "}
+          <a
+            href="https://github.com/ishaquehassan"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted"
+            style={{ color: DH.ink }}
+          >
+            Ishaque Hassan
+          </a>{" "}
+          pushed me into the rewrite when nobody else would see it through.
+        </p>
+      </div>
 
       <div className="mt-auto pt-8 space-y-2">
         <a
