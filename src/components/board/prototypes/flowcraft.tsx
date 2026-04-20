@@ -137,7 +137,7 @@ function FlowCraftMark({ size = 32 }: { size?: number }) {
 
 // ---------- Peek stage: sprite sheet filling in ----------
 
-type PoseKind = "t" | "walk" | "run" | "jump";
+type PoseKind = "t" | "walk" | "run" | "jump" | "attack";
 
 const POSE_SEQUENCE: { key: PoseKind; label: string }[] = [
   { key: "t", label: "t-pose" },
@@ -293,8 +293,13 @@ function PoseFrame({
   );
 }
 
-function CharacterPose({ pose }: { pose: PoseKind }) {
-  // Shared character parts (head + small cape)
+function CharacterPose({
+  pose,
+  flipped,
+}: {
+  pose: PoseKind;
+  flipped?: boolean;
+}) {
   const headColor = "#2a1f2e";
   const limbColor = "#2a1f2e";
   const capeColor = "#8b7bb5";
@@ -304,6 +309,7 @@ function CharacterPose({ pose }: { pose: PoseKind }) {
       viewBox="0 0 80 120"
       className="absolute inset-0 w-full h-full"
       preserveAspectRatio="xMidYMax meet"
+      style={flipped ? { transform: "scaleX(-1)" } : undefined}
       aria-hidden
     >
       {pose === "t" && (
@@ -481,6 +487,61 @@ function CharacterPose({ pose }: { pose: PoseKind }) {
           />
           <path
             d="M 44 58 Q 52 72 46 88"
+            stroke={limbColor}
+            strokeWidth="7"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </>
+      )}
+
+      {pose === "attack" && (
+        <>
+          {/* cape flaring back */}
+          <path
+            d="M 32 32 Q 20 60 14 88 L 28 90 Q 38 64 42 36 Z"
+            fill={capeColor}
+            opacity="0.5"
+          />
+          {/* torso leaning forward into strike */}
+          <path
+            d="M 34 28 L 46 28 L 44 64 L 32 64 Z"
+            fill={limbColor}
+          />
+          {/* head forward */}
+          <circle cx="42" cy="18" r="10" fill={headColor} />
+          <path
+            d="M 32 20 Q 32 8 42 8 Q 52 8 52 20 L 52 26 L 32 26 Z"
+            fill={headColor}
+          />
+          {/* front arm fully extended into punch */}
+          <path
+            d="M 42 32 Q 54 32 68 36"
+            stroke={limbColor}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle cx="70" cy="36" r="4.5" fill={limbColor} />
+          {/* back arm bent for balance */}
+          <path
+            d="M 36 33 Q 26 40 22 52"
+            stroke={limbColor}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* front lunging leg */}
+          <path
+            d="M 40 64 Q 50 82 58 104"
+            stroke={limbColor}
+            strokeWidth="7"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* back leg planted, slight bend */}
+          <path
+            d="M 34 64 Q 26 84 22 104"
             stroke={limbColor}
             strokeWidth="7"
             strokeLinecap="round"
@@ -760,13 +821,83 @@ type AnimKey = "idle" | "walk" | "run" | "jump" | "attack";
 
 const ANIMATIONS: Record<
   AnimKey,
-  { name: string; keyFrames: number; finalFrames: number; fps: number }
+  {
+    name: string;
+    keyFrames: number;
+    finalFrames: number;
+    fps: number;
+    // One entry per key frame. finalFrames are interpolated by repeating
+    // the key sequence with horizontal flips to suggest mirrored strides.
+    keys: { pose: PoseKind; flipped?: boolean }[];
+  }
 > = {
-  idle: { name: "Idle", keyFrames: 2, finalFrames: 4, fps: 6 },
-  walk: { name: "Walk", keyFrames: 8, finalFrames: 16, fps: 10 },
-  run: { name: "Run", keyFrames: 8, finalFrames: 16, fps: 12 },
-  jump: { name: "Jump", keyFrames: 6, finalFrames: 12, fps: 8 },
-  attack: { name: "Attack", keyFrames: 6, finalFrames: 12, fps: 10 },
+  idle: {
+    name: "Idle",
+    keyFrames: 2,
+    finalFrames: 4,
+    fps: 6,
+    keys: [{ pose: "t" }, { pose: "t", flipped: true }],
+  },
+  walk: {
+    name: "Walk",
+    keyFrames: 8,
+    finalFrames: 16,
+    fps: 10,
+    keys: [
+      { pose: "t" },
+      { pose: "walk" },
+      { pose: "walk" },
+      { pose: "t" },
+      { pose: "t", flipped: true },
+      { pose: "walk", flipped: true },
+      { pose: "walk", flipped: true },
+      { pose: "t", flipped: true },
+    ],
+  },
+  run: {
+    name: "Run",
+    keyFrames: 8,
+    finalFrames: 16,
+    fps: 12,
+    keys: [
+      { pose: "run" },
+      { pose: "run" },
+      { pose: "jump" },
+      { pose: "run", flipped: true },
+      { pose: "run", flipped: true },
+      { pose: "run", flipped: true },
+      { pose: "jump" },
+      { pose: "run" },
+    ],
+  },
+  jump: {
+    name: "Jump",
+    keyFrames: 6,
+    finalFrames: 12,
+    fps: 8,
+    keys: [
+      { pose: "t" },
+      { pose: "jump" },
+      { pose: "jump" },
+      { pose: "jump" },
+      { pose: "jump" },
+      { pose: "t" },
+    ],
+  },
+  attack: {
+    name: "Attack",
+    keyFrames: 6,
+    finalFrames: 12,
+    fps: 10,
+    keys: [
+      { pose: "t" },
+      { pose: "attack" },
+      { pose: "attack" },
+      { pose: "attack" },
+      { pose: "t" },
+      { pose: "t" },
+    ],
+  },
 };
 
 function SpriteTab() {
@@ -947,8 +1078,14 @@ function SpriteTab() {
                   Key poses · prompted individually
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  {Array.from({ length: def.keyFrames }).map((_, i) => (
-                    <FrameBox key={i} filled={i < keyCount} variant="key" />
+                  {def.keys.map((k, i) => (
+                    <FrameBox
+                      key={i}
+                      filled={i < keyCount}
+                      variant="key"
+                      pose={k.pose}
+                      flipped={k.flipped}
+                    />
                   ))}
                 </div>
               </div>
@@ -959,9 +1096,18 @@ function SpriteTab() {
                   Final frames · interpolated to {def.finalFrames} @ {def.fps} fps
                 </p>
                 <div className="flex gap-1.5 flex-wrap">
-                  {Array.from({ length: def.finalFrames }).map((_, i) => (
-                    <FrameBox key={i} filled={i < finalCount} variant="final" />
-                  ))}
+                  {Array.from({ length: def.finalFrames }).map((_, i) => {
+                    const src = def.keys[i % def.keys.length];
+                    return (
+                      <FrameBox
+                        key={i}
+                        filled={i < finalCount}
+                        variant="final"
+                        pose={src.pose}
+                        flipped={src.flipped}
+                      />
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1038,38 +1184,36 @@ function PhaseLine({ done }: { done: boolean }) {
 function FrameBox({
   filled,
   variant,
+  pose,
+  flipped,
 }: {
   filled: boolean;
   variant: "key" | "final";
+  pose: PoseKind;
+  flipped?: boolean;
 }) {
-  const size = variant === "key" ? 44 : 28;
+  const size = variant === "key" ? 52 : 32;
+  const isKey = variant === "key";
   return (
     <span
       className="rounded relative overflow-hidden transition-all duration-300"
       style={{
         width: size,
-        height: size,
+        height: Math.round(size * 1.3),
         background: filled
-          ? variant === "key"
-            ? FC.violet
-            : FC.rose
+          ? isKey
+            ? `linear-gradient(180deg, ${FC.sky}44 0%, ${FC.violet}88 60%, ${FC.ink}bb 100%)`
+            : `linear-gradient(180deg, ${FC.rose}33 0%, ${FC.rose}66 100%)`
           : "rgba(42,31,46,0.05)",
         border: filled
-          ? "1px solid transparent"
+          ? `1px solid ${isKey ? FC.violet + "66" : FC.rose + "66"}`
           : `1px dashed ${FC.border}`,
         boxShadow: filled
           ? "0 4px 10px -4px rgba(42,31,46,0.2)"
           : undefined,
       }}
     >
-      {filled && (
-        <span
-          className="absolute inset-0 flex items-center justify-center text-white/80"
-          style={{ fontSize: variant === "key" ? 11 : 8 }}
-        >
-          ◆
-        </span>
-      )}
+      {filled && <CharacterPose pose={pose} flipped={flipped} />}
     </span>
   );
 }
