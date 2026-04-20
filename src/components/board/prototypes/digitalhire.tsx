@@ -550,100 +550,52 @@ function Sidebar() {
         2022 — now · video-first recruitment
       </p>
 
-      {/* Metric strip */}
-      <div className="mt-5 grid grid-cols-3 gap-2">
-        <Stat value="70K+" label="users" accent={DH.primary} />
-        <Stat value="10K+" label="installs" accent={DH.aiGrammarBorder} />
-        <Stat value="3.5y" label="on it" accent={DH.primaryDark} />
+      {/* Metric strip — one accent, not a rainbow */}
+      <div className="mt-6 grid grid-cols-3 gap-2">
+        <Stat value="70K+" label="users" />
+        <Stat value="10K+" label="installs" />
+        <Stat value="3.5y" label="on it" />
       </div>
 
-      <p className="mt-5 text-[13px] leading-relaxed" style={{ color: DH.inkSoft }}>
-        I came in as sole designer, ended up PM, and moved back into the
-        code when it mattered. Same product the whole time.
+      {/* One confident line instead of the resume bullet list */}
+      <p
+        className="mt-6 text-[15px] leading-[1.55] tracking-tight"
+        style={{ color: DH.ink }}
+      >
+        Designed it. Ran it. Eventually wrote it.{" "}
+        <span style={{ color: DH.muted }}>
+          Three roles, one product, the whole time.
+        </span>
       </p>
 
-      <div className="mt-5">
-        <p
-          className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
-          style={{ color: DH.muted }}
-        >
-          Roles, in order
-        </p>
-        <ul className="space-y-1.5 text-[12.5px]" style={{ color: DH.inkSoft }}>
-          <li className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: DH.primary }} />
-            Product Designer, solo from day one
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: DH.aiPurple }} />
-            Product Manager, unasked for
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: DH.aiGrammarBorder }} />
-            Full-stack dev, picked it up
-          </li>
-        </ul>
-      </div>
-
-      <div className="mt-5">
-        <p
-          className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
-          style={{ color: DH.muted }}
-        >
-          Shipped
-        </p>
-        <ul className="space-y-1 text-[12.5px]" style={{ color: DH.inkSoft }}>
-          <li>— Web, iOS, Android on one design system</li>
-          <li>— The pivot from forms to AI chat</li>
-          <li>— Chat service rewrite on NestJS</li>
-          <li>— Ongoing monolith migration</li>
-        </ul>
-      </div>
-
-      <div className="mt-5">
-        <p
-          className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
-          style={{ color: DH.muted }}
-        >
-          Credits
-        </p>
-        <p className="text-[12px] leading-relaxed" style={{ color: DH.inkSoft }}>
-          <a
-            href="https://github.com/mohsinraza-fdev"
-            target="_blank"
-            rel="noreferrer"
-            className="underline decoration-dotted"
-            style={{ color: DH.ink }}
-          >
-            Mohsin Raza
-          </a>{" "}
-          on frontend.{" "}
-          <a
-            href="https://github.com/ishaquehassan"
-            target="_blank"
-            rel="noreferrer"
-            className="underline decoration-dotted"
-            style={{ color: DH.ink }}
-          >
-            Ishaque Hassan
-          </a>{" "}
-          as EM.
-        </p>
-      </div>
-
-      <div
-        className="mt-5 p-3 rounded-xl text-[12px] leading-relaxed"
-        style={{
-          background: DH.aiPurpleSoft,
-          color: DH.inkSoft,
-          border: `1px solid ${DH.aiPurple}33`,
-        }}
+      <p
+        className="mt-6 text-[13px] leading-relaxed"
+        style={{ color: DH.muted }}
       >
-        Next beat: an AI agent layer across the platform. Can&apos;t show
-        it yet — it&apos;s why my evenings look like this.
-      </div>
+        Built alongside{" "}
+        <a
+          href="https://github.com/mohsinraza-fdev"
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-dotted"
+          style={{ color: DH.ink }}
+        >
+          Mohsin Raza
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://github.com/ishaquehassan"
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-dotted"
+          style={{ color: DH.ink }}
+        >
+          Ishaque Hassan
+        </a>
+        .
+      </p>
 
-      <div className="mt-auto pt-6 space-y-2">
+      <div className="mt-auto pt-8 space-y-2">
         <a
           href="https://digitalhire.com"
           target="_blank"
@@ -651,7 +603,7 @@ function Sidebar() {
           className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           style={{
             background: DH.primary,
-            boxShadow: `0 10px 28px -10px ${DH.primary}99`,
+            boxShadow: `0 10px 28px -10px ${DH.primary}66`,
           }}
         >
           <span className="flex items-center gap-2">
@@ -666,7 +618,7 @@ function Sidebar() {
           rel="noreferrer"
           className="group flex items-center justify-between rounded-xl px-4 py-3 text-[13px] font-medium transition-colors"
           style={{
-            background: DH.paperAlt,
+            background: DH.paper,
             border: `1px solid ${DH.border}`,
             color: DH.ink,
           }}
@@ -679,27 +631,19 @@ function Sidebar() {
   );
 }
 
-function Stat({
-  value,
-  label,
-  accent,
-}: {
-  value: string;
-  label: string;
-  accent: string;
-}) {
+function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div
-      className="rounded-xl p-2.5"
+      className="rounded-xl p-3"
       style={{ background: DH.card, border: `1px solid ${DH.border}` }}
     >
       <p
-        className="text-[17px] font-semibold leading-none tracking-tight"
-        style={{ color: accent }}
+        className="text-[18px] font-semibold leading-none tracking-tight"
+        style={{ color: DH.ink }}
       >
         {value}
       </p>
-      <p className="mt-1 text-[10px]" style={{ color: DH.muted }}>
+      <p className="mt-1.5 text-[10px]" style={{ color: DH.muted }}>
         {label}
       </p>
     </div>
@@ -1236,7 +1180,6 @@ function AiChatScene() {
         <div className="flex items-center gap-2 mb-5">
           {(["employer", "applicant"] as Persona[]).map((p) => {
             const sel = persona === p;
-            const tint = p === "employer" ? DH.primary : DH.aiGrammarBorder;
             return (
               <button
                 key={p}
@@ -1246,15 +1189,14 @@ function AiChatScene() {
                 }}
                 className="h-10 px-4 rounded-full text-[13px] font-medium transition-all flex items-center gap-2"
                 style={{
-                  background: sel ? tint : DH.paper,
+                  background: sel ? DH.ink : DH.paper,
                   color: sel ? "#fff" : DH.inkSoft,
                   border: `1px solid ${sel ? "transparent" : DH.border}`,
-                  boxShadow: sel ? `0 6px 16px -8px ${tint}aa` : "none",
                 }}
               >
                 <span
                   className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: sel ? "#fff" : tint }}
+                  style={{ background: sel ? DH.primary : DH.muted }}
                 />
                 {p === "employer" ? "Employer" : "Applicant"} persona
               </button>
@@ -1287,7 +1229,7 @@ function AiChatScene() {
                     className="w-full text-left rounded-xl px-3.5 py-2.5 transition-all"
                     style={{
                       background: sel ? DH.paper : DH.paperAlt,
-                      border: `1px solid ${sel ? (persona === "employer" ? DH.primary : DH.aiGrammarBorder) : DH.border}`,
+                      border: `1px solid ${sel ? DH.ink : DH.border}`,
                     }}
                   >
                     <p className="text-[13px]" style={{ color: DH.ink }}>
@@ -1307,7 +1249,7 @@ function AiChatScene() {
             <div className="flex items-center gap-2 pb-3" style={{ borderBottom: `1px solid ${DH.borderSoft}` }}>
               <div
                 className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                style={{ background: persona === "employer" ? DH.primary : DH.aiGrammarBorder }}
+                style={{ background: DH.ink }}
               >
                 {persona === "employer" ? "E" : "A"}
               </div>
@@ -1322,10 +1264,7 @@ function AiChatScene() {
             <div className="flex justify-end">
               <div
                 className="text-[13px] leading-snug px-3 py-2 rounded-xl max-w-[80%] text-right"
-                style={{
-                  background: persona === "employer" ? DH.primary : DH.aiGrammarBorder,
-                  color: "#fff",
-                }}
+                style={{ background: DH.primary, color: "#fff" }}
               >
                 {active.text}
               </div>
@@ -1392,7 +1331,6 @@ const CANDIDATES = [
     exp: "6 yrs · Karachi · Remote OK",
     match: 94,
     skills: ["TypeScript", "React", "Design systems"],
-    accent: DH.primary,
   },
   {
     name: "Daniyal Rashid",
@@ -1400,7 +1338,6 @@ const CANDIDATES = [
     exp: "5 yrs · Lahore · Hybrid",
     match: 89,
     skills: ["React", "Next.js", "GraphQL"],
-    accent: DH.aiGrammarBorder,
   },
   {
     name: "Hira Naseem",
@@ -1408,7 +1345,6 @@ const CANDIDATES = [
     exp: "4 yrs · Islamabad · Remote",
     match: 81,
     skills: ["Vue", "TypeScript"],
-    accent: DH.aiPurple,
   },
 ];
 
@@ -1450,15 +1386,15 @@ function CandidateMatchScene() {
                 border: `1px solid ${i === 0 ? `${DH.primary}33` : DH.border}`,
               }}
             >
-              {/* Video thumb */}
+              {/* Video thumb — uniform, monochrome */}
               <div
                 className="h-14 w-14 rounded-xl overflow-hidden relative flex items-center justify-center text-white font-semibold"
-                style={{ background: `linear-gradient(135deg, ${c.accent}, ${DH.ink})` }}
+                style={{ background: `linear-gradient(135deg, #1f2937, #0f172a)` }}
               >
                 <span>{c.name.charAt(0)}</span>
                 <span
                   className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(0,0,0,0.5)" }}
+                  style={{ background: "rgba(255,255,255,0.18)" }}
                 >
                   <svg width="8" height="8" viewBox="0 0 10 10" fill="#fff">
                     <polygon points="2,1 9,5 2,9" />
@@ -1489,7 +1425,7 @@ function CandidateMatchScene() {
                   ))}
                 </div>
               </div>
-              {/* Match bar */}
+              {/* Match bar — uniform green */}
               <div className="w-32">
                 <div
                   className="h-1.5 rounded-full overflow-hidden"
@@ -1497,10 +1433,7 @@ function CandidateMatchScene() {
                 >
                   <div
                     className="h-full rounded-full"
-                    style={{
-                      width: `${c.match}%`,
-                      background: c.accent,
-                    }}
+                    style={{ width: `${c.match}%`, background: DH.primary }}
                   />
                 </div>
                 <p
@@ -1535,33 +1468,25 @@ function CandidateMatchScene() {
           ))}
         </div>
 
-        {/* Metric strip */}
+        {/* Metric strip — single ink tone */}
         <div className="mt-6 grid grid-cols-4 gap-3">
-          <DashStat label="jobs live" value="312" tint={DH.primary} />
-          <DashStat label="applications this week" value="1.4k" tint={DH.aiGrammarBorder} />
-          <DashStat label="interviews scheduled" value="78" tint={DH.aiPurple} />
-          <DashStat label="median time-to-reply" value="6h" tint={DH.primaryDark} />
+          <DashStat label="jobs live" value="312" />
+          <DashStat label="applications this week" value="1.4k" />
+          <DashStat label="interviews scheduled" value="78" />
+          <DashStat label="median time-to-reply" value="6h" />
         </div>
       </div>
     </div>
   );
 }
 
-function DashStat({
-  label,
-  value,
-  tint,
-}: {
-  label: string;
-  value: string;
-  tint: string;
-}) {
+function DashStat({ label, value }: { label: string; value: string }) {
   return (
     <div
       className="rounded-xl p-3"
       style={{ background: DH.card, border: `1px solid ${DH.border}` }}
     >
-      <p className="text-[20px] font-semibold leading-none" style={{ color: tint }}>
+      <p className="text-[20px] font-semibold leading-none" style={{ color: DH.ink }}>
         {value}
       </p>
       <p className="mt-1.5 text-[10.5px]" style={{ color: DH.muted }}>
