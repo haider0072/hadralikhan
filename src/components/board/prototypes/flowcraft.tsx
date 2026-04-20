@@ -137,19 +137,19 @@ function FlowCraftMark({ size = 32 }: { size?: number }) {
 
 // ---------- Peek stage: sprite sheet filling in ----------
 
-const PEEK_ROWS = [
-  { key: "idle", label: "idle", frames: 4 },
-  { key: "walk", label: "walk", frames: 6 },
-  { key: "run", label: "run", frames: 6 },
-  { key: "jump", label: "jump", frames: 5 },
+type PoseKind = "t" | "walk" | "run" | "jump";
+
+const POSE_SEQUENCE: { key: PoseKind; label: string }[] = [
+  { key: "t", label: "t-pose" },
+  { key: "walk", label: "walk" },
+  { key: "run", label: "run" },
+  { key: "jump", label: "jump" },
 ];
 
 function SpriteStage({ animated }: { animated: boolean }) {
-  // grid[row][col] = 0 empty, 1 key-frame, 2 interpolated, 3 generating
-  const [grid, setGrid] = useState<number[][]>(() =>
-    PEEK_ROWS.map((r) => Array(r.frames).fill(0)),
-  );
-  const [activeRow, setActiveRow] = useState(0);
+  // how many poses have been "generated"
+  const [revealed, setRevealed] = useState(0);
+  const [generating, setGenerating] = useState<number | null>(null);
   const [credits, setCredits] = useState(42);
 
   useEffect(() => {
@@ -157,62 +157,42 @@ function SpriteStage({ animated }: { animated: boolean }) {
     const timers: ReturnType<typeof setTimeout>[] = [];
     let alive = true;
 
-    const reset = () => {
-      setGrid(PEEK_ROWS.map((r) => Array(r.frames).fill(0)));
-      setActiveRow(0);
-      setCredits(42);
-    };
-
-    const fillRow = (row: number, onDone: () => void) => {
-      setActiveRow(row);
-      const rowDef = PEEK_ROWS[row];
-      let col = 0;
-
-      const step = () => {
-        if (!alive) return;
-        setGrid((prev) => {
-          const next = prev.map((r) => [...r]);
-          if (col < rowDef.frames) {
-            // every 3rd is a key-frame
-            next[row][col] = col % 3 === 0 ? 1 : 2;
-          }
-          // show "generating" glow on the next cell
-          if (col + 1 < rowDef.frames) {
-            next[row][col + 1] = 3;
-          }
-          return next;
-        });
-        setCredits((c) => Math.max(0, c - 1));
-        col += 1;
-        if (col < rowDef.frames) {
-          timers.push(setTimeout(step, 220));
-        } else {
-          timers.push(setTimeout(onDone, 280));
-        }
-      };
-      step();
-    };
-
     const run = () => {
-      reset();
-      let row = 0;
-      const next = () => {
-        if (!alive) return;
-        if (row >= PEEK_ROWS.length) {
-          // hold, then loop
-          timers.push(setTimeout(run, 1800));
-          return;
-        }
-        fillRow(row, () => {
-          row += 1;
-          timers.push(setTimeout(next, 180));
-        });
-      };
-      next();
+      setRevealed(0);
+      setCredits(42);
+      setGenerating(0);
+
+      POSE_SEQUENCE.forEach((_, i) => {
+        // start generating
+        timers.push(
+          setTimeout(() => {
+            if (!alive) return;
+            setGenerating(i);
+          }, i * 900),
+        );
+        // finish generating
+        timers.push(
+          setTimeout(
+            () => {
+              if (!alive) return;
+              setRevealed(i + 1);
+              setCredits((c) => Math.max(0, c - 10));
+              if (i === POSE_SEQUENCE.length - 1) setGenerating(null);
+            },
+            i * 900 + 700,
+          ),
+        );
+      });
+
+      timers.push(
+        setTimeout(() => {
+          if (!alive) return;
+          run();
+        }, POSE_SEQUENCE.length * 900 + 1800),
+      );
     };
 
     run();
-
     return () => {
       alive = false;
       timers.forEach(clearTimeout);
@@ -220,50 +200,35 @@ function SpriteStage({ animated }: { animated: boolean }) {
   }, [animated]);
 
   return (
-    <div className="relative flex items-center gap-3 scale-[0.95]">
-      {/* Character reference on the left */}
-      <div className="flex flex-col items-center gap-1.5">
-        <div
-          className="relative h-[78px] w-[52px] rounded-md overflow-hidden"
-          style={{
-            background: `linear-gradient(180deg, ${FC.sky}55 0%, ${FC.violet}66 60%, ${FC.ink}aa 100%)`,
-            border: `1px solid ${FC.border}`,
-            boxShadow: "0 6px 16px -8px rgba(42,31,46,0.3)",
-          }}
-        >
-          <GrisSilhouette />
-          <div className="absolute top-1 left-1 text-[6px] font-mono uppercase tracking-[0.12em] text-white/80">
-            ref
-          </div>
-        </div>
-        <div className="text-[7px] font-mono uppercase tracking-[0.16em] text-[#4a3d4c]">
-          character
-        </div>
-      </div>
-
-      {/* Sprite sheet grid */}
-      <div className="flex flex-col gap-1">
-        {PEEK_ROWS.map((row, ri) => (
-          <div key={row.key} className="flex items-center gap-1">
-            <span
-              className={cn(
-                "text-[7px] font-mono uppercase tracking-[0.14em] w-8 text-right",
-                ri === activeRow ? "text-[#2a1f2e]" : "text-[#7a6e77]",
-              )}
-            >
-              {row.label}
-            </span>
-            <div className="flex gap-[3px]">
-              {grid[ri].map((state, ci) => (
-                <SpriteCell key={ci} state={state} />
-              ))}
+    <div className="relative flex flex-col items-center gap-2">
+      <div className="flex items-end gap-2">
+        {POSE_SEQUENCE.map((pose, i) => {
+          const isRevealed = i < revealed;
+          const isGenerating = generating === i && !isRevealed;
+          return (
+            <div key={pose.key} className="flex flex-col items-center gap-1">
+              <PoseFrame
+                pose={pose.key}
+                state={
+                  isRevealed ? "done" : isGenerating ? "generating" : "pending"
+                }
+                size={48}
+              />
+              <span
+                className={cn(
+                  "text-[7px] font-mono uppercase tracking-[0.14em]",
+                  isRevealed ? "text-[#2a1f2e]" : "text-[#7a6e77]",
+                )}
+              >
+                {pose.label}
+              </span>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Credits pill */}
-      <div className="absolute -bottom-2 right-0 flex items-center gap-1.5 px-2 py-0.5 rounded-full backdrop-blur"
+      <div
+        className="flex items-center gap-1.5 px-2 py-0.5 rounded-full backdrop-blur"
         style={{
           background: "rgba(42,31,46,0.08)",
           border: `1px solid ${FC.border}`,
@@ -284,27 +249,246 @@ function SpriteStage({ animated }: { animated: boolean }) {
   );
 }
 
-function SpriteCell({ state }: { state: number }) {
+function PoseFrame({
+  pose,
+  state,
+  size,
+}: {
+  pose: PoseKind;
+  state: "pending" | "generating" | "done";
+  size: number;
+}) {
   return (
-    <span
-      className="h-4 w-4 rounded-sm transition-all duration-300"
+    <div
+      className="relative rounded-md overflow-hidden transition-all duration-300"
       style={{
+        width: size,
+        height: Math.round(size * 1.4),
         background:
-          state === 1
-            ? FC.violet
-            : state === 2
-              ? FC.rose
-              : state === 3
-                ? FC.gold
-                : "rgba(42,31,46,0.08)",
+          state === "pending"
+            ? "rgba(42,31,46,0.04)"
+            : `linear-gradient(180deg, ${FC.sky}33 0%, ${FC.violet}55 60%, ${FC.ink}88 100%)`,
         border:
-          state === 0 ? `1px dashed ${FC.border}` : `1px solid transparent`,
+          state === "pending"
+            ? `1px dashed ${FC.border}`
+            : `1px solid ${FC.border}`,
         boxShadow:
-          state === 3
-            ? `0 0 8px ${FC.gold}, inset 0 0 4px rgba(255,255,255,0.4)`
-            : undefined,
+          state === "generating"
+            ? `0 0 12px ${FC.gold}, 0 0 0 1px ${FC.gold}88`
+            : state === "done"
+              ? "0 4px 10px -4px rgba(42,31,46,0.25)"
+              : undefined,
       }}
-    />
+    >
+      {state === "done" && <CharacterPose pose={pose} />}
+      {state === "generating" && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className="h-2 w-2 rounded-full animate-pulse"
+            style={{ background: FC.gold }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CharacterPose({ pose }: { pose: PoseKind }) {
+  // Shared character parts (head + small cape)
+  const headColor = "#2a1f2e";
+  const limbColor = "#2a1f2e";
+  const capeColor = "#8b7bb5";
+
+  return (
+    <svg
+      viewBox="0 0 80 120"
+      className="absolute inset-0 w-full h-full"
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden
+    >
+      {pose === "t" && (
+        <>
+          {/* cape behind body */}
+          <path
+            d="M 30 32 Q 24 70 22 104 L 58 104 Q 56 70 50 32 Z"
+            fill={capeColor}
+            opacity="0.5"
+          />
+          {/* torso */}
+          <rect x="34" y="28" width="12" height="36" rx="2" fill={limbColor} />
+          {/* head + hood */}
+          <circle cx="40" cy="18" r="10" fill={headColor} />
+          <path
+            d="M 30 20 Q 30 8 40 8 Q 50 8 50 20 L 50 26 L 30 26 Z"
+            fill={headColor}
+          />
+          {/* arms stretched out */}
+          <rect x="10" y="31" width="24" height="5" rx="2.5" fill={limbColor} />
+          <rect x="46" y="31" width="24" height="5" rx="2.5" fill={limbColor} />
+          <circle cx="11" cy="33.5" r="3.5" fill={limbColor} />
+          <circle cx="69" cy="33.5" r="3.5" fill={limbColor} />
+          {/* legs */}
+          <rect x="33" y="64" width="6" height="42" rx="2" fill={limbColor} />
+          <rect x="41" y="64" width="6" height="42" rx="2" fill={limbColor} />
+        </>
+      )}
+
+      {pose === "walk" && (
+        <>
+          <path
+            d="M 32 32 Q 26 68 26 100 L 54 100 Q 54 68 48 32 Z"
+            fill={capeColor}
+            opacity="0.5"
+          />
+          <rect x="34" y="28" width="12" height="36" rx="2" fill={limbColor} />
+          <circle cx="40" cy="18" r="10" fill={headColor} />
+          <path
+            d="M 30 20 Q 30 8 40 8 Q 50 8 50 20 L 50 26 L 30 26 Z"
+            fill={headColor}
+          />
+          {/* left arm swinging forward */}
+          <path
+            d="M 38 33 Q 30 45 26 56"
+            stroke={limbColor}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* right arm back */}
+          <path
+            d="M 42 33 Q 50 45 54 56"
+            stroke={limbColor}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* left leg forward (bent knee) */}
+          <path
+            d="M 38 64 Q 30 82 26 104"
+            stroke={limbColor}
+            strokeWidth="7"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* right leg back (pushing off) */}
+          <path
+            d="M 42 64 Q 50 82 54 104"
+            stroke={limbColor}
+            strokeWidth="7"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </>
+      )}
+
+      {pose === "run" && (
+        <>
+          {/* cape flowing back */}
+          <path
+            d="M 34 34 Q 20 60 8 82 L 22 86 Q 40 66 46 38 Z"
+            fill={capeColor}
+            opacity="0.55"
+          />
+          {/* torso leaning forward */}
+          <path
+            d="M 36 28 L 48 28 L 46 66 L 34 66 Z"
+            fill={limbColor}
+          />
+          {/* head forward */}
+          <circle cx="46" cy="18" r="10" fill={headColor} />
+          <path
+            d="M 36 20 Q 36 8 46 8 Q 56 8 56 20 L 56 26 L 36 26 Z"
+            fill={headColor}
+          />
+          {/* front arm bent forward */}
+          <path
+            d="M 44 33 Q 58 40 62 52"
+            stroke={limbColor}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* back arm bent behind */}
+          <path
+            d="M 40 33 Q 30 38 22 46"
+            stroke={limbColor}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* front leg reaching */}
+          <path
+            d="M 42 66 Q 56 78 60 96"
+            stroke={limbColor}
+            strokeWidth="7"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* back leg kicking up */}
+          <path
+            d="M 38 66 Q 22 74 10 78"
+            stroke={limbColor}
+            strokeWidth="7"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </>
+      )}
+
+      {pose === "jump" && (
+        <>
+          {/* cape flaring up behind */}
+          <path
+            d="M 28 34 Q 16 56 14 80 L 30 78 Q 36 60 38 38 Z"
+            fill={capeColor}
+            opacity="0.5"
+          />
+          <path
+            d="M 50 34 Q 62 56 64 80 L 48 78 Q 44 60 44 38 Z"
+            fill={capeColor}
+            opacity="0.4"
+          />
+          {/* torso */}
+          <rect x="34" y="28" width="12" height="30" rx="2" fill={limbColor} />
+          {/* head */}
+          <circle cx="40" cy="18" r="10" fill={headColor} />
+          <path
+            d="M 30 20 Q 30 8 40 8 Q 50 8 50 20 L 50 26 L 30 26 Z"
+            fill={headColor}
+          />
+          {/* arms up and out */}
+          <path
+            d="M 38 31 Q 26 20 20 12"
+            stroke={limbColor}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <path
+            d="M 42 31 Q 54 20 60 12"
+            stroke={limbColor}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* knees tucked (bent legs) */}
+          <path
+            d="M 36 58 Q 28 72 34 88"
+            stroke={limbColor}
+            strokeWidth="7"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <path
+            d="M 44 58 Q 52 72 46 88"
+            stroke={limbColor}
+            strokeWidth="7"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </>
+      )}
+    </svg>
   );
 }
 
