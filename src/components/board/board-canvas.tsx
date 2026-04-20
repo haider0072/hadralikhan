@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePanZoom } from "./use-pan-zoom";
-import { cards as initialCards, WORLD } from "./layout";
+import { cards as initialCards, WORLD, BOARD_HOME } from "./layout";
 import { CardRenderer } from "./cards";
 import { Minimap } from "./minimap";
 import { Cursor } from "./cursor";
@@ -21,6 +21,7 @@ export function BoardCanvas({ github }: { github: GithubStats | null }) {
     world: WORLD,
     minScale: 0.3,
     maxScale: 2,
+    initial: { x: BOARD_HOME.x, y: BOARD_HOME.y, scale: BOARD_HOME.scale },
   });
 
   const [size, setSize] = useState({ w: 0, h: 0 });

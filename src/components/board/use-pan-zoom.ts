@@ -7,7 +7,9 @@ type Options = {
   world: { w: number; h: number; padding: number };
   minScale?: number;
   maxScale?: number;
-  initial?: Partial<Viewport>;
+  // If provided, interprets x/y as a WORLD POINT to center on at first paint
+  // (not a viewport offset) and uses `scale` as the preferred zoom level.
+  initial?: { x?: number; y?: number; scale?: number };
 };
 
 export function usePanZoom({
@@ -17,8 +19,8 @@ export function usePanZoom({
   initial,
 }: Options) {
   const [viewport, setViewport] = useState<Viewport>(() => ({
-    x: initial?.x ?? 0,
-    y: initial?.y ?? 0,
+    x: 0,
+    y: 0,
     scale: initial?.scale ?? 1,
   }));
   const viewportRef = useRef(viewport);
@@ -185,7 +187,10 @@ export function usePanZoom({
     };
   }, [zoomAt, clampViewport]);
 
-  // Initial centering — fit the world to viewport, centered
+  // Initial entry — zoom in a bit and center on the world's middle so the
+  // first thing the visitor sees is the "me" cluster, not the whole board.
+  // Falls back to a fit-to-viewport on very small screens where 0.8 would
+  // clip both sides.
   const didInit = useRef(false);
   useEffect(() => {
     if (didInit.current) return;
@@ -195,17 +200,20 @@ export function usePanZoom({
       const rect = el.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
       didInit.current = true;
-      const s = Math.min(
+      const fitScale = Math.min(
         (rect.width * 0.92) / world.w,
         (rect.height * 0.92) / world.h,
       );
-      const clampedS = Math.max(minScale, Math.min(maxScale, s));
+      const preferred = initial?.scale ?? 0.8;
+      const s = Math.max(minScale, Math.min(maxScale, Math.max(fitScale, preferred)));
+      const cx = initial?.x ?? world.w / 2;
+      const cy = initial?.y ?? world.h / 2;
       setViewport(
         clampViewport(
           {
-            x: (rect.width - world.w * clampedS) / 2,
-            y: (rect.height - world.h * clampedS) / 2,
-            scale: clampedS,
+            x: rect.width / 2 - cx * s,
+            y: rect.height / 2 - cy * s,
+            scale: s,
           },
           rect.width,
           rect.height,
@@ -213,7 +221,7 @@ export function usePanZoom({
       );
     });
     return () => cancelAnimationFrame(id);
-  }, [world.w, world.h, clampViewport, minScale, maxScale]);
+  }, [world.w, world.h, clampViewport, minScale, maxScale, initial?.scale, initial?.x, initial?.y]);
 
   return {
     containerRef,
