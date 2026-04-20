@@ -130,17 +130,12 @@ export const cards: BoardCard[] = [
   },
   {
     id: "project-ember",
-    kind: "project",
+    kind: "prototype",
     slug: "ember",
     x: 3800,
     y: 1780,
     rotation: -3,
     depth: 0,
-    title: "Ember",
-    tagline: "Torrent player. Stream while downloading.",
-    year: "2024",
-    stack: ["Flutter", "Dart"],
-    accent: "terracotta",
   },
   {
     id: "project-trading",

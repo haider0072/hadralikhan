@@ -21,6 +21,7 @@ import { AudoraPrototype } from "./prototypes/audora";
 import { MochiPrototype } from "./prototypes/mochi";
 import { TradingBotPrototype } from "./prototypes/trading-bot";
 import { WiseSendPrototype } from "./prototypes/wisesend";
+import { EmberPrototype } from "./prototypes/ember";
 import type { CardActivity } from "./use-card-activity";
 import {
   ContributionCalendarCard,
@@ -98,6 +99,8 @@ function PrototypeCardView({
       return <TradingBotPrototype activity={activity} />;
     case "wisesend":
       return <WiseSendPrototype activity={activity} />;
+    case "ember":
+      return <EmberPrototype activity={activity} />;
     default:
       return <GhPlaceholder label={`${card.slug} · coming soon`} />;
   }
