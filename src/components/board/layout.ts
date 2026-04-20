@@ -116,17 +116,12 @@ export const cards: BoardCard[] = [
   },
   {
     id: "project-flowcraft",
-    kind: "project",
+    kind: "prototype",
     slug: "flowcraft",
     x: 700,
     y: 1600,
     rotation: 2,
     depth: 0,
-    title: "FlowCraft",
-    tagline: "AI sprite-sheet generator for 2D game characters.",
-    year: "2025",
-    stack: ["Next.js", "AI"],
-    accent: "sage",
   },
   {
     id: "project-ember",
