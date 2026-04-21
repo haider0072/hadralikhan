@@ -1,4 +1,4 @@
-import { BoardCanvas } from "@/components/board/board-canvas";
+import { BoardShell } from "@/components/board-shell";
 import { SeoContent } from "@/components/board/seo-content";
 import { getGithubStats } from "@/lib/github";
 
@@ -9,7 +9,7 @@ export default async function Home() {
   return (
     <>
       <SeoContent />
-      <BoardCanvas github={github} />
+      <BoardShell github={github} />
     </>
   );
 }

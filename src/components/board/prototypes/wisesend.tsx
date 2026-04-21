@@ -398,18 +398,24 @@ function BrowserMini({
   );
 }
 
+const QR_PATTERN: boolean[] = (() => {
+  const cells = 8;
+  const out: boolean[] = [];
+  for (let i = 0; i < cells * cells; i++) {
+    const h = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
+    out.push(h - Math.floor(h) > 0.5);
+  }
+  return out;
+})();
+
 function MiniQR() {
   const cells = 8;
-  const pattern = useRef<boolean[] | null>(null);
-  if (!pattern.current) {
-    pattern.current = Array.from({ length: cells * cells }, () => Math.random() > 0.5);
-  }
   return (
     <div
       className="grid gap-[1px] bg-[#44475a]"
       style={{ gridTemplateColumns: `repeat(${cells}, 1fr)` }}
     >
-      {pattern.current.map((on, i) => (
+      {QR_PATTERN.map((on, i) => (
         <span
           key={i}
           className="h-[3px] w-[3px]"
@@ -747,15 +753,19 @@ function PhoneBig({ phase }: { phase: number }) {
   );
 }
 
+const BIG_QR_PATTERN: boolean[] = (() => {
+  const cells = 11;
+  const out: boolean[] = [];
+  for (let i = 0; i < cells * cells; i++) {
+    const h = Math.sin(i * 91.2287 + 17.911) * 12345.6789;
+    out.push(h - Math.floor(h) > 0.5);
+  }
+  return out;
+})();
+
 function BigQR({ highlight }: { highlight: boolean }) {
   const cells = 11;
-  const pattern = useRef<boolean[] | null>(null);
-  if (!pattern.current) {
-    pattern.current = Array.from(
-      { length: cells * cells },
-      () => Math.random() > 0.5,
-    );
-  }
+  const pattern = { current: BIG_QR_PATTERN };
   return (
     <div
       className={cn(

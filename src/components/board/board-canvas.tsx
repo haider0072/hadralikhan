@@ -16,7 +16,13 @@ const DRAG_THRESHOLD = 8;
 
 type Positions = Record<string, { x: number; y: number }>;
 
-export function BoardCanvas({ github }: { github: GithubStats | null }) {
+export function BoardCanvas({
+  github,
+  dimmed = false,
+}: {
+  github: GithubStats | null;
+  dimmed?: boolean;
+}) {
   const { containerRef, viewport, setViewport, isDragging, fit } = usePanZoom({
     world: WORLD,
     minScale: 0.3,
@@ -167,7 +173,11 @@ export function BoardCanvas({ github }: { github: GithubStats | null }) {
         ref={containerRef}
         className={cn(
           "fixed inset-0 overflow-hidden touch-none select-none bg-cream",
-          isDragging ? "cursor-grabbing" : "cursor-grab",
+          dimmed
+            ? "pointer-events-none"
+            : isDragging
+              ? "cursor-grabbing"
+              : "cursor-grab",
         )}
         style={{
           backgroundImage:
@@ -183,6 +193,12 @@ export function BoardCanvas({ github }: { github: GithubStats | null }) {
             height: `${WORLD.h}px`,
             transform: `translate3d(${viewport.x}px, ${viewport.y}px, 0) scale(${viewport.scale})`,
             transformOrigin: "0 0",
+            filter: dimmed
+              ? "blur(3px) brightness(0.96) saturate(0.9)"
+              : undefined,
+            opacity: dimmed ? 0.6 : 1,
+            transition:
+              "filter 600ms cubic-bezier(0.22, 1, 0.36, 1), opacity 600ms cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
           {cards.map((c) => {
@@ -190,10 +206,16 @@ export function BoardCanvas({ github }: { github: GithubStats | null }) {
             const base =
               (c.depth ?? 1) * 2 + (c.kind === "sticker" ? 5 : 0);
             const z = topIndex[c.id] ?? base;
+            const slug =
+              c.kind === "project" || c.kind === "prototype"
+                ? c.slug
+                : undefined;
             return (
               <div
                 key={c.id}
                 data-no-drag
+                data-card-id={c.id}
+                data-card-slug={slug}
                 className={cn(
                   "absolute",
                   isActive
@@ -224,7 +246,13 @@ export function BoardCanvas({ github }: { github: GithubStats | null }) {
               >
                 <CardRenderer
                   card={c}
-                  activity={viewport.scale >= 0.55 ? "active" : "idle"}
+                  activity={
+                    dimmed
+                      ? "idle"
+                      : viewport.scale >= 0.55
+                        ? "active"
+                        : "idle"
+                  }
                   github={github}
                 />
               </div>
