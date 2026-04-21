@@ -60,6 +60,8 @@ type Props = {
 export function WorkScene({ open, onClose }: Props) {
   const [items, setItems] = useState<Item[] | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [session, setSession] = useState(0);
+  const sessionRef = useRef(0);
   const originalsRef = useRef<HTMLElement[]>([]);
   const closeTimerRef = useRef<number | null>(null);
 
@@ -71,6 +73,19 @@ export function WorkScene({ open, onClose }: Props) {
       window.clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
+
+    // Bump session so FlyingItems fully remount on each open
+    sessionRef.current += 1;
+    const mySession = sessionRef.current;
+    setSession(mySession);
+
+    // If originals were previously hidden but not yet restored (mid-close),
+    // restore them before we re-measure so rects reflect their true layout.
+    originalsRef.current.forEach((el) => {
+      el.style.opacity = "";
+      el.style.pointerEvents = "";
+    });
+    originalsRef.current = [];
 
     const originals = Array.from(
       document.querySelectorAll<HTMLElement>("[data-card-slug]"),
@@ -123,7 +138,7 @@ export function WorkScene({ open, onClose }: Props) {
     const rows = Math.ceil(count / cols);
     const cellW = availW / cols;
     const cellH = availH / rows;
-    const padding = 0.88;
+    const padding = 0.94;
 
     captured.forEach((it, i) => {
       const row = Math.floor(i / cols);
@@ -134,7 +149,9 @@ export function WorkScene({ open, onClose }: Props) {
         (cellW * padding) / it.home.width,
         (cellH * padding) / it.home.height,
       );
-      const targetScale = Math.min(0.95, fit);
+      // Cards should feel big and present — let them go above 1.0 (live DOM,
+      // no pixelation) but clamp so they never overflow the cell.
+      const targetScale = Math.min(1.25, fit);
       it.target.x = cx; // center x
       it.target.y = cy; // center y
       it.target.scale = targetScale;
@@ -163,9 +180,11 @@ export function WorkScene({ open, onClose }: Props) {
   // Close sequence: animate back, then unmount + unhide
   useEffect(() => {
     if (open || !mounted || !items) return;
+    const mySession = sessionRef.current;
 
-    // Wait for exit animations (handled by FlyingItem via layout effect)
     closeTimerRef.current = window.setTimeout(() => {
+      // Another open may have started in the interim — bail if so.
+      if (sessionRef.current !== mySession) return;
       originalsRef.current.forEach((el) => {
         el.style.opacity = "";
         el.style.pointerEvents = "";
@@ -245,10 +264,15 @@ export function WorkScene({ open, onClose }: Props) {
         </button>
       )}
 
-      {/* Flying items — live React prototypes */}
+      {/* Flying items — live React prototypes. Key includes session so they
+          fully remount on every open and never inherit stale gsap state. */}
       {mounted && items &&
         items.map((it) => (
-          <FlyingItem key={it.slug} item={it} closing={!open} />
+          <FlyingItem
+            key={`${session}-${it.slug}`}
+            item={it}
+            closing={!open}
+          />
         ))}
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePanZoom } from "./use-pan-zoom";
 import { cards as initialCards, WORLD, BOARD_HOME } from "./layout";
 import { CardRenderer } from "./cards";
@@ -39,10 +39,25 @@ export function BoardCanvas({
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
 
-  // Compose current card state (base + override positions)
-  const cards: BoardCard[] = initialCards.map((c) =>
-    positions[c.id] ? { ...c, x: positions[c.id].x, y: positions[c.id].y } : c,
+  // Compose current card state (base + override positions). Memoized so
+  // pan/zoom (which re-renders this component every frame) doesn't thrash
+  // all card children through React reconciliation.
+  const cards: BoardCard[] = useMemo(
+    () =>
+      initialCards.map((c) =>
+        positions[c.id]
+          ? { ...c, x: positions[c.id].x, y: positions[c.id].y }
+          : c,
+      ),
+    [positions],
   );
+
+  // Derive a coarse zoom step that only flips when crossing the 0.55
+  // threshold — used to toggle expensive prototype animations active/idle.
+  // This keeps continuous scale changes from invalidating the card list.
+  const isZoomedIn = viewport.scale >= 0.55;
+  const activity: "active" | "idle" =
+    dimmed || !isZoomedIn ? "idle" : "active";
 
   // Load layout from localStorage
   useEffect(() => {
@@ -78,15 +93,17 @@ export function BoardCanvas({
     return () => clearTimeout(t);
   }, []);
 
-  const onMinimapJump = (wx: number, wy: number) => {
-    animateTo({ wx, wy, scale: viewport.scale }, viewport, setViewport, size);
-  };
-
-  const onFocusCard = (c: BoardCard) => {
-    const wx = c.x;
-    const wy = c.y;
-    animateTo({ wx, wy, scale: 1.4 }, viewport, setViewport, size);
-  };
+  const onMinimapJump = useCallback(
+    (wx: number, wy: number) => {
+      animateTo(
+        { wx, wy, scale: viewportRef.current.scale },
+        viewportRef.current,
+        setViewport,
+        size,
+      );
+    },
+    [setViewport, size],
+  );
 
   const resetLayout = useCallback(() => {
     setPositions({});
@@ -112,28 +129,29 @@ export function BoardCanvas({
     setTopIndex((prev) => ({ ...prev, [id]: topCounter.current }));
   }, []);
 
-  const onCardPointerDown = (e: React.PointerEvent, card: BoardCard) => {
-    // Let native clicks on interactive children (links, buttons) through
-    // without hijacking them into a drag.
-    const t = e.target as HTMLElement | null;
-    if (t && t.closest("a, button")) return;
-    try {
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    } catch {}
-    dragRef.current = {
-      id: card.id,
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      startY: e.clientY,
-      origX: card.x,
-      origY: card.y,
-      moved: false,
-    };
-    setActiveCardId(card.id);
-    bringToFront(card.id);
-  };
+  const onCardPointerDown = useCallback(
+    (e: React.PointerEvent, card: BoardCard) => {
+      const t = e.target as HTMLElement | null;
+      if (t && t.closest("a, button")) return;
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {}
+      dragRef.current = {
+        id: card.id,
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        origX: card.x,
+        origY: card.y,
+        moved: false,
+      };
+      setActiveCardId(card.id);
+      bringToFront(card.id);
+    },
+    [bringToFront],
+  );
 
-  const onCardPointerMove = (e: React.PointerEvent) => {
+  const onCardPointerMove = useCallback((e: React.PointerEvent) => {
     const d = dragRef.current;
     if (!d || d.pointerId !== e.pointerId) return;
     const screenDx = e.clientX - d.startX;
@@ -146,9 +164,9 @@ export function BoardCanvas({
     const nx = d.origX + screenDx / scale;
     const ny = d.origY + screenDy / scale;
     setPositions((prev) => ({ ...prev, [d.id]: { x: nx, y: ny } }));
-  };
+  }, []);
 
-  const onCardPointerUp = (e: React.PointerEvent) => {
+  const onCardPointerUp = useCallback((e: React.PointerEvent) => {
     const d = dragRef.current;
     if (!d) return;
     try {
@@ -157,15 +175,89 @@ export function BoardCanvas({
     if (d.moved) suppressClickRef.current = true;
     dragRef.current = null;
     setActiveCardId(null);
-  };
+  }, []);
 
-  const onCardClickCapture = (e: React.MouseEvent) => {
+  const onCardClickCapture = useCallback((e: React.MouseEvent) => {
     if (suppressClickRef.current) {
       e.preventDefault();
       e.stopPropagation();
       suppressClickRef.current = false;
     }
-  };
+  }, []);
+
+  const onDoubleClickCard = useCallback(
+    (c: BoardCard) => {
+      animateTo(
+        { wx: c.x, wy: c.y, scale: 1.4 },
+        viewportRef.current,
+        setViewport,
+        size,
+      );
+    },
+    [setViewport, size],
+  );
+
+  // Render the card list once per "meaningful" state change. Viewport pan
+  // frames don't touch this tree.
+  const cardList = useMemo(
+    () =>
+      cards.map((c) => {
+        const isActive = activeCardId === c.id;
+        const base = (c.depth ?? 1) * 2 + (c.kind === "sticker" ? 5 : 0);
+        const z = topIndex[c.id] ?? base;
+        const slug =
+          c.kind === "project" || c.kind === "prototype" ? c.slug : undefined;
+        return (
+          <div
+            key={c.id}
+            data-no-drag
+            data-card-id={c.id}
+            data-card-slug={slug}
+            className={cn(
+              "absolute",
+              isActive
+                ? "cursor-grabbing"
+                : "cursor-grab active:cursor-grabbing",
+            )}
+            style={{
+              left: c.x,
+              top: c.y,
+              transform: `translate(-50%, -50%) rotate(${
+                isActive ? 0 : (c.rotation ?? 0)
+              }deg) ${isActive ? "scale(1.03)" : ""}`,
+              transformOrigin: "center center",
+              zIndex: z,
+              filter: isActive
+                ? "drop-shadow(0 20px 40px rgba(42,31,23,0.25))"
+                : undefined,
+              transition: isActive
+                ? "none"
+                : "transform 180ms ease, filter 180ms ease",
+            }}
+            onPointerDown={(e) => onCardPointerDown(e, c)}
+            onPointerMove={onCardPointerMove}
+            onPointerUp={onCardPointerUp}
+            onPointerCancel={onCardPointerUp}
+            onClickCapture={onCardClickCapture}
+            onDoubleClick={() => onDoubleClickCard(c)}
+          >
+            <CardRenderer card={c} activity={activity} github={github} />
+          </div>
+        );
+      }),
+    [
+      cards,
+      activeCardId,
+      topIndex,
+      activity,
+      github,
+      onCardPointerDown,
+      onCardPointerMove,
+      onCardPointerUp,
+      onCardClickCapture,
+      onDoubleClickCard,
+    ],
+  );
 
   return (
     <>
@@ -201,63 +293,7 @@ export function BoardCanvas({
               "filter 600ms cubic-bezier(0.22, 1, 0.36, 1), opacity 600ms cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          {cards.map((c) => {
-            const isActive = activeCardId === c.id;
-            const base =
-              (c.depth ?? 1) * 2 + (c.kind === "sticker" ? 5 : 0);
-            const z = topIndex[c.id] ?? base;
-            const slug =
-              c.kind === "project" || c.kind === "prototype"
-                ? c.slug
-                : undefined;
-            return (
-              <div
-                key={c.id}
-                data-no-drag
-                data-card-id={c.id}
-                data-card-slug={slug}
-                className={cn(
-                  "absolute",
-                  isActive
-                    ? "cursor-grabbing"
-                    : "cursor-grab active:cursor-grabbing",
-                )}
-                style={{
-                  left: c.x,
-                  top: c.y,
-                  transform: `translate(-50%, -50%) rotate(${
-                    isActive ? 0 : (c.rotation ?? 0)
-                  }deg) ${isActive ? "scale(1.03)" : ""}`,
-                  transformOrigin: "center center",
-                  zIndex: z,
-                  filter: isActive
-                    ? "drop-shadow(0 20px 40px rgba(42,31,23,0.25))"
-                    : undefined,
-                  transition: isActive
-                    ? "none"
-                    : "transform 180ms ease, filter 180ms ease",
-                }}
-                onPointerDown={(e) => onCardPointerDown(e, c)}
-                onPointerMove={onCardPointerMove}
-                onPointerUp={onCardPointerUp}
-                onPointerCancel={onCardPointerUp}
-                onClickCapture={onCardClickCapture}
-                onDoubleClick={() => onFocusCard(c)}
-              >
-                <CardRenderer
-                  card={c}
-                  activity={
-                    dimmed
-                      ? "idle"
-                      : viewport.scale >= 0.55
-                        ? "active"
-                        : "idle"
-                  }
-                  github={github}
-                />
-              </div>
-            );
-          })}
+          {cardList}
         </div>
       </div>
 
