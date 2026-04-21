@@ -60,65 +60,56 @@ export function Dock({
       const ctx = audioCtxRef.current;
       if (ctx.state === "suspended") void ctx.resume();
 
-      const now = ctx.currentTime + 0.01;
+      const now = ctx.currentTime + 0.005;
       const master = ctx.createGain();
-      const toneGain = ctx.createGain();
-      const bodyGain = ctx.createGain();
-      const noiseGain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      const tone = ctx.createOscillator();
-      const body = ctx.createOscillator();
-
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(3600, now);
-      filter.frequency.exponentialRampToValueAtTime(1200, now + 0.12);
-      filter.Q.value = 0.7;
-
-      master.gain.setValueAtTime(0.0001, now);
-      master.gain.exponentialRampToValueAtTime(0.42, now + 0.006);
-      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
-
-      tone.type = "sine";
-      tone.frequency.setValueAtTime(1320, now);
-      tone.frequency.exponentialRampToValueAtTime(760, now + 0.05);
-      toneGain.gain.setValueAtTime(0.035, now);
-      toneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-
-      body.type = "triangle";
-      body.frequency.setValueAtTime(260, now);
-      body.frequency.exponentialRampToValueAtTime(190, now + 0.08);
-      bodyGain.gain.setValueAtTime(0.028, now);
-      bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
-
-      const noiseBuffer = ctx.createBuffer(
-        1,
-        Math.floor(ctx.sampleRate * 0.018),
-        ctx.sampleRate,
-      );
-      const noiseData = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < noiseData.length; i++) {
-        noiseData[i] = (Math.random() * 2 - 1) * (1 - i / noiseData.length);
-      }
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer;
-      noiseGain.gain.setValueAtTime(0.018, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
-
-      tone.connect(toneGain);
-      body.connect(bodyGain);
-      noise.connect(noiseGain);
-      toneGain.connect(filter);
-      bodyGain.connect(filter);
-      noiseGain.connect(filter);
-      filter.connect(master);
+      master.gain.setValueAtTime(0.55, now);
       master.connect(ctx.destination);
 
-      tone.start(now);
+      // 1. Transient "tick" — noise burst through narrow bandpass @ 2.4kHz
+      const tickBuf = ctx.createBuffer(
+        1,
+        Math.floor(ctx.sampleRate * 0.04),
+        ctx.sampleRate,
+      );
+      const td = tickBuf.getChannelData(0);
+      for (let i = 0; i < td.length; i++) {
+        const env = Math.pow(1 - i / td.length, 2.5);
+        td[i] = (Math.random() * 2 - 1) * env;
+      }
+      const tick = ctx.createBufferSource();
+      tick.buffer = tickBuf;
+      const tickBp = ctx.createBiquadFilter();
+      tickBp.type = "bandpass";
+      tickBp.frequency.value = 2400;
+      tickBp.Q.value = 6.5;
+      const tickGain = ctx.createGain();
+      tickGain.gain.setValueAtTime(0.0001, now);
+      tickGain.gain.exponentialRampToValueAtTime(0.9, now + 0.002);
+      tickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+      tick.connect(tickBp);
+      tickBp.connect(tickGain);
+      tickGain.connect(master);
+
+      // 2. Body "thock" — short low triangle through lowpass
+      const body = ctx.createOscillator();
+      body.type = "triangle";
+      body.frequency.setValueAtTime(210, now);
+      body.frequency.exponentialRampToValueAtTime(140, now + 0.06);
+      const bodyLp = ctx.createBiquadFilter();
+      bodyLp.type = "lowpass";
+      bodyLp.frequency.value = 800;
+      bodyLp.Q.value = 0.7;
+      const bodyGain = ctx.createGain();
+      bodyGain.gain.setValueAtTime(0.0001, now);
+      bodyGain.gain.exponentialRampToValueAtTime(0.18, now + 0.006);
+      bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+      body.connect(bodyLp);
+      bodyLp.connect(bodyGain);
+      bodyGain.connect(master);
+
+      tick.start(now);
       body.start(now);
-      noise.start(now);
-      tone.stop(now + 0.09);
-      body.stop(now + 0.12);
-      noise.stop(now + 0.03);
+      body.stop(now + 0.1);
     } catch {
       // ignore — audio is a nicety, not critical
     }
@@ -155,11 +146,11 @@ export function Dock({
                 onHoverEnd={() =>
                   setHovered((prev) => (prev === it.key ? null : prev))
                 }
-                whileTap={prefersReducedMotion ? undefined : { scale: 0.94 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}
                 aria-pressed={isActive}
                 aria-label={it.label}
                 className={cn(
-                  "group relative isolate flex h-8 items-center gap-2 overflow-hidden rounded-full px-2.5 text-ink-muted outline-none transition-colors duration-200",
+                  "group relative isolate flex h-8 min-w-8 items-center justify-center overflow-hidden rounded-full px-2 text-ink-muted outline-none transition-colors duration-200",
                   "focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 focus-visible:ring-offset-paper",
                   isActive ? "text-cream" : "hover:text-ink",
                 )}
@@ -170,9 +161,8 @@ export function Dock({
                     className="absolute inset-0 rounded-full bg-cream-deep/70"
                     transition={{
                       type: "spring",
-                      stiffness: 520,
-                      damping: 38,
-                      mass: 0.7,
+                      stiffness: 340,
+                      damping: 30,
                     }}
                   />
                 )}
@@ -182,21 +172,15 @@ export function Dock({
                     className="absolute inset-0 rounded-full bg-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_18px_rgba(42,31,23,0.18)]"
                     transition={{
                       type: "spring",
-                      stiffness: 520,
-                      damping: 36,
-                      mass: 0.72,
+                      stiffness: 280,
+                      damping: 30,
                     }}
                   />
                 )}
                 <motion.span
                   layout="position"
-                  className="relative z-10 flex h-4 w-4 items-center justify-center"
-                  animate={
-                    prefersReducedMotion
-                      ? undefined
-                      : { y: isActive ? -0.5 : 0, scale: isActive ? 1.04 : 1 }
-                  }
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  className="relative z-10 flex h-4 w-4 shrink-0 items-center justify-center"
+                  transition={{ type: "spring", stiffness: 280, damping: 30 }}
                 >
                   <it.Icon filled={isActive} />
                 </motion.span>
@@ -208,19 +192,22 @@ export function Dock({
                       initial={
                         prefersReducedMotion
                           ? false
-                          : { width: 0, opacity: 0, x: -4 }
+                          : { width: 0, opacity: 0, marginLeft: 0 }
                       }
-                      animate={{ width: "auto", opacity: 1, x: 0 }}
+                      animate={{
+                        width: "auto",
+                        opacity: 1,
+                        marginLeft: 6,
+                      }}
                       exit={
                         prefersReducedMotion
                           ? undefined
-                          : { width: 0, opacity: 0, x: -4 }
+                          : { width: 0, opacity: 0, marginLeft: 0 }
                       }
                       transition={{
                         type: "spring",
-                        stiffness: 520,
-                        damping: 40,
-                        mass: 0.65,
+                        stiffness: 280,
+                        damping: 30,
                       }}
                     >
                       <span className="block pr-1">{it.label}</span>
