@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CardActivity } from "../use-card-activity";
 import { ProjectFrame } from "../project-frame";
 import { FocusModal } from "../focus-modal";
-import { GithubLogo } from "../tool-logos";
+import { ProjectLinks } from "../project-links";
 import { cn } from "@/lib/cn";
 
 const EMBER = {
@@ -344,7 +344,7 @@ function Sidebar() {
     >
       <div className="flex items-center gap-3">
         <div
-          className="h-12 w-12 rounded-xl overflow-hidden ring-1 ring-[#e42000]/40 bg-black"
+          className="h-12 w-12 rounded-xl overflow-hidden ring-1 ring-[#e42000]/40 bg-black shrink-0"
           style={{ boxShadow: "0 0 20px rgba(228,32,0,0.3)" }}
         >
           <Image
@@ -355,7 +355,7 @@ function Sidebar() {
             className="object-cover"
           />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="font-semibold tracking-tight text-base leading-none">
             Ember
           </p>
@@ -363,6 +363,10 @@ function Sidebar() {
             2025 · Torrent streamer
           </p>
         </div>
+        <ProjectLinks
+          dark
+          links={[{ kind: "github", href: "https://github.com/haider0072/Ember" }]}
+        />
       </div>
 
       <p className="mt-5 text-[13px] leading-relaxed text-[#b0b4bc]">
@@ -441,26 +445,6 @@ function Sidebar() {
         side project.
       </div>
 
-      <div className="mt-6 space-y-2">
-        <a
-          href="https://github.com/haider0072/Ember"
-          target="_blank"
-          rel="noreferrer"
-          className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{
-            background: "linear-gradient(135deg, #e42000 0%, #ff6b00 100%)",
-            boxShadow: "0 8px 24px -8px rgba(228,32,0,0.5)",
-          }}
-        >
-          <span className="flex items-center gap-2">
-            <GithubLogo size={16} />
-            View on GitHub
-          </span>
-          <span className="transition-transform group-hover:translate-x-1">
-            →
-          </span>
-        </a>
-      </div>
     </aside>
   );
 }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CardActivity } from "../use-card-activity";
 import { ProjectFrame } from "../project-frame";
 import { FocusModal } from "../focus-modal";
-import { GithubLogo } from "../tool-logos";
+import { ProjectLinks } from "../project-links";
 import { cn } from "@/lib/cn";
 
 // Gris-inspired palette
@@ -664,7 +664,7 @@ function Sidebar() {
     >
       <div className="flex items-center gap-3">
         <FlowCraftMark size={48} />
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="font-semibold tracking-tight text-base leading-none text-[#2a1f2e]">
             FlowCraft
           </p>
@@ -672,6 +672,13 @@ function Sidebar() {
             2026 · Creative platform
           </p>
         </div>
+        <ProjectLinks
+          dark={false}
+          links={[
+            { kind: "live", href: "https://flowcraft-mu.vercel.app/" },
+            { kind: "github", href: "https://github.com/haider0072/flowcraft" },
+          ]}
+        />
       </div>
 
       <p className="mt-5 text-[13px] leading-relaxed text-[#4a3d4c]">
@@ -751,48 +758,6 @@ function Sidebar() {
         credits. The platform is waiting for the artist to come back.
       </div>
 
-      <div className="mt-6 space-y-2">
-        <a
-          href="https://flowcraft-mu.vercel.app/"
-          target="_blank"
-          rel="noreferrer"
-          className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{
-            background: `linear-gradient(135deg, ${FC.violet} 0%, ${FC.rose} 100%)`,
-            boxShadow: "0 8px 24px -8px rgba(139,123,181,0.5)",
-          }}
-        >
-          <span className="flex items-center gap-2">
-            <span
-              className="h-1.5 w-1.5 rounded-full bg-white animate-pulse"
-              aria-hidden
-            />
-            Try it live
-          </span>
-          <span className="transition-transform group-hover:translate-x-1">
-            →
-          </span>
-        </a>
-        <a
-          href="https://github.com/haider0072/flowcraft"
-          target="_blank"
-          rel="noreferrer"
-          className="group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-colors"
-          style={{
-            background: FC.surfaceHi,
-            border: `1px solid ${FC.border}`,
-            color: "#2a1f2e",
-          }}
-        >
-          <span className="flex items-center gap-2">
-            <GithubLogo size={16} />
-            View on GitHub
-          </span>
-          <span className="transition-transform group-hover:translate-x-1">
-            →
-          </span>
-        </a>
-      </div>
     </aside>
   );
 }

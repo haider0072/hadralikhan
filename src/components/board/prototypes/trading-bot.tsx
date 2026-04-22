@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CardActivity } from "../use-card-activity";
 import { ProjectFrame } from "../project-frame";
 import { FocusModal } from "../focus-modal";
-import { ClaudeLogo, GithubLogo } from "../tool-logos";
+import { ClaudeLogo } from "../tool-logos";
+import { ProjectLinks } from "../project-links";
 import { cn } from "@/lib/cn";
 
 const WATCHED = [
@@ -192,7 +193,7 @@ function CaseStudySidebar() {
   return (
     <aside className="p-7 bg-[#f7f8fa] border-r border-[#e6e8ec] overflow-y-auto">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-[#0a0e27] flex items-center justify-center">
+        <div className="h-10 w-10 rounded-xl bg-[#0a0e27] flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
               d="M3 17l5-6 4 4 4-8 5 10"
@@ -203,12 +204,18 @@ function CaseStudySidebar() {
             />
           </svg>
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="font-semibold tracking-tight text-base leading-none">Trading Bot</p>
           <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#5b616e] mt-1">
             2024 · Halal automation
           </p>
         </div>
+        <ProjectLinks
+          dark={false}
+          links={[
+            { kind: "github", href: "https://github.com/haider0072/trading-bot" },
+          ]}
+        />
       </div>
 
       <p className="mt-5 text-[13px] leading-relaxed text-[#5b616e]">
@@ -292,20 +299,6 @@ function CaseStudySidebar() {
         trailing take-profit. Weekly retrain. One kill switch.
       </div>
 
-      <div className="mt-6 space-y-2">
-        <a
-          href="https://github.com/haider0072/trading-bot"
-          target="_blank"
-          rel="noreferrer"
-          className="group flex items-center justify-between rounded-xl bg-[#0a0e27] hover:bg-[#1a1f3d] text-white px-4 py-3 text-sm font-semibold transition-colors"
-        >
-          <span className="flex items-center gap-2">
-            <GithubLogo size={16} />
-            View on GitHub
-          </span>
-          <span className="transition-transform group-hover:translate-x-1">→</span>
-        </a>
-      </div>
     </aside>
   );
 }

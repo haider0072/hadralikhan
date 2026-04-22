@@ -10,8 +10,8 @@ import {
   ClaudeLogo,
   YoutubeLogo,
   SpotifyLogo,
-  GithubLogo,
 } from "../tool-logos";
+import { ProjectLinks } from "../project-links";
 import { cn } from "@/lib/cn";
 
 type Lyric = { han: string; rom: string; eng: string };
@@ -437,15 +437,28 @@ function AudoraFocus() {
       {/* Sidebar — case study */}
       <aside className={cn("border-r p-7 overflow-y-auto", border)}>
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#e11d48] flex items-center justify-center">
-            <span className="text-white font-serif italic text-lg">a</span>
+          <div className="h-11 w-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/10 shadow-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/projects/audora-logo.png"
+              alt="Audora"
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="font-semibold tracking-tight text-base">Audora</p>
             <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
               2025 · Music player
             </p>
           </div>
+          <ProjectLinks
+            dark={dark}
+            links={[
+              { kind: "live", href: "https://audora-player.vercel.app" },
+              { kind: "github", href: "https://github.com/haider0072/Audora" },
+            ]}
+          />
         </div>
 
         <p className={cn("mt-5 text-sm leading-relaxed", subtle)}>
@@ -551,34 +564,6 @@ function AudoraFocus() {
           </div>
         </div>
 
-        <div className="mt-6 space-y-2">
-          <a
-            href="https://audora-player.vercel.app"
-            target="_blank"
-            rel="noreferrer"
-            className="group flex items-center justify-between rounded-xl bg-[#e11d48] hover:bg-[#be185d] text-white px-4 py-3 text-sm font-semibold transition-colors"
-          >
-            <span>Open live app</span>
-            <span className="transition-transform group-hover:translate-x-1">→</span>
-          </a>
-          <a
-            href="https://github.com/haider0072/Audora"
-            target="_blank"
-            rel="noreferrer"
-            className={cn(
-              "flex items-center justify-between rounded-xl border px-4 py-2.5 text-xs",
-              border,
-              subtle,
-              dark ? "hover:bg-white/5" : "hover:bg-black/5",
-            )}
-          >
-            <span className="flex items-center gap-2">
-              <GithubLogo size={14} />
-              View on GitHub
-            </span>
-            <span>↗</span>
-          </a>
-        </div>
       </aside>
 
       {/* Main — feature demo */}

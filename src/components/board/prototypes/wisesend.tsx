@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CardActivity } from "../use-card-activity";
 import { ProjectFrame } from "../project-frame";
 import { FocusModal } from "../focus-modal";
-import { GithubLogo } from "../tool-logos";
+import { ProjectLinks } from "../project-links";
 import { cn } from "@/lib/cn";
 
 const BRAND = {
@@ -453,7 +453,7 @@ function Sidebar() {
   return (
     <aside className="p-7 bg-white border-r border-[#eceef2] overflow-y-auto">
       <div className="flex items-center gap-3">
-        <div className="h-12 w-12 rounded-xl overflow-hidden ring-1 ring-black/5 bg-white">
+        <div className="h-12 w-12 rounded-xl overflow-hidden ring-1 ring-black/5 bg-white shrink-0">
           <Image
             src="/projects/wisesend-logo.png"
             alt="WiseSend"
@@ -462,12 +462,22 @@ function Sidebar() {
             className="object-cover"
           />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="font-semibold tracking-tight text-base leading-none">WiseSend</p>
           <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#6b7280] mt-1">
             2025 · File sharing
           </p>
         </div>
+        <ProjectLinks
+          dark={false}
+          links={[
+            { kind: "live", href: "https://wisesend.xrlabs.app" },
+            {
+              kind: "playstore",
+              href: "https://play.google.com/store/apps/details?id=app.xrlabs.wisesend",
+            },
+          ]}
+        />
       </div>
 
       <p className="mt-5 text-[13px] leading-relaxed text-[#4b5563]">
@@ -556,29 +566,6 @@ function Sidebar() {
         </p>
       </div>
 
-      <div className="mt-6 space-y-2">
-        <a
-          href="https://play.google.com/store/apps/details?id=app.xrlabs.wisesend"
-          target="_blank"
-          rel="noreferrer"
-          className="group flex items-center justify-between rounded-xl bg-[#0084ff] hover:bg-[#006bd6] text-white px-4 py-3 text-sm font-semibold transition-colors"
-        >
-          <span>Open on Play Store</span>
-          <span className="transition-transform group-hover:translate-x-1">→</span>
-        </a>
-        <a
-          href="https://github.com/ishaquehassan"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-between rounded-xl border border-[#eceef2] px-4 py-2.5 text-xs text-[#6b7280] hover:bg-[#fafbfc] transition-colors"
-        >
-          <span className="flex items-center gap-2">
-            <GithubLogo size={14} />
-            Co-builder Ishaque
-          </span>
-          <span>↗</span>
-        </a>
-      </div>
     </aside>
   );
 }

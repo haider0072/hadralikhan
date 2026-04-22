@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { CardActivity } from "../use-card-activity";
 import { ProjectFrame } from "../project-frame";
 import { FocusModal } from "../focus-modal";
-import { ClaudeLogo, FigmaLogo, GithubLogo } from "../tool-logos";
+import { ClaudeLogo, FigmaLogo } from "../tool-logos";
+import { ProjectLinks } from "../project-links";
 import { cn } from "@/lib/cn";
 
 const SEEDS = [
@@ -221,17 +222,24 @@ function MochiFocus() {
       <aside className="p-7 bg-[#f5f0e4] border-r border-[#3d2f2315] overflow-y-auto">
         <div className="flex items-center gap-3">
           <div
-            className="h-10 w-10 rounded-xl flex items-center justify-center transition-colors"
+            className="h-10 w-10 rounded-xl flex items-center justify-center transition-colors shrink-0"
             style={{ background: seed.primary }}
           >
             <Mascot className="w-7 h-7" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="font-bold text-base leading-none text-[#2a1f17]">mochi</p>
             <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#6b5a4a] mt-1">
               2026 · Design tool
             </p>
           </div>
+          <ProjectLinks
+            dark={false}
+            links={[
+              { kind: "live", href: "https://mochi-plum.vercel.app" },
+              { kind: "github", href: "https://github.com/haider0072/mochi" },
+            ]}
+          />
         </div>
 
         <p className="mt-5 text-[13px] leading-relaxed text-[#6b5a4a]">
@@ -307,30 +315,6 @@ function MochiFocus() {
           a brand family that hangs together.
         </div>
 
-        <div className="mt-6 space-y-2">
-          <a
-            href="https://mochi-plum.vercel.app"
-            target="_blank"
-            rel="noreferrer"
-            className="group flex items-center justify-between rounded-xl text-white px-4 py-3 text-sm font-semibold transition-opacity hover:opacity-90"
-            style={{ background: seed.primary }}
-          >
-            <span>Open live app</span>
-            <span className="transition-transform group-hover:translate-x-1">→</span>
-          </a>
-          <a
-            href="https://github.com/haider0072/mochi"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-between rounded-xl border border-[#3d2f2322] px-4 py-2.5 text-xs text-[#6b5a4a] hover:bg-white transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              <GithubLogo size={14} />
-              View on GitHub
-            </span>
-            <span>↗</span>
-          </a>
-        </div>
       </aside>
 
       {/* Main — tabbed */}

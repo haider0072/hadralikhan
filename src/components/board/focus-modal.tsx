@@ -60,7 +60,7 @@ export function FocusModal({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-4 right-4 z-20 h-9 w-9 rounded-full bg-cream/90 border border-ink/10 hover:bg-cream flex items-center justify-center text-ink backdrop-blur transition-colors"
+            className="absolute top-[10px] right-4 z-20 h-9 w-9 rounded-full bg-cream/90 border border-ink/10 hover:bg-cream flex items-center justify-center text-ink backdrop-blur transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path
