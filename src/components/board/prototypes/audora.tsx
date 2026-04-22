@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CardActivity } from "../use-card-activity";
 import { ProjectFrame } from "../project-frame";
 import { FocusModal } from "../focus-modal";
@@ -14,27 +14,128 @@ import {
 } from "../tool-logos";
 import { cn } from "@/lib/cn";
 
-const TRACKS = [
+type Lyric = { han: string; rom: string; eng: string };
+
+type Track = {
+  slug: string;
+  title: string;
+  titleNative?: string;
+  artist: string;
+  album: string;
+  year: number;
+  duration: number;
+  audio: string;
+  cover: string;
+  coverFrom: string;
+  coverVia: string;
+  coverTo: string;
+  lrc: string;
+  lrcOffset?: number;
+  youtubeId: string;
+  youtubeTitle: string;
+  youtubeChannel: string;
+  youtubeLength: string;
+  lyrics: Lyric[];
+  story: string;
+  sizes: { flac: string; alac: string; mp3: string };
+};
+
+const TRACKS: Track[] = [
   {
-    title: "Midnight in Kyoto",
-    artist: "Hiroshi Yoshimura",
-    album: "静かな夜",
-    duration: 213,
-    year: 1993,
+    slug: "spring-day",
+    title: "Spring Day",
+    titleNative: "봄날",
+    artist: "BTS",
+    album: "You Never Walk Alone",
+    year: 2017,
+    duration: 274.7,
+    audio: "/audio/spring-day.flac",
+    cover: "/audio/spring-day.jpg",
+    lrc: "/audio/spring-day.lrc",
+    coverFrom: "#3b5a7a",
+    coverVia: "#8396ac",
+    coverTo: "#d4c9b8",
+    youtubeId: "xEeFrLSkMm8",
+    youtubeTitle: "BTS (방탄소년단) '봄날 (Spring Day)' Official MV",
+    youtubeChannel: "HYBE LABELS",
+    youtubeLength: "5:29",
+    lyrics: [],
+    story:
+      "\"Spring Day\" is the BTS song that people who don't follow BTS know. Released on You Never Walk Alone in February 2017, it's a ballad about longing — for someone gone, for a version of yourself that isn't coming back. The visual language of the MV (the yellow train, the abandoned hotel, the shoes on the wire) reads as a tribute to the 2014 Sewol ferry disaster, though the group never stated it directly. Musically it's layered: acoustic guitar, piano, strings, shifting into an anthemic chorus. Ursula K. Le Guin's \"The Ones Who Walk Away from Omelas\" is cited as an inspiration. RM produced it with Pdogg.",
+    sizes: { flac: "35.0 MB", alac: "23.2 MB", mp3: "8.8 MB" },
   },
   {
-    title: "Wabi",
-    artist: "Haruomi Hosono",
-    album: "Glass Garden",
-    duration: 187,
-    year: 1988,
+    slug: "untitled-2014",
+    title: "Untitled, 2014",
+    titleNative: "무제 (無題)",
+    artist: "G-DRAGON",
+    album: "KWON JI YONG",
+    year: 2017,
+    duration: 222.87,
+    audio: "/audio/untitled-2014.flac",
+    cover: "/audio/untitled-2014.jpg",
+    lrc: "/audio/untitled-2014.lrc",
+    coverFrom: "#2a1810",
+    coverVia: "#4a2818",
+    coverTo: "#6b3d28",
+    youtubeId: "9kaCAbIXuyg",
+    youtubeTitle: "G-DRAGON - '무제(無題) (Untitled, 2014)' M/V",
+    youtubeChannel: "YG ENTERTAINMENT",
+    youtubeLength: "3:43",
+    lyrics: [],
+    story:
+      "Recorded one late night in 2014 and shelved for three years, \"Untitled, 2014\" is G-Dragon at his most stripped. A piano. A vocal take. No rap, no production flex. He co-produced it with Choice37 and kept the arrangement deliberately thin — you can hear the room. The MV was shot single-take, allegedly finished in under an hour. The song was widely read as a letter to Kiko Mizuhara after their split, though GD has never confirmed it. What it is for certain: the moment Korea's biggest rapper proved he could carry a room with nothing but a melody and a mic.",
+    sizes: { flac: "21.1 MB", alac: "14.3 MB", mp3: "5.2 MB" },
   },
   {
-    title: "Soft Rain, Osaka",
-    artist: "Mariah",
-    album: "Utakata no Hibi",
-    duration: 244,
-    year: 1983,
+    slug: "my-old-story",
+    title: "My Old Story",
+    titleNative: "나의 옛날이야기",
+    artist: "IU",
+    album: "꽃갈피 (A Flower Bookmark)",
+    year: 2014,
+    duration: 213.83,
+    audio: "/audio/my-old-story.flac",
+    cover: "/audio/my-old-story.jpg",
+    lrc: "/audio/my-old-story.lrc",
+    coverFrom: "#8b6b4a",
+    coverVia: "#a68a6d",
+    coverTo: "#d4b896",
+    youtubeId: "npttud7NkL0",
+    youtubeTitle: "[MV] IU(아이유) _ My Old Story (나의 옛날이야기)",
+    youtubeChannel: "1theK (원더케이)",
+    youtubeLength: "3:41",
+    lyrics: [
+      {
+        han: "쓸쓸하던 그 골목을",
+        rom: "sseulsseulhadeon geu golmogeul",
+        eng: "That lonely alleyway",
+      },
+      {
+        han: "당신은 기억하십니까",
+        rom: "dangsineun gieokhasimnikka",
+        eng: "Do you still remember?",
+      },
+      {
+        han: "지금도 난 기억합니다",
+        rom: "jigeumdo nan gieokhamnida",
+        eng: "I still remember, even now",
+      },
+      {
+        han: "철없던 시절의",
+        rom: "cheoreopdeon sijeorui",
+        eng: "Of those childish days",
+      },
+      {
+        han: "눈부시게 아름다운 밤",
+        rom: "nunbusige areumdaun bam",
+        eng: "Dazzlingly beautiful nights",
+      },
+      { han: "아직 난 사랑 중", rom: "ajik nan sarang jung", eng: "I am still in love" },
+    ],
+    story:
+      "\"My Old Story\" opens A Flower Bookmark, IU's 2014 remake project where she reinterpreted older Korean songs she'd grown up with. The original belongs to indie duo Eoeoobook; in IU's hands it became quieter and more personal. Recorded nearly live with minimal overdubs — acoustic guitar, a little piano, her voice. No strings, no builds. The kind of track that rewards a listening room and a good DAC. A year later she'd re-record it for a soundtrack. This was the version that mattered.",
+    sizes: { flac: "19.0 MB", alac: "12.6 MB", mp3: "4.8 MB" },
   },
 ];
 
@@ -99,23 +200,23 @@ function AudoraPeek({
       <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-[#fb7185]/20 blur-3xl" />
 
       <div className="absolute inset-4 flex items-center gap-3">
-        <div className="relative h-28 w-28 rounded-md bg-gradient-to-br from-[#e11d48] via-[#be185d] to-[#831843] shadow-lg flex items-center justify-center shrink-0">
-          <svg viewBox="0 0 100 100" className="w-20 h-20 opacity-90" aria-hidden>
-            <circle cx="50" cy="50" r="46" fill="#1f1a1e" />
-            <circle cx="50" cy="50" r="32" fill="none" stroke="#fda4af" strokeWidth="0.4" opacity="0.5" />
-            <circle cx="50" cy="50" r="22" fill="none" stroke="#fda4af" strokeWidth="0.4" opacity="0.5" />
-            <circle cx="50" cy="50" r="12" fill="#e11d48" />
-            <circle cx="50" cy="50" r="2" fill="#fce7f3" />
-          </svg>
+        <div className="relative h-28 w-28 rounded-md overflow-hidden shadow-lg ring-1 ring-black/10 shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/audio/spring-day.jpg"
+            alt=""
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
         </div>
         <div className="min-w-0 flex-1">
           <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9f1239]">
             Now playing
           </span>
           <p className="mt-1 font-semibold text-[#4c0519] leading-tight truncate">
-            Midnight in Kyoto
+            Spring Day
           </p>
-          <p className="text-[11px] text-[#9f1239] truncate">Hiroshi Yoshimura</p>
+          <p className="text-[11px] text-[#9f1239] truncate">BTS · 봄날</p>
           <div className="mt-3 flex items-end gap-[2px] h-[24px]">
             {Array.from({ length: 28 }).map((_, i) => (
               <div
@@ -148,10 +249,171 @@ function AudoraPeek({
 
 type Tab = "now" | "youtube" | "lyrics" | "ai" | "download";
 
+type Player = {
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+  track: Track;
+  trackIndex: number;
+  selectTrack: (i: number) => void;
+  playing: boolean;
+  buffering: boolean;
+  toggle: () => void;
+  currentTime: number;
+  duration: number;
+  getAnalyserData: () => Uint8Array | null;
+};
+
+function useAudioPlayer(): Player {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ctxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const dataRef = useRef<Uint8Array | null>(null);
+
+  const [trackIndex, setTrackIndex] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [buffering, setBuffering] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const shouldPlayNext = useRef(false);
+
+  const track = TRACKS[trackIndex];
+
+  const ensureCtx = useCallback(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (!ctxRef.current) {
+      type WindowWithWebkit = Window & {
+        webkitAudioContext?: typeof AudioContext;
+      };
+      const w = window as WindowWithWebkit;
+      const Ctx = window.AudioContext || w.webkitAudioContext;
+      if (!Ctx) return;
+      ctxRef.current = new Ctx();
+    }
+    if (!sourceRef.current && ctxRef.current) {
+      try {
+        sourceRef.current = ctxRef.current.createMediaElementSource(a);
+        analyserRef.current = ctxRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+        analyserRef.current.smoothingTimeConstant = 0.75;
+        sourceRef.current.connect(analyserRef.current);
+        analyserRef.current.connect(ctxRef.current.destination);
+        dataRef.current = new Uint8Array(analyserRef.current.frequencyBinCount);
+      } catch {
+        // MediaElementSource already created — ignore
+      }
+    }
+    if (ctxRef.current.state === "suspended") {
+      void ctxRef.current.resume();
+    }
+  }, []);
+
+  const toggle = useCallback(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    ensureCtx();
+    if (a.paused) {
+      void a.play().catch(() => {});
+    } else {
+      a.pause();
+    }
+  }, [ensureCtx]);
+
+  const selectTrack = useCallback(
+    (i: number) => {
+      if (i === trackIndex) {
+        toggle();
+        return;
+      }
+      shouldPlayNext.current = true;
+      setTrackIndex(i);
+    },
+    [trackIndex, toggle],
+  );
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const wasPlaying = !a.paused || shouldPlayNext.current;
+    a.src = TRACKS[trackIndex].audio;
+    a.load();
+    setCurrentTime(0);
+    if (wasPlaying) {
+      ensureCtx();
+      void a.play().catch(() => {});
+    }
+    shouldPlayNext.current = false;
+  }, [trackIndex, ensureCtx]);
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+    const onTime = () => setCurrentTime(a.currentTime);
+    const onMeta = () => setDuration(a.duration || 0);
+    const onWaiting = () => setBuffering(true);
+    const onPlaying = () => setBuffering(false);
+    const onEnded = () => {
+      shouldPlayNext.current = true;
+      setTrackIndex((i) => (i + 1) % TRACKS.length);
+    };
+    a.addEventListener("play", onPlay);
+    a.addEventListener("pause", onPause);
+    a.addEventListener("timeupdate", onTime);
+    a.addEventListener("loadedmetadata", onMeta);
+    a.addEventListener("durationchange", onMeta);
+    a.addEventListener("waiting", onWaiting);
+    a.addEventListener("playing", onPlaying);
+    a.addEventListener("ended", onEnded);
+    return () => {
+      a.removeEventListener("play", onPlay);
+      a.removeEventListener("pause", onPause);
+      a.removeEventListener("timeupdate", onTime);
+      a.removeEventListener("loadedmetadata", onMeta);
+      a.removeEventListener("durationchange", onMeta);
+      a.removeEventListener("waiting", onWaiting);
+      a.removeEventListener("playing", onPlaying);
+      a.removeEventListener("ended", onEnded);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      const a = audioRef.current;
+      if (a) a.pause();
+      if (ctxRef.current && ctxRef.current.state !== "closed") {
+        void ctxRef.current.close();
+      }
+    };
+  }, []);
+
+  const getAnalyserData = useCallback(() => {
+    const analyser = analyserRef.current;
+    const data = dataRef.current;
+    if (!analyser || !data) return null;
+    analyser.getByteFrequencyData(data as unknown as Uint8Array<ArrayBuffer>);
+    return data;
+  }, []);
+
+  return {
+    audioRef,
+    track,
+    trackIndex,
+    selectTrack,
+    playing,
+    buffering,
+    toggle,
+    currentTime,
+    duration: duration || track.duration,
+    getAnalyserData,
+  };
+}
+
 function AudoraFocus() {
   const [tab, setTab] = useState<Tab>("now");
   const [dark, setDark] = useState(true);
-  const [track, setTrack] = useState(TRACKS[0]);
+  const player = useAudioPlayer();
 
   const bg = dark ? "bg-[#0a0a0a] text-[#fafafa]" : "bg-white text-[#0a0a0a]";
   const surface = dark ? "bg-[#18181b]" : "bg-[#f4f4f5]";
@@ -166,6 +428,12 @@ function AudoraFocus() {
         bg,
       )}
     >
+      <audio
+        ref={player.audioRef}
+        src={TRACKS[0].audio}
+        preload="metadata"
+      />
+
       {/* Sidebar — case study */}
       <aside className={cn("border-r p-7 overflow-y-auto", border)}>
         <div className="flex items-center gap-3">
@@ -181,9 +449,10 @@ function AudoraFocus() {
         </div>
 
         <p className={cn("mt-5 text-sm leading-relaxed", subtle)}>
-          I buy FLAC tracks. Studio-recorded, not MP3. Qobuz didn&apos;t feel
-          right, nothing had the sorting, typography, or backstory I wanted.
-          So I built my own.
+          I buy FLAC tracks. Studio-recorded, not MP3. I listen to a lot of
+          Korean ballads and late-night indie — music that rewards a good DAC
+          and a quiet room. Qobuz didn&apos;t feel right. Nothing had the
+          sorting, typography, or backstory I wanted. So I built my own.
         </p>
 
         <div className="mt-6">
@@ -197,8 +466,8 @@ function AudoraFocus() {
           </p>
           <p className={cn("text-[13px] leading-relaxed", subtle)}>
             Solo build. Research, interaction design, every line of code.
-            I spent a week with FLAC files and my own listening habits before
-            designing a single screen.
+            I spent a week with my own FLAC library and listening habits
+            before designing a single screen.
           </p>
         </div>
 
@@ -353,12 +622,44 @@ function AudoraFocus() {
 
         <div className="flex-1 overflow-y-auto relative">
           {tab === "now" && (
-            <NowPlaying track={track} setTrack={setTrack} dark={dark} subtle={subtle} border={border} muted={muted} />
+            <NowPlaying
+              player={player}
+              dark={dark}
+              subtle={subtle}
+              border={border}
+              muted={muted}
+            />
           )}
-          {tab === "youtube" && <YouTubeTab dark={dark} subtle={subtle} surface={surface} border={border} />}
-          {tab === "lyrics" && <LyricsTab track={track} dark={dark} subtle={subtle} />}
-          {tab === "ai" && <AITab track={track} dark={dark} subtle={subtle} surface={surface} border={border} />}
-          {tab === "download" && <DownloadTab track={track} dark={dark} subtle={subtle} border={border} surface={surface} />}
+          {tab === "youtube" && (
+            <YouTubeTab
+              track={player.track}
+              dark={dark}
+              subtle={subtle}
+              surface={surface}
+              border={border}
+            />
+          )}
+          {tab === "lyrics" && (
+            <LyricsTab player={player} dark={dark} subtle={subtle} />
+          )}
+          {tab === "ai" && (
+            <AITab
+              track={player.track}
+              dark={dark}
+              subtle={subtle}
+              surface={surface}
+              border={border}
+            />
+          )}
+          {tab === "download" && (
+            <DownloadTab
+              track={player.track}
+              dark={dark}
+              subtle={subtle}
+              border={border}
+              surface={surface}
+            />
+          )}
         </div>
       </section>
     </div>
@@ -408,11 +709,7 @@ function BuildStep({
   Logo: React.ComponentType<{ size?: number; className?: string }>;
 }) {
   return (
-    <div
-      className={cn(
-        "grid grid-cols-[104px_1fr] items-start gap-3 py-1",
-      )}
-    >
+    <div className={cn("grid grid-cols-[104px_1fr] items-start gap-3 py-1")}>
       <span
         className={cn(
           "flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-[0.22em] px-2 py-1 rounded-md border whitespace-nowrap",
@@ -437,42 +734,46 @@ function BuildStep({
 // ---------- Tabs ----------
 
 function NowPlaying({
-  track,
-  setTrack,
+  player,
   dark,
   subtle,
   border,
   muted,
 }: {
-  track: (typeof TRACKS)[number];
-  setTrack: (t: (typeof TRACKS)[number]) => void;
+  player: Player;
   dark: boolean;
   subtle: string;
   border: string;
   muted: string;
 }) {
-  const [playing, setPlaying] = useState(true);
-  const [progress, setProgress] = useState(0.32);
+  const { track, trackIndex, selectTrack, playing, toggle, currentTime, duration, buffering, getAnalyserData } = player;
   const bars = useRef<HTMLDivElement[]>([]);
   const raf = useRef<number | null>(null);
-  const t = useRef(0);
+  const fallbackT = useRef(0);
 
   useEffect(() => {
-    if (!playing) {
-      if (raf.current) cancelAnimationFrame(raf.current);
-      raf.current = null;
-      return;
-    }
     const tick = () => {
-      t.current += 0.06;
-      for (let i = 0; i < bars.current.length; i++) {
-        const el = bars.current[i];
-        if (!el) continue;
-        const h =
-          18 +
-          Math.abs(Math.sin(t.current + i * 0.28)) * 52 +
-          Math.abs(Math.sin(t.current * 1.7 + i * 0.5)) * 10;
-        el.style.height = `${h}px`;
+      const data = getAnalyserData();
+      const count = bars.current.length;
+      if (data && playing) {
+        const step = Math.max(1, Math.floor(data.length / count));
+        for (let i = 0; i < count; i++) {
+          const el = bars.current[i];
+          if (!el) continue;
+          const v = data[i * step] ?? 0;
+          const h = 12 + (v / 255) * 68;
+          el.style.height = `${h}px`;
+        }
+      } else {
+        // idle ambient float when paused / no analyser yet
+        fallbackT.current += playing ? 0.06 : 0.02;
+        for (let i = 0; i < count; i++) {
+          const el = bars.current[i];
+          if (!el) continue;
+          const base = playing ? 28 : 18;
+          const amp = playing ? 16 : 4;
+          el.style.height = `${base + Math.abs(Math.sin(fallbackT.current + i * 0.3)) * amp}px`;
+        }
       }
       raf.current = requestAnimationFrame(tick);
     };
@@ -480,52 +781,101 @@ function NowPlaying({
     return () => {
       if (raf.current) cancelAnimationFrame(raf.current);
     };
-  }, [playing]);
+  }, [playing, getAnalyserData]);
 
-  useEffect(() => {
-    if (!playing) return;
-    const id = setInterval(() => {
-      setProgress((p) => (p >= 1 ? 0 : p + 1 / track.duration / 3));
-    }, 100);
-    return () => clearInterval(id);
-  }, [playing, track.duration]);
+  const progress = duration > 0 ? currentTime / duration : 0;
 
   return (
     <div className="p-8 grid grid-cols-[260px_1fr] gap-8 h-full">
       <div className="space-y-3">
-        <div className="relative h-60 w-60 rounded-2xl bg-gradient-to-br from-[#e11d48] via-[#be185d] to-[#831843] shadow-2xl flex items-center justify-center overflow-hidden">
-          <svg viewBox="0 0 100 100" className="w-44 h-44 animate-[spin_8s_linear_infinite]" aria-hidden>
-            <circle cx="50" cy="50" r="46" fill="#1f1a1e" />
-            <circle cx="50" cy="50" r="38" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
-            <circle cx="50" cy="50" r="30" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
-            <circle cx="50" cy="50" r="22" fill="none" stroke="#fda4af" strokeWidth="0.3" opacity="0.4" />
-            <circle cx="50" cy="50" r="14" fill="#e11d48" />
-            <circle cx="50" cy="50" r="3" fill="#fce7f3" />
-          </svg>
+        <div className="relative h-60 w-60">
+          <div
+            className={cn(
+              "absolute top-1 left-1 h-58 w-58 rounded-full transition-transform duration-[650ms] ease-out",
+              playing ? "translate-x-14" : "translate-x-0 opacity-0 scale-90",
+            )}
+            aria-hidden
+            style={{ height: "232px", width: "232px" }}
+          >
+            <div
+              className={cn(
+                "h-full w-full rounded-full relative",
+                playing ? "animate-[spin_9s_linear_infinite]" : "",
+              )}
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 50%, #1a1a1a 0%, #050505 55%, #111 100%)",
+                boxShadow: "0 18px 40px -12px rgba(0,0,0,0.7)",
+              }}
+            >
+              {[0.1, 0.2, 0.3, 0.42].map((i) => (
+                <div
+                  key={i}
+                  className="absolute rounded-full border border-white/5"
+                  style={{ inset: `${i * 100}%` }}
+                />
+              ))}
+              <div className="absolute inset-[38%] rounded-full overflow-hidden ring-1 ring-black/40">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={track.cover}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  draggable={false}
+                />
+              </div>
+              <div className="absolute inset-[48%] rounded-full bg-black" />
+            </div>
+          </div>
+          <div className="absolute inset-0 rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/20 z-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={track.cover}
+              alt={`${track.title} cover`}
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
+            <div
+              className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"
+              aria-hidden
+            />
+          </div>
         </div>
 
         <div>
           <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em] mb-2", subtle)}>Queue</p>
           <div className="space-y-1">
-            {TRACKS.map((tr) => (
-              <button
-                key={tr.title}
-                onClick={() => setTrack(tr)}
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded-md text-xs flex items-center justify-between",
-                  tr.title === track.title
-                    ? "bg-[#e11d48]/15 text-[#e11d48]"
-                    : dark
-                      ? "hover:bg-white/5"
-                      : "hover:bg-black/5",
-                )}
-              >
-                <span className="truncate">{tr.title}</span>
-                <span className={cn("text-[10px] font-mono shrink-0 ml-2", subtle)}>
-                  {formatTime(tr.duration)}
-                </span>
-              </button>
-            ))}
+            {TRACKS.map((tr, i) => {
+              const active = i === trackIndex;
+              return (
+                <button
+                  key={tr.slug}
+                  onClick={() => selectTrack(i)}
+                  className={cn(
+                    "w-full text-left px-3 py-2 rounded-md text-xs flex items-center justify-between",
+                    active
+                      ? "bg-[#e11d48]/15 text-[#e11d48]"
+                      : dark
+                        ? "hover:bg-white/5"
+                        : "hover:bg-black/5",
+                  )}
+                >
+                  <span className="truncate flex items-center gap-2">
+                    {active && playing ? (
+                      <span className="inline-flex items-end gap-[1.5px] h-3">
+                        <span className="w-[2px] bg-[#e11d48] animate-[eq1_0.8s_ease-in-out_infinite]" />
+                        <span className="w-[2px] bg-[#e11d48] animate-[eq2_0.7s_ease-in-out_infinite]" />
+                        <span className="w-[2px] bg-[#e11d48] animate-[eq3_0.9s_ease-in-out_infinite]" />
+                      </span>
+                    ) : null}
+                    <span className="truncate">{tr.title}</span>
+                  </span>
+                  <span className={cn("text-[10px] font-mono shrink-0 ml-2", subtle)}>
+                    {formatTime(tr.duration)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -538,9 +888,14 @@ function NowPlaying({
           <h3 className="mt-2 font-serif text-3xl md:text-4xl tracking-tight leading-tight truncate">
             {track.title}
           </h3>
+          {track.titleNative && (
+            <p className={cn("mt-0.5 text-sm font-serif italic", subtle)}>
+              {track.titleNative}
+            </p>
+          )}
           <p className={cn("mt-1 text-lg", subtle)}>{track.artist}</p>
           <p className={cn("mt-1 text-xs font-mono uppercase tracking-[0.22em]", subtle)}>
-            FLAC · 44.1 kHz · 24-bit
+            FLAC · 44.1 kHz · 16-bit {buffering && playing ? "· buffering…" : ""}
           </p>
         </div>
 
@@ -585,19 +940,31 @@ function NowPlaying({
         </div>
 
         <div className="mt-5 flex items-center gap-3 font-mono text-xs">
-          <span className={subtle}>{formatTime(progress * track.duration)}</span>
+          <span className={subtle}>{formatTime(currentTime)}</span>
           <div className={cn("flex-1 h-[3px] rounded-full overflow-hidden", muted)}>
             <div
               className="h-full bg-gradient-to-r from-[#e11d48] to-[#fb7185]"
               style={{ width: `${progress * 100}%` }}
             />
           </div>
-          <span className={subtle}>{formatTime(track.duration)}</span>
+          <span className={subtle}>{formatTime(duration)}</span>
         </div>
 
         <div className="mt-5 flex items-center justify-center gap-6">
           <button
-            onClick={() => setPlaying((p) => !p)}
+            onClick={() => selectTrack((trackIndex - 1 + TRACKS.length) % TRACKS.length)}
+            className={cn(
+              "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
+              dark ? "hover:bg-white/10 text-white/80" : "hover:bg-black/5 text-black/70",
+            )}
+            aria-label="Previous"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6v12h2V6H6zm3.5 6L20 18V6l-10.5 6z" />
+            </svg>
+          </button>
+          <button
+            onClick={toggle}
             className="h-14 w-14 rounded-full bg-[#e11d48] hover:bg-[#be185d] flex items-center justify-center shadow-lg transition-colors"
             aria-label={playing ? "Pause" : "Play"}
           >
@@ -612,31 +979,62 @@ function NowPlaying({
               </svg>
             )}
           </button>
+          <button
+            onClick={() => selectTrack((trackIndex + 1) % TRACKS.length)}
+            className={cn(
+              "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
+              dark ? "hover:bg-white/10 text-white/80" : "hover:bg-black/5 text-black/70",
+            )}
+            aria-label="Next"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 6v12h2V6h-2zM4 18l10.5-6L4 6v12z" />
+            </svg>
+          </button>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes eq1 {
+          0%, 100% { height: 4px; }
+          50% { height: 12px; }
+        }
+        @keyframes eq2 {
+          0%, 100% { height: 10px; }
+          50% { height: 4px; }
+        }
+        @keyframes eq3 {
+          0%, 100% { height: 6px; }
+          50% { height: 12px; }
+        }
+      `}</style>
     </div>
   );
 }
 
 function YouTubeTab({
+  track,
   dark,
   subtle,
   surface,
   border,
 }: {
+  track: Track;
   dark: boolean;
   subtle: string;
   surface: string;
   border: string;
 }) {
   const [url, setUrl] = useState("");
-  const [loaded, setLoaded] = useState<{ title: string; channel: string } | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const [typing, setTyping] = useState(true);
-  const targetUrl = "https://youtu.be/kQyUl3rhxW0";
+  const targetUrl = `https://youtu.be/${track.youtubeId}`;
+  const watchUrl = `https://www.youtube.com/watch?v=${track.youtubeId}`;
+  const thumbnail = `https://i.ytimg.com/vi/${track.youtubeId}/maxresdefault.jpg`;
 
   useEffect(() => {
     setUrl("");
-    setLoaded(null);
+    setLoaded(false);
     setTyping(true);
     let i = 0;
     const id = setInterval(() => {
@@ -645,16 +1043,11 @@ function YouTubeTab({
       if (i >= targetUrl.length) {
         clearInterval(id);
         setTyping(false);
-        setTimeout(() => {
-          setLoaded({
-            title: "Hiroshi Yoshimura · Music for Nine Postcards (Full Album)",
-            channel: "Light in the Attic Records",
-          });
-        }, 700);
+        setTimeout(() => setLoaded(true), 500);
       }
-    }, 60);
+    }, 50);
     return () => clearInterval(id);
-  }, []);
+  }, [targetUrl]);
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
@@ -691,44 +1084,57 @@ function YouTubeTab({
       </div>
 
       {loaded && (
-        <div
+        <a
+          href={watchUrl}
+          target="_blank"
+          rel="noreferrer"
           className={cn(
-            "mt-6 rounded-xl border overflow-hidden",
+            "mt-6 block rounded-xl border overflow-hidden group",
             border,
-            "animate-[fadeIn_0.4s_ease-out]",
+            "animate-[audora-fadeIn_0.4s_ease-out]",
           )}
         >
           <div className="relative aspect-video bg-gradient-to-br from-[#0a0a0a] to-[#27272a]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={thumbnail}
+              alt={track.youtubeTitle}
+              className="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = `https://i.ytimg.com/vi/${track.youtubeId}/hqdefault.jpg`;
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#e11d48] flex items-center justify-center shadow-2xl">
+              <div className="h-16 w-16 rounded-full bg-[#e11d48] flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
                   <path d="M7 4l13 8-13 8z" />
                 </svg>
               </div>
             </div>
             <span className="absolute bottom-3 right-3 font-mono text-[10px] bg-black/80 text-white px-2 py-1 rounded">
-              47:22
+              {track.youtubeLength}
             </span>
           </div>
           <div className={cn("p-4", surface)}>
-            <p className="font-semibold text-sm">{loaded.title}</p>
-            <p className={cn("text-xs mt-1", subtle)}>{loaded.channel}</p>
+            <p className="font-semibold text-sm">{track.youtubeTitle}</p>
+            <p className={cn("text-xs mt-1", subtle)}>{track.youtubeChannel}</p>
             <div className="mt-3 flex gap-2">
-              <button className="h-8 px-3 rounded-md bg-[#e11d48] hover:bg-[#be185d] text-white text-xs font-semibold transition-colors">
+              <span className="h-8 px-3 rounded-md bg-[#e11d48] text-white text-xs font-semibold flex items-center">
                 Queue now
-              </button>
-              <button
+              </span>
+              <span
                 className={cn(
-                  "h-8 px-3 rounded-md border text-xs font-semibold transition-colors",
+                  "h-8 px-3 rounded-md border text-xs font-semibold flex items-center gap-1",
                   border,
-                  dark ? "hover:bg-white/5" : "hover:bg-black/5",
+                  subtle,
                 )}
               >
-                Save to library
-              </button>
+                Watch on YouTube <span>↗</span>
+              </span>
             </div>
           </div>
-        </div>
+        </a>
       )}
 
       <div className={cn("mt-6 text-xs leading-relaxed", subtle)}>
@@ -738,7 +1144,7 @@ function YouTubeTab({
       </div>
 
       <style jsx>{`
-        @keyframes fadeIn {
+        @keyframes audora-fadeIn {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: none; }
         }
@@ -747,44 +1153,97 @@ function YouTubeTab({
   );
 }
 
-const LYRICS = [
-  "静かな夜、京都の雨",
-  "Soft the city breathes in grey",
-  "Neon flickers on the pavement",
-  "Tea cools by my side",
-  "A thousand paper cranes",
-  "Fold inside the silence",
-  "And I drift on the tone",
-  "Of a piano from next door",
-  "静かな夜、また明日",
-];
+type LrcLine = { time: number; text: string };
+
+function parseLrc(src: string): LrcLine[] {
+  const out: LrcLine[] = [];
+  for (const raw of src.split("\n")) {
+    const m = raw.match(/^\[(\d+):(\d+(?:\.\d+)?)\]\s*(.*)$/);
+    if (!m) continue;
+    const t = parseInt(m[1], 10) * 60 + parseFloat(m[2]);
+    const text = m[3].trim();
+    if (!text) continue;
+    out.push({ time: t, text });
+  }
+  return out.sort((a, b) => a.time - b.time);
+}
+
+function useLrc(url: string): { lines: LrcLine[]; loading: boolean } {
+  const [lines, setLines] = useState<LrcLine[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    setLines([]);
+    setLoading(true);
+    fetch(url)
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((text) => {
+        if (cancelled) return;
+        setLines(text ? parseLrc(text) : []);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+  return { lines, loading };
+}
 
 function LyricsTab({
-  track,
+  player,
   dark,
   subtle,
 }: {
-  track: (typeof TRACKS)[number];
+  player: Player;
   dark: boolean;
   subtle: string;
 }) {
-  const [active, setActive] = useState(0);
+  const { track, currentTime } = player;
+  const { lines, loading } = useLrc(track.lrc);
+  const offset = track.lrcOffset ?? 0;
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const lineRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  let active = -1;
+  const t = currentTime + offset;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].time <= t) active = i;
+    else break;
+  }
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setActive((i) => (i + 1) % LYRICS.length);
-    }, 2000);
-    return () => clearInterval(id);
-  }, []);
+    if (active < 0) return;
+    const el = lineRefs.current[active];
+    const container = listRef.current;
+    if (!el || !container) return;
+    const elRect = el.getBoundingClientRect();
+    const contRect = container.getBoundingClientRect();
+    const delta =
+      elRect.top - contRect.top - container.clientHeight / 2 + el.clientHeight / 2;
+    container.scrollBy({ top: delta, behavior: "smooth" });
+  }, [active]);
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <p className={cn("text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
-            Live lyrics · synced
+            {loading
+              ? "Live lyrics · loading…"
+              : lines.length
+                ? "Live lyrics · synced to playback"
+                : "Lyrics unavailable"}
           </p>
           <h3 className="mt-2 font-serif text-2xl tracking-tight">{track.title}</h3>
+          {track.titleNative && (
+            <p className={cn("text-xs italic font-serif mt-0.5", subtle)}>
+              {track.titleNative}
+            </p>
+          )}
+          <p className={cn("text-xs mt-0.5", subtle)}>{track.artist}</p>
         </div>
         <span
           className={cn(
@@ -795,29 +1254,56 @@ function LyricsTab({
         </span>
       </div>
 
-      <div className="mt-8 space-y-5">
-        {LYRICS.map((line, i) => {
+      <div
+        ref={listRef}
+        className="mt-6 space-y-4 overflow-y-auto pr-2 scroll-smooth"
+        style={{ maxHeight: "calc(92vh - 240px)" }}
+      >
+        {loading && (
+          <p className={cn("text-sm font-mono", subtle)}>Fetching LRC from lrclib…</p>
+        )}
+        {!loading && lines.length === 0 && (
+          <p className={cn("text-sm", subtle)}>
+            No synced lyrics available for this track.
+          </p>
+        )}
+        {lines.map((line, i) => {
           const distance = Math.abs(i - active);
-          const opacity = i === active ? 1 : Math.max(0.15, 1 - distance * 0.25);
-          const scale = i === active ? 1 : 0.94;
+          const opacity = i === active ? 1 : Math.max(0.2, 1 - distance * 0.18);
+          const scale = i === active ? 1 : 0.96;
           return (
-            <p
+            <div
               key={i}
-              className={cn(
-                "font-serif transition-all duration-500",
-                i === active
-                  ? "text-[#e11d48] text-4xl font-medium"
-                  : dark
-                    ? "text-white text-3xl"
-                    : "text-black text-3xl",
-              )}
-              style={{ opacity, transform: `scale(${scale})`, transformOrigin: "left center" }}
+              ref={(el) => {
+                lineRefs.current[i] = el;
+              }}
+              className="transition-all duration-500"
+              style={{
+                opacity,
+                transform: `scale(${scale})`,
+                transformOrigin: "left center",
+              }}
             >
-              {line}
-            </p>
+              <p
+                className={cn(
+                  "font-serif leading-snug",
+                  i === active
+                    ? "text-[#e11d48] text-2xl md:text-3xl font-medium"
+                    : dark
+                      ? "text-white text-lg md:text-xl"
+                      : "text-black text-lg md:text-xl",
+                )}
+              >
+                {line.text}
+              </p>
+            </div>
           );
         })}
       </div>
+
+      <p className={cn("mt-4 text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+        Lyrics · lrclib.net
+      </p>
     </div>
   );
 }
@@ -829,15 +1315,14 @@ function AITab({
   surface,
   border,
 }: {
-  track: (typeof TRACKS)[number];
+  track: Track;
   dark: boolean;
   subtle: string;
   surface: string;
   border: string;
 }) {
-  const story = `"${track.title}" sits in the tradition of Japanese kankyō ongaku, the "environmental music" that ${track.artist} helped crystallize in the late 80s and early 90s. ${track.year === 1993 ? "Recorded in a single afternoon session at the artist's Tokyo apartment" : "Released as part of a small-run cassette"}, the piece leans on a Roland SH-2 drone, long sustains, and spaced silences. What you're hearing is less a song than a room: a thick, slow atmosphere you walk into and out of.`;
-
   const [typed, setTyped] = useState("");
+  const story = track.story;
 
   useEffect(() => {
     setTyped("");
@@ -850,6 +1335,24 @@ function AITab({
     return () => clearInterval(id);
   }, [story]);
 
+  const related: Record<string, string[]> = {
+    "spring-day": [
+      "BTS · Blue & Grey",
+      "BTS · 00:00 (Zero O'Clock)",
+      "RM · Seoul (prod. HONNE)",
+    ],
+    "untitled-2014": [
+      "TAEYANG · Eyes, Nose, Lips",
+      "IU feat. G-DRAGON · Palette",
+      "Crush · Beautiful",
+    ],
+    "my-old-story": [
+      "IU · Through the Night (밤편지)",
+      "Eoeoobook · original version",
+      "Yoon Jong Shin · Like It",
+    ],
+  };
+
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <div className="flex items-center gap-2 mb-1">
@@ -860,7 +1363,12 @@ function AITab({
         >
           AI · Backstory
         </span>
-        <span className={cn("flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.22em]", subtle)}>
+        <span
+          className={cn(
+            "flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.22em]",
+            subtle,
+          )}
+        >
           <span>via</span>
           <SpotifyLogo size={12} />
           <span>+</span>
@@ -868,11 +1376,19 @@ function AITab({
         </span>
       </div>
       <h3 className="mt-3 font-serif text-3xl tracking-tight">{track.title}</h3>
-      <p className={cn("text-sm", subtle)}>
+      {track.titleNative && (
+        <p className={cn("text-sm italic font-serif", subtle)}>{track.titleNative}</p>
+      )}
+      <p className={cn("text-sm mt-1", subtle)}>
         {track.artist} · {track.album} · {track.year}
       </p>
 
-      <p className={cn("mt-6 text-lg leading-relaxed font-serif", dark ? "text-white/85" : "text-black/80")}>
+      <p
+        className={cn(
+          "mt-6 text-lg leading-relaxed font-serif",
+          dark ? "text-white/85" : "text-black/80",
+        )}
+      >
         {typed}
         {typed.length < story.length && (
           <span className="inline-block w-[2px] h-[1.1em] bg-[#e11d48] align-middle ml-0.5 animate-pulse" />
@@ -884,11 +1400,7 @@ function AITab({
           Related tracks
         </p>
         <ul className="space-y-1">
-          {[
-            "Hiroshi Yoshimura · Music for Nine Postcards",
-            "Haruomi Hosono · Watering a Flower",
-            "Mariah · Shinzo No Tobira",
-          ].map((t) => (
+          {(related[track.slug] ?? []).map((t) => (
             <li key={t} className={cn("py-1 flex items-center justify-between", subtle)}>
               <span>{t}</span>
               <span>→</span>
@@ -907,24 +1419,28 @@ function DownloadTab({
   border,
   surface,
 }: {
-  track: (typeof TRACKS)[number];
+  track: Track;
   dark: boolean;
   subtle: string;
   border: string;
   surface: string;
 }) {
   const qualities = [
-    { label: "FLAC", detail: "44.1 kHz · 24-bit · lossless", size: "42.3 MB" },
-    { label: "ALAC", detail: "44.1 kHz · 16-bit · lossless", size: "28.1 MB" },
-    { label: "MP3", detail: "320 kbps · compressed", size: "9.8 MB" },
+    { label: "FLAC", detail: "44.1 kHz · 16-bit · lossless", size: track.sizes.flac },
+    { label: "ALAC", detail: "44.1 kHz · 16-bit · lossless", size: track.sizes.alac },
+    { label: "MP3", detail: "320 kbps · compressed", size: track.sizes.mp3 },
   ];
   const [picked, setPicked] = useState(0);
   const [progress, setProgress] = useState(0);
   const [downloading, setDownloading] = useState(true);
 
   useEffect(() => {
-    if (!downloading) return;
     setProgress(0);
+    setDownloading(true);
+  }, [track.slug, picked]);
+
+  useEffect(() => {
+    if (!downloading) return;
     const id = setInterval(() => {
       setProgress((p) => {
         if (p >= 1) {
@@ -936,7 +1452,7 @@ function DownloadTab({
       });
     }, 80);
     return () => clearInterval(id);
-  }, [downloading, picked]);
+  }, [downloading]);
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
@@ -947,7 +1463,15 @@ function DownloadTab({
 
       <div className={cn("mt-5 rounded-xl border p-5", border, surface)}>
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-lg bg-gradient-to-br from-[#e11d48] to-[#831843] shrink-0" />
+          <div className="h-16 w-16 rounded-lg shrink-0 overflow-hidden ring-1 ring-black/10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={track.cover}
+              alt=""
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
+          </div>
           <div>
             <p className="font-semibold">{track.title}</p>
             <p className={cn("text-xs", subtle)}>
@@ -974,7 +1498,11 @@ function DownloadTab({
                 <div
                   className={cn(
                     "h-4 w-4 rounded-full border-2",
-                    picked === i ? "border-[#e11d48] bg-[#e11d48]" : dark ? "border-white/30" : "border-black/30",
+                    picked === i
+                      ? "border-[#e11d48] bg-[#e11d48]"
+                      : dark
+                        ? "border-white/30"
+                        : "border-black/30",
                   )}
                 />
                 <div>
@@ -1009,6 +1537,7 @@ function DownloadTab({
 }
 
 function formatTime(s: number): string {
+  if (!Number.isFinite(s) || s < 0) return "0:00";
   const m = Math.floor(s / 60);
   const ss = Math.floor(s % 60)
     .toString()
