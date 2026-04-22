@@ -3,7 +3,7 @@ export const site = {
   shortName: "Haider",
   role: "Product Designer · PM · Developer",
   location: "Karachi, Pakistan",
-  email: "admin@digitalhire.com",
+  email: "hello@itshaider.work",
   tagline:
     "I design, manage, and ship software end-to-end. Product, AI, and the plumbing underneath.",
   about: [
@@ -14,7 +14,7 @@ export const site = {
   socials: {
     github: "https://github.com/haider0072",
     linkedin: "https://www.linkedin.com/in/hadralikhan",
-    twitter: "https://twitter.com/hadralikhan",
-    email: "mailto:admin@digitalhire.com",
+    twitter: "https://x.com/hadralikhan",
+    email: "mailto:hello@itshaider.work",
   },
 };

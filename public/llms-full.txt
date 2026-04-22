@@ -76,8 +76,8 @@ Video-based hiring / recruitment SaaS. Title Product Designer; actual scope end-
 
 ## Contact
 
-- **Email**: admin@digitalhire.com
+- **Email**: hello@itshaider.work
 - **Portfolio**: https://hadralikhan.vercel.app
 - **GitHub**: https://github.com/haider0072
 - **LinkedIn**: https://www.linkedin.com/in/hadralikhan
-- **Twitter**: https://twitter.com/hadralikhan
+- **Twitter**: https://x.com/hadralikhan
