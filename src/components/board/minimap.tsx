@@ -39,6 +39,7 @@ export function Minimap({
   const dotColor = (kind: string) => {
     if (kind === "project") return "#c4623d";
     if (kind === "intro") return "#2a1f17";
+    if (kind === "about") return "#2a1f17";
     if (kind === "contact") return "#2a1f17";
     if (kind === "polaroid") return "#b88a3e";
     if (kind === "note") return "#b88a3e";

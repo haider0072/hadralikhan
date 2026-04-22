@@ -1,52 +1,46 @@
 import type { BoardCard } from "./types";
 
-// World is in "world units" — cards positioned inside a 5200 x 3600 area.
+// Layout philosophy — one hero, everything orbits it.
 //
-// Strategy: isolated clusters with real breathing room between them.
-// Instead of packing everything around the Me zone, each cluster gets its
-// own quadrant and the empty dots between are treated as composition
-// (not as bug). On entry at 80% zoom, the visitor sees a clean Me zone
-// with quiet atmosphere around it — projects and the dev corner reveal
-// with a short pan.
+// The About card sits dead-center as the single dense hub. Six prototypes
+// form a flat oval ring around it (like a planetary system). Polaroids sit
+// closer than the ring, pinned near the About card. The GitHub dev corner
+// clusters in the north gap above the hero. A top-right quote+heart pair
+// and a bottom-right pink note balance the right side. Outer negative
+// space carries sparse atmosphere — not structure.
 //
-//             [ Contact ]                   ← top air
-//     [Mochi]                   [Audora]    ← top projects sit high
-//
-//   [Resume]        [ Me ]        [Skills]  ← center band
-//                 (polaroids,
-//                  arrow, quote)
-//
-//               [ pink note ]
-//   [FlowCraft]                   [Ember]   ← flanks drop below
-//     [Trading]              [WiseSend]
-//                                  ↳
-//                              [ Dev Corner ]
-export const WORLD = { w: 5400, h: 3800, padding: 600 };
+// Rotation budget: About is 0° as the anchor. Audora (ring right) is also
+// 0° to stabilize the horizon. Every other card tilts 2–8° so the anchors
+// read as deliberate.
 
-export const BOARD_HOME = { x: 2700, y: 1900, scale: 0.8 };
+export const WORLD = { w: 4400, h: 3200, padding: 400 };
+
+export const BOARD_HOME = { x: 2200, y: 1600, scale: 0.85 };
 
 export const cards: BoardCard[] = [
   // ──────────────────────────────────────────────────────────────
-  // ME zone — dead-center, tight
+  // ABOUT — dense hero, dead center, 0° anchor
   // ──────────────────────────────────────────────────────────────
   {
-    id: "intro",
-    kind: "intro",
-    x: 2700,
-    y: 1900,
-    rotation: -1.5,
+    id: "about",
+    kind: "about",
+    x: 2200,
+    y: 1600,
+    rotation: 0,
     depth: 2,
-    w: 520,
-    h: 340,
+    w: 540,
   },
 
+  // ──────────────────────────────────────────────────────────────
+  // POLAROIDS — pinned inside the ring, closer to About
+  // ──────────────────────────────────────────────────────────────
   {
     id: "polaroid-me",
     kind: "polaroid",
-    x: 2790,
-    y: 1560,
-    rotation: 2,
-    depth: 2,
+    x: 1720,
+    y: 1500,
+    rotation: -8,
+    depth: 1,
     caption: "haider, probably debugging",
     emoji: "🧑🏻‍💻",
     color: "#b88a3e",
@@ -54,9 +48,9 @@ export const cards: BoardCard[] = [
   {
     id: "polaroid-karachi",
     kind: "polaroid",
-    x: 2240,
-    y: 1820,
-    rotation: -6,
+    x: 2840,
+    y: 1460,
+    rotation: 5,
     depth: 1,
     caption: "home · karachi",
     emoji: "🌙",
@@ -65,122 +59,57 @@ export const cards: BoardCard[] = [
   {
     id: "polaroid-desk",
     kind: "polaroid",
-    x: 3170,
-    y: 1960,
-    rotation: 5,
+    x: 2392,
+    y: 2377,
+    rotation: -3,
     depth: 1,
     caption: "the desk, 2am",
     emoji: "☕",
     color: "#c4623d",
   },
 
-  {
-    id: "sticker-arrow-1",
-    kind: "sticker",
-    x: 2530,
-    y: 1700,
-    rotation: -15,
-    depth: 3,
-    symbol: "↴",
-    label: "that's me",
-  },
-  {
-    id: "quote-1",
-    kind: "quote",
-    x: 3320,
-    y: 1530,
-    rotation: -3,
-    depth: 1,
-    text: "a product is a frozen argument. design the argument first.",
-  },
-
   // ──────────────────────────────────────────────────────────────
-  // TOP BAND — Contact floats at the very top, Mochi + Audora flank.
+  // PROJECT RING — six prototypes, flat oval around About
+  //   E  = audora      (0°, anchor, 0°)
+  //   NE = flowcraft   (upper-right)
+  //   NW = mochi       (upper-left)
+  //   W  = trading-bot (left)
+  //   SW = wisesend    (lower-left)
+  //   SE = ember       (lower-right)
   // ──────────────────────────────────────────────────────────────
   {
-    id: "contact",
-    kind: "contact",
-    x: 2700,
-    y: 860,
-    rotation: -1,
-    depth: 2,
-    w: 420,
-    h: 220,
+    id: "project-audora",
+    kind: "prototype",
+    slug: "audora",
+    x: 3300,
+    y: 1620,
+    rotation: 0,
+    depth: 0,
+  },
+  {
+    id: "project-flowcraft",
+    kind: "prototype",
+    slug: "flowcraft",
+    x: 3000,
+    y: 1000,
+    rotation: 3,
+    depth: 0,
   },
   {
     id: "project-mochi",
     kind: "prototype",
     slug: "mochi",
-    x: 1600,
+    x: 1380,
     y: 1020,
     rotation: -4,
     depth: 0,
   },
   {
-    id: "project-audora",
-    kind: "prototype",
-    slug: "audora",
-    x: 3820,
-    y: 1030,
-    rotation: 2,
-    depth: 0,
-  },
-
-  // ──────────────────────────────────────────────────────────────
-  // CENTER FLANKS — Resume west, Skills east, room before Me
-  // ──────────────────────────────────────────────────────────────
-  {
-    id: "experience",
-    kind: "experience",
-    x: 1080,
-    y: 1600,
-    rotation: -2,
-    depth: 1,
-    w: 380,
-    h: 460,
-  },
-  {
-    id: "skills",
-    kind: "skills",
-    x: 4300,
-    y: 1620,
-    rotation: 3,
-    depth: 1,
-    w: 380,
-    h: 420,
-  },
-
-  // ──────────────────────────────────────────────────────────────
-  // LOWER BAND — Case studies drop below Me with a clear gap
-  // ──────────────────────────────────────────────────────────────
-  {
-    id: "project-flowcraft",
-    kind: "prototype",
-    slug: "flowcraft",
-    x: 1480,
-    y: 2420,
-    rotation: 2,
-    depth: 0,
-  },
-  {
-    id: "project-ember",
-    kind: "prototype",
-    slug: "ember",
-    x: 3920,
-    y: 2440,
-    rotation: -3,
-    depth: 0,
-  },
-
-  // ──────────────────────────────────────────────────────────────
-  // BOTTOM BAND — older real ships, distinct from the lower band
-  // ──────────────────────────────────────────────────────────────
-  {
     id: "project-trading",
     kind: "prototype",
     slug: "trading-bot",
-    x: 1900,
-    y: 2920,
+    x: 980,
+    y: 1700,
     rotation: -5,
     depth: 0,
   },
@@ -188,21 +117,75 @@ export const cards: BoardCard[] = [
     id: "project-wisesend",
     kind: "prototype",
     slug: "wisesend",
-    x: 3300,
-    y: 2940,
-    rotation: -2,
+    x: 1490,
+    y: 2192,
+    rotation: 2,
+    depth: 0,
+  },
+  {
+    id: "project-ember",
+    kind: "prototype",
+    slug: "ember",
+    x: 2960,
+    y: 2320,
+    rotation: -3,
     depth: 0,
   },
 
   // ──────────────────────────────────────────────────────────────
-  // STICKY NOTES — sit in the gaps between bands as glue
+  // DEV CORNER — compact GitHub cluster in the north gap
   // ──────────────────────────────────────────────────────────────
+  {
+    id: "gh-languages",
+    kind: "gh-languages",
+    x: 1960,
+    y: 380,
+    rotation: 3,
+    depth: 0,
+  },
+  {
+    id: "gh-stats",
+    kind: "gh-stats",
+    x: 2560,
+    y: 500,
+    rotation: -2,
+    depth: 1,
+  },
+  {
+    id: "gh-calendar",
+    kind: "gh-calendar",
+    x: 2040,
+    y: 680,
+    rotation: -1,
+    depth: 1,
+  },
+  {
+    id: "gh-activity",
+    kind: "gh-activity",
+    x: 2600,
+    y: 820,
+    rotation: 2,
+    depth: 1,
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // ATMOSPHERE — accents in the outer negative space
+  // ──────────────────────────────────────────────────────────────
+  {
+    id: "quote-1",
+    kind: "quote",
+    x: 1897,
+    y: 1037,
+    rotation: -3,
+    depth: 1,
+    text: "a product is a frozen argument. design the argument first.",
+  },
   {
     id: "note-1",
     kind: "note",
-    x: 2100,
-    y: 1200,
-    rotation: -4,
+    x: 1018,
+    y: 1247,
+    rotation: -5,
     depth: 2,
     text: "design like you'll read it at 2am with tired eyes",
     author: "h.",
@@ -211,32 +194,32 @@ export const cards: BoardCard[] = [
   {
     id: "note-2",
     kind: "note",
-    x: 2700,
-    y: 2350,
-    rotation: 6,
+    x: 3398,
+    y: 2097,
+    rotation: 4,
     depth: 2,
     text: "ship, then make it beautiful. never the other way.",
     color: "pink",
   },
-  {
-    id: "note-3",
-    kind: "note",
-    x: 1140,
-    y: 2540,
-    rotation: 3,
-    depth: 2,
-    text: "karachi · 05:00 UTC · coffee: black",
-    color: "blue",
-  },
 
   // ──────────────────────────────────────────────────────────────
-  // STICKERS — small mood markers in the empty dots between zones
+  // STICKERS — minimal, atmospheric marks
   // ──────────────────────────────────────────────────────────────
+  {
+    id: "sticker-arrow",
+    kind: "sticker",
+    x: 2403,
+    y: 1159,
+    rotation: -15,
+    depth: 3,
+    symbol: "↴",
+    label: "about me",
+  },
   {
     id: "sticker-star",
     kind: "sticker",
-    x: 920,
-    y: 820,
+    x: 1548,
+    y: 681,
     rotation: 10,
     depth: 3,
     symbol: "✶",
@@ -244,84 +227,20 @@ export const cards: BoardCard[] = [
   {
     id: "sticker-heart",
     kind: "sticker",
-    x: 4420,
-    y: 860,
+    x: 3160,
+    y: 1180,
     rotation: -8,
     depth: 3,
     symbol: "❤",
   },
   {
-    id: "sticker-flower",
-    kind: "sticker",
-    x: 920,
-    y: 2960,
-    rotation: 12,
-    depth: 3,
-    symbol: "✿",
-  },
-  {
     id: "sticker-spark",
     kind: "sticker",
-    x: 2700,
-    y: 3200,
-    rotation: -6,
+    x: 2010,
+    y: 2271,
+    rotation: -4,
     depth: 3,
     symbol: "✦",
-  },
-  {
-    id: "sticker-circle",
-    kind: "sticker",
-    x: 2920,
-    y: 2940,
-    rotation: 0,
-    depth: 3,
-    symbol: "○",
-    label: "tap a project →",
-  },
-
-  // ──────────────────────────────────────────────────────────────
-  // DEV CORNER — south-east second pole with real distance from Me
-  // ──────────────────────────────────────────────────────────────
-  {
-    id: "sticker-dev",
-    kind: "sticker",
-    x: 3820,
-    y: 2600,
-    rotation: -10,
-    depth: 3,
-    symbol: "↳",
-    label: "also: i code",
-  },
-  {
-    id: "gh-languages",
-    kind: "gh-languages",
-    x: 3930,
-    y: 2880,
-    rotation: 4,
-    depth: 0,
-  },
-  {
-    id: "gh-stats",
-    kind: "gh-stats",
-    x: 4480,
-    y: 2910,
-    rotation: 2.5,
-    depth: 1,
-  },
-  {
-    id: "gh-calendar",
-    kind: "gh-calendar",
-    x: 4080,
-    y: 3210,
-    rotation: -1.5,
-    depth: 1,
-  },
-  {
-    id: "gh-activity",
-    kind: "gh-activity",
-    x: 4520,
-    y: 3290,
-    rotation: -3,
-    depth: 1,
+    label: "drag · scroll · click",
   },
 ];

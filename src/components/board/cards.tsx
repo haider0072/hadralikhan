@@ -7,6 +7,7 @@ import { skillGroups } from "@/data/skills";
 import type {
   BoardCard,
   IntroCard,
+  AboutCard,
   ProjectCard,
   PrototypeCard,
   PolaroidCard,
@@ -51,6 +52,8 @@ export function CardRenderer({
   switch (card.kind) {
     case "intro":
       return <IntroCardView card={card} />;
+    case "about":
+      return <AboutCardView card={card} />;
     case "project":
       return <ProjectCardView card={card} />;
     case "prototype":
@@ -117,6 +120,138 @@ function GhPlaceholder({ label }: { label: string }) {
     >
       {label}
     </div>
+  );
+}
+
+function AboutCardView({ card }: { card: AboutCard }) {
+  return (
+    <article
+      data-no-drag
+      style={{ width: card.w ?? 540 }}
+      className="bg-ink text-cream rounded-sm shadow-[0_28px_60px_-18px_rgba(0,0,0,0.45)] p-8 flex flex-col"
+    >
+      <header>
+        <h1 className="font-serif text-2xl leading-tight tracking-tight">
+          {site.name}
+        </h1>
+        <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-cream/60 mt-1">
+          Designer · PM · Developer
+        </p>
+      </header>
+
+      <div className="mt-5 space-y-3 text-[13px] leading-relaxed text-cream/85">
+        <p>
+          I design, manage, and ship software end-to-end. Karachi-based.
+          Currently building{" "}
+          <span className="font-semibold text-cream">DigitalHire</span>, a
+          video-first hiring platform where I lead product and also work
+          down the stack.
+        </p>
+        <p className="text-cream/70">
+          Outside the editor: Japanese architecture, cinematic storytelling,
+          and vintage objects. Portfolio below is a pinboard — drag to pan,
+          scroll to zoom, click a project to open.
+        </p>
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        <a
+          href={site.socials.email}
+          className="rounded-lg bg-cream/10 hover:bg-cream/15 border border-cream/10 px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-cream transition-colors"
+        >
+          Email
+        </a>
+        <a
+          href={site.socials.linkedin}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-lg bg-cream/10 hover:bg-cream/15 border border-cream/10 px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-cream transition-colors"
+        >
+          LinkedIn
+        </a>
+        <a
+          href={site.socials.github}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-lg bg-cream/10 hover:bg-cream/15 border border-cream/10 px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-cream transition-colors"
+        >
+          GitHub
+        </a>
+        <a
+          href={site.socials.twitter}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-lg bg-cream/10 hover:bg-cream/15 border border-cream/10 px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-cream transition-colors"
+        >
+          Twitter
+        </a>
+      </div>
+
+      <div className="mt-6 h-px bg-cream/10" />
+
+      <div className="mt-5">
+        <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-cream/50 mb-3">
+          Where I've been
+        </p>
+        <ul className="space-y-2.5">
+          {experience.map((exp) => (
+            <li
+              key={exp.company}
+              className="grid grid-cols-[16px_1fr_auto] items-baseline gap-3"
+            >
+              <span
+                className="h-2 w-2 rounded-[2px] mt-1.5"
+                aria-hidden
+                style={{
+                  background:
+                    exp.company === "DigitalHire"
+                      ? "#c4623d"
+                      : exp.company === "iSystematic"
+                        ? "#6b8aa5"
+                        : exp.company === "Walletly"
+                          ? "#8a9d6c"
+                          : "#b88a3e",
+                }}
+              />
+              <div className="min-w-0">
+                <p className="font-medium text-cream leading-tight text-sm">
+                  {exp.company}
+                </p>
+                <p className="text-cream/55 text-[11px] leading-tight mt-0.5">
+                  {exp.role}
+                </p>
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/45 whitespace-nowrap">
+                {exp.period}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-6 h-px bg-cream/10" />
+
+      <div className="mt-5">
+        <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-cream/50 mb-3">
+          What I reach for
+        </p>
+        <div className="space-y-2">
+          {skillGroups.slice(0, 5).map((g) => (
+            <div
+              key={g.label}
+              className="grid grid-cols-[76px_1fr] gap-3 text-[12px]"
+            >
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-cream/45 pt-0.5">
+                {g.label}
+              </span>
+              <span className="text-cream/75 leading-snug">
+                {g.items.slice(0, 5).join(" · ")}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </article>
   );
 }
 

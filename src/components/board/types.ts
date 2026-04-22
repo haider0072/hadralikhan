@@ -1,5 +1,6 @@
 export type CardKind =
   | "intro"
+  | "about"
   | "project"
   | "prototype"
   | "polaroid"
@@ -27,6 +28,10 @@ export type CardBase = {
 
 export type IntroCard = CardBase & {
   kind: "intro";
+};
+
+export type AboutCard = CardBase & {
+  kind: "about";
 };
 
 export type ProjectCard = CardBase & {
@@ -96,6 +101,7 @@ export type GhLanguagesCard = CardBase & { kind: "gh-languages" };
 
 export type BoardCard =
   | IntroCard
+  | AboutCard
   | ProjectCard
   | PrototypeCard
   | PolaroidCard
