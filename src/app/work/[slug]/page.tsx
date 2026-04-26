@@ -1,9 +1,59 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { projects } from "@/data/projects";
+import { seo } from "@/data/seo";
+import { site } from "@/data/site";
 
 export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const project = projects.find((p) => p.slug === slug);
+  if (!project) return {};
+
+  const title = `${project.title} — ${project.tagline}`;
+  const description = `${project.title} (${project.year}) by ${seo.name}. ${project.tagline} Built with ${project.stack.join(", ")}. Role: ${project.role}.`;
+  const canonical = `/work/${project.slug}`;
+
+  return {
+    title: `${project.title} · ${project.year} · ${seo.name}`,
+    description,
+    keywords: [
+      project.title,
+      `${project.title} case study`,
+      `${seo.name} ${project.title}`,
+      ...project.stack,
+      project.role,
+      "portfolio",
+      "case study",
+      seo.name,
+    ],
+    alternates: { canonical },
+    openGraph: {
+      type: "article",
+      url: `${seo.url}${canonical}`,
+      title: `${project.title} — ${project.tagline}`,
+      description,
+      siteName: seo.name,
+      authors: [seo.url],
+      tags: project.stack,
+      publishedTime: `${project.year}-01-01`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: seo.twitterHandle,
+      creator: seo.twitterHandle,
+      title: `${project.title} — ${project.tagline}`,
+      description,
+    },
+  };
 }
 
 export default async function WorkFallbackPage({
@@ -15,8 +65,60 @@ export default async function WorkFallbackPage({
   const project = projects.find((p) => p.slug === slug);
   if (!project) notFound();
 
+  const others = projects.filter((p) => p.slug !== project.slug).slice(0, 4);
+  const canonical = `${seo.url}/work/${project.slug}`;
+
+  const creativeWork = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    headline: project.tagline,
+    description: project.tagline,
+    url: canonical,
+    inLanguage: "en",
+    dateCreated: `${project.year}-01-01`,
+    datePublished: `${project.year}-01-01`,
+    creator: {
+      "@type": "Person",
+      name: seo.name,
+      url: seo.url,
+      sameAs: [
+        site.socials.github,
+        site.socials.linkedin,
+        site.socials.twitter,
+      ],
+    },
+    author: { "@type": "Person", name: seo.name, url: seo.url },
+    keywords: project.stack.join(", "),
+    about: project.stack,
+    ...(project.href ? { sameAs: [project.href] } : {}),
+  };
+
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Portfolio", item: seo.url },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Work",
+        item: `${seo.url}/#work`,
+      },
+      { "@type": "ListItem", position: 3, name: project.title, item: canonical },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-cream text-ink px-6 md:px-10 py-16 md:py-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(creativeWork) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       <div className="max-w-2xl mx-auto">
         <Link
           href="/"
@@ -73,6 +175,32 @@ export default async function WorkFallbackPage({
             </a>
           )}
         </div>
+
+        <nav
+          aria-label="More work"
+          className="mt-20 border-t border-ink/10 pt-8"
+        >
+          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-muted">
+            More work
+          </p>
+          <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+            {others.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  href={`/work/${p.slug}`}
+                  className="group flex items-baseline justify-between gap-3 py-1.5 border-b border-ink/5 hover:border-ink/20 transition-colors"
+                >
+                  <span className="font-serif text-[18px] text-ink group-hover:text-terracotta transition-colors">
+                    {p.title}
+                  </span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted">
+                    {p.year}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </main>
   );

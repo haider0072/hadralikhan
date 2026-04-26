@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MochiCaseStudy } from "./client";
+import { seo } from "@/data/seo";
+import { site } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Mochi — Case study",
@@ -8,15 +10,73 @@ export const metadata: Metadata = {
     "Design-system generator. One prompt, one complete production-grade system. Coded tokens, components, and a Figma file you can actually use.",
   alternates: { canonical: "/work/mochi" },
   openGraph: {
+    type: "article",
+    url: `${seo.url}/work/mochi`,
     title: "Mochi — Case study",
     description:
       "Prompt → OKLCH tokens → components → Figma. The live, perceptually uniform color engine from the real codebase.",
+    siteName: seo.name,
+    authors: [seo.url],
   },
+  twitter: {
+    card: "summary_large_image",
+    site: seo.twitterHandle,
+    creator: seo.twitterHandle,
+    title: "Mochi — Case study",
+    description:
+      "Prompt → OKLCH tokens → components → Figma. The live perceptually uniform color engine.",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  name: "Mochi",
+  headline: "Design-system generator",
+  description:
+    "Prompt to a complete production-grade design system. OKLCH tokens, components, and an exportable Figma file.",
+  url: `${seo.url}/work/mochi`,
+  inLanguage: "en",
+  datePublished: "2026-01-01",
+  creator: {
+    "@type": "Person",
+    name: seo.name,
+    url: seo.url,
+    sameAs: [site.socials.github, site.socials.linkedin, site.socials.twitter],
+  },
+  author: { "@type": "Person", name: seo.name, url: seo.url },
+  keywords:
+    "design system, OKLCH, color tokens, Figma plugin, AI design tools, TypeScript",
+  about: ["Design Systems", "OKLCH", "Figma", "AI", "TypeScript"],
+  sameAs: ["https://mochi-plum.vercel.app"],
+};
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Portfolio", item: seo.url },
+    { "@type": "ListItem", position: 2, name: "Work", item: `${seo.url}/#work` },
+    {
+      "@type": "ListItem",
+      position: 3,
+      name: "Mochi",
+      item: `${seo.url}/work/mochi`,
+    },
+  ],
 };
 
 export default function Page() {
   return (
     <div className="min-h-screen" style={{ background: "#fdfbf5" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       <TopBar />
       <MochiCaseStudy />
       <Footer />

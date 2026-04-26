@@ -20,7 +20,7 @@ export const projects: Project[] = [
     role: "Design & Engineering",
     featured: true,
     accent: "terracotta",
-    href: "https://github.com/haider0072",
+    href: "https://mochi-plum.vercel.app",
   },
   {
     slug: "audora",
