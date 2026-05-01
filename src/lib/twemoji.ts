@@ -18,6 +18,15 @@ export function flagUrl(country: string | null | undefined): string {
   return `${TWEMOJI_BASE}/${code}.svg`;
 }
 
+/* Full-bleed rectangular flag (no padding) — for circular avatars where we
+   want the flag to fill the whole circle. flagcdn.com hosts clean SVGs. */
+export function flagFullUrl(country: string | null | undefined): string {
+  if (!country || country.length !== 2) {
+    return `https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/${GLOBE_CODEPOINT}.svg`;
+  }
+  return `https://flagcdn.com/${country.toLowerCase()}.svg`;
+}
+
 export function emojiUrl(emoji: string): string {
   const code = [...emoji]
     .map((c) => c.codePointAt(0)!.toString(16))

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { flagUrl } from "@/lib/twemoji";
+import { flagFullUrl } from "@/lib/twemoji";
 import { useRealtime, useOthers } from "./realtime-context";
 import { cursorColor } from "./palette";
 
@@ -85,7 +85,7 @@ function Avatar({
       style={{ backgroundColor: color }}
     >
       <Image
-        src={flagUrl(country)}
+        src={flagFullUrl(country)}
         alt=""
         fill
         unoptimized
