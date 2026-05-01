@@ -54,7 +54,6 @@ const EMPTY: RealtimeContextValue = {
 };
 
 const CURSOR_SEND_MS = 60;
-const CURSOR_STALE_MS = 4000;
 
 type CursorBroadcast = {
   from: string;
@@ -93,24 +92,22 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const reactionListenersRef = useRef<Set<(e: ReactionEvent) => void>>(new Set());
   const reconnectTimerRef = useRef<number | null>(null);
 
-  // Per-client cursor map (id -> latest cursor + timestamp). Stays in a ref so
-  // rapid-fire broadcast events don't churn React state — we mirror it into
-  // `others` via a single throttled update.
+  // Per-client cursor map (id -> latest cursor). Cleared only when the user
+  // leaves presence — a stationary user keeps their cursor at last position
+  // (Figma-style).
   const cursorMapRef = useRef<
-    Map<string, { x: number | null; y: number | null; ts: number }>
+    Map<string, { x: number | null; y: number | null }>
   >(new Map());
   // Per-client country (set on presence join/sync)
   const countryMapRef = useRef<Map<string, string | null>>(new Map());
 
   const recomputeOthers = useCallback(() => {
     const list: OtherUser[] = [];
-    const now = performance.now();
     for (const [id, country] of countryMapRef.current.entries()) {
       if (id === clientId) continue;
       const cur = cursorMapRef.current.get(id);
-      const fresh = cur && now - cur.ts < CURSOR_STALE_MS;
       const cursor =
-        fresh && cur && cur.x != null && cur.y != null
+        cur && cur.x != null && cur.y != null
           ? { worldX: cur.x, worldY: cur.y }
           : null;
       list.push({ id, data: { country, cursor } });
@@ -160,17 +157,29 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
 
     channel.on("presence", { event: "sync" }, syncPresence);
-    channel.on("presence", { event: "join" }, syncPresence);
+    channel.on("presence", { event: "join" }, () => {
+      syncPresence();
+      // Broadcast has no replay — when a new user joins, re-send our cursor
+      // so they can see it without us moving first.
+      const cur = cursorRef.current;
+      if (cur && channelRef.current) {
+        channelRef.current.send({
+          type: "broadcast",
+          event: "cursor",
+          payload: {
+            from: clientId,
+            worldX: cur.worldX,
+            worldY: cur.worldY,
+          } satisfies CursorBroadcast,
+        });
+      }
+    });
     channel.on("presence", { event: "leave" }, syncPresence);
 
     channel.on("broadcast", { event: "cursor" }, ({ payload }) => {
       const p = payload as CursorBroadcast;
       if (!p?.from || p.from === clientId) return;
-      cursorMapRef.current.set(p.from, {
-        x: p.worldX,
-        y: p.worldY,
-        ts: performance.now(),
-      });
+      cursorMapRef.current.set(p.from, { x: p.worldX, y: p.worldY });
       recomputeOthers();
     });
 
@@ -205,23 +214,9 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Periodically prune stale cursors
-    const pruneInterval = window.setInterval(() => {
-      const now = performance.now();
-      let changed = false;
-      for (const [id, cur] of cursorMapRef.current.entries()) {
-        if (now - cur.ts > CURSOR_STALE_MS) {
-          cursorMapRef.current.delete(id);
-          changed = true;
-        }
-      }
-      if (changed) recomputeOthers();
-    }, 1500);
-
     return () => {
       setReady(false);
       channelRef.current = null;
-      window.clearInterval(pruneInterval);
       if (reconnectTimerRef.current != null) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
