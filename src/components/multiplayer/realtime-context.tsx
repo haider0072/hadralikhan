@@ -78,6 +78,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const [country, setCountry] = useState<string | null>(null);
   const [others, setOthers] = useState<OtherUser[]>([]);
   const [ready, setReady] = useState(false);
+  const [reconnectKey, setReconnectKey] = useState(0);
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const cursorRef = useRef<PresenceData["cursor"]>(null);
@@ -85,6 +86,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const lastSentRef = useRef(0);
   const pendingFlushRef = useRef<number | null>(null);
   const reactionListenersRef = useRef<Set<(e: ReactionEvent) => void>>(new Set());
+  const reconnectTimerRef = useRef<number | null>(null);
 
   // Fetch country once
   useEffect(() => {
@@ -135,6 +137,14 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       for (const cb of reactionListenersRef.current) cb(e);
     });
 
+    const scheduleReconnect = () => {
+      if (reconnectTimerRef.current != null) return;
+      reconnectTimerRef.current = window.setTimeout(() => {
+        reconnectTimerRef.current = null;
+        setReconnectKey((k) => k + 1);
+      }, 2000);
+    };
+
     channel.subscribe(async (status) => {
       if (status === "SUBSCRIBED") {
         await channel.track({
@@ -142,17 +152,38 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
           cursor: cursorRef.current,
         } satisfies PresenceData);
         setReady(true);
-      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+      } else if (
+        status === "CHANNEL_ERROR" ||
+        status === "TIMED_OUT" ||
+        status === "CLOSED"
+      ) {
         setReady(false);
+        setOthers([]);
+        scheduleReconnect();
       }
     });
 
     return () => {
       setReady(false);
       channelRef.current = null;
+      if (reconnectTimerRef.current != null) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
       supabase.removeChannel(channel);
     };
-  }, [supabase, clientId]);
+  }, [supabase, clientId, reconnectKey]);
+
+  // Reconnect when tab becomes visible again (browsers throttle/close idle WS)
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && !ready) {
+        setReconnectKey((k) => k + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [ready]);
 
   // Re-track when country resolves later
   useEffect(() => {
