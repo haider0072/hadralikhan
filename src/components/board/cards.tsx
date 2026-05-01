@@ -121,8 +121,6 @@ function PrototypeCardView({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInViewport(ref, "400px");
-  // Mount when on or near screen so cards pre-warm before swinging into view.
-  const shouldMount = inView;
   // Stay "active" for a grace window after a card leaves the viewport so a
   // quick pan-out + pan-back doesn't restart multi-stage timer animations
   // from phase 1. Only fully idle after 5s of being off-screen.
@@ -137,36 +135,33 @@ function PrototypeCardView({
   }, [inView]);
   const effectiveActivity: CardActivity = graceActive ? activity : "idle";
 
-  let content: React.ReactNode = null;
-  if (shouldMount) {
-    switch (card.slug) {
-      case "audora":
-        content = <AudoraPrototype activity={effectiveActivity} />;
-        break;
-      case "mochi":
-        content = <MochiPrototype activity={effectiveActivity} />;
-        break;
-      case "trading-bot":
-        content = <TradingBotPrototype activity={effectiveActivity} />;
-        break;
-      case "wisesend":
-        content = <WiseSendPrototype activity={effectiveActivity} />;
-        break;
-      case "ember":
-        content = <EmberPrototype activity={effectiveActivity} />;
-        break;
-      case "flowcraft":
-        content = <FlowCraftPrototype activity={effectiveActivity} />;
-        break;
-      default:
-        content = <GhPlaceholder label={`${card.slug} · coming soon`} />;
-    }
+  // Always mount the prototype so the card has real dimensions at all times
+  // (WorkScene measures originals when opening). Heavy animations are paused
+  // via `effectiveActivity` when the card has been off-screen for >5s.
+  let content: React.ReactNode;
+  switch (card.slug) {
+    case "audora":
+      content = <AudoraPrototype activity={effectiveActivity} />;
+      break;
+    case "mochi":
+      content = <MochiPrototype activity={effectiveActivity} />;
+      break;
+    case "trading-bot":
+      content = <TradingBotPrototype activity={effectiveActivity} />;
+      break;
+    case "wisesend":
+      content = <WiseSendPrototype activity={effectiveActivity} />;
+      break;
+    case "ember":
+      content = <EmberPrototype activity={effectiveActivity} />;
+      break;
+    case "flowcraft":
+      content = <FlowCraftPrototype activity={effectiveActivity} />;
+      break;
+    default:
+      content = <GhPlaceholder label={`${card.slug} · coming soon`} />;
   }
-  return (
-    <div ref={ref} className="w-full h-full">
-      {content}
-    </div>
-  );
+  return <div ref={ref}>{content}</div>;
 }
 
 function GhPlaceholder({ label }: { label: string }) {
