@@ -48,7 +48,6 @@ export function FloatingComments() {
                   alt=""
                   width={12}
                   height={12}
-                  unoptimized
                   className="rounded-[2px]"
                   aria-hidden
                 />

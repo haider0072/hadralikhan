@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef } from "react";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/cn";
 import { site } from "@/data/site";
 import { experience } from "@/data/experience";
@@ -18,13 +20,36 @@ import type {
   SkillsCard,
   QuoteCard,
 } from "./types";
-import { AudoraPrototype } from "./prototypes/audora";
-import { MochiPrototype } from "./prototypes/mochi";
-import { TradingBotPrototype } from "./prototypes/trading-bot";
-import { WiseSendPrototype } from "./prototypes/wisesend";
-import { EmberPrototype } from "./prototypes/ember";
-import { FlowCraftPrototype } from "./prototypes/flowcraft";
 import type { CardActivity } from "./use-card-activity";
+import { useInViewport } from "./use-in-viewport";
+
+// Each prototype is heavy (~1k lines) and only meaningful when its card is on
+// screen and zoomed in. Dynamic-import them so they don't bloat the initial /
+// chunk, and gate mounting behind viewport visibility (PrototypeCardView).
+const AudoraPrototype = dynamic(
+  () => import("./prototypes/audora").then((m) => ({ default: m.AudoraPrototype })),
+  { ssr: false, loading: () => null },
+);
+const MochiPrototype = dynamic(
+  () => import("./prototypes/mochi").then((m) => ({ default: m.MochiPrototype })),
+  { ssr: false, loading: () => null },
+);
+const TradingBotPrototype = dynamic(
+  () => import("./prototypes/trading-bot").then((m) => ({ default: m.TradingBotPrototype })),
+  { ssr: false, loading: () => null },
+);
+const WiseSendPrototype = dynamic(
+  () => import("./prototypes/wisesend").then((m) => ({ default: m.WiseSendPrototype })),
+  { ssr: false, loading: () => null },
+);
+const EmberPrototype = dynamic(
+  () => import("./prototypes/ember").then((m) => ({ default: m.EmberPrototype })),
+  { ssr: false, loading: () => null },
+);
+const FlowCraftPrototype = dynamic(
+  () => import("./prototypes/flowcraft").then((m) => ({ default: m.FlowCraftPrototype })),
+  { ssr: false, loading: () => null },
+);
 import {
   ContributionCalendarCard,
   StatsSummaryCard,
@@ -94,22 +119,42 @@ function PrototypeCardView({
   card: PrototypeCard;
   activity: CardActivity;
 }) {
-  switch (card.slug) {
-    case "audora":
-      return <AudoraPrototype activity={activity} />;
-    case "mochi":
-      return <MochiPrototype activity={activity} />;
-    case "trading-bot":
-      return <TradingBotPrototype activity={activity} />;
-    case "wisesend":
-      return <WiseSendPrototype activity={activity} />;
-    case "ember":
-      return <EmberPrototype activity={activity} />;
-    case "flowcraft":
-      return <FlowCraftPrototype activity={activity} />;
-    default:
-      return <GhPlaceholder label={`${card.slug} · coming soon`} />;
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInViewport(ref);
+  // Only mount the heavy prototype when its card is actually on screen AND
+  // the user is zoomed in enough to read it. Both cheaply tracked already.
+  const shouldMount = inView && activity === "active";
+
+  let content: React.ReactNode = null;
+  if (shouldMount) {
+    switch (card.slug) {
+      case "audora":
+        content = <AudoraPrototype activity={activity} />;
+        break;
+      case "mochi":
+        content = <MochiPrototype activity={activity} />;
+        break;
+      case "trading-bot":
+        content = <TradingBotPrototype activity={activity} />;
+        break;
+      case "wisesend":
+        content = <WiseSendPrototype activity={activity} />;
+        break;
+      case "ember":
+        content = <EmberPrototype activity={activity} />;
+        break;
+      case "flowcraft":
+        content = <FlowCraftPrototype activity={activity} />;
+        break;
+      default:
+        content = <GhPlaceholder label={`${card.slug} · coming soon`} />;
+    }
   }
+  return (
+    <div ref={ref} className="w-full h-full">
+      {content}
+    </div>
+  );
 }
 
 function GhPlaceholder({ label }: { label: string }) {

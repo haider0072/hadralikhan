@@ -18,6 +18,12 @@ function hash(s: string): number {
   return h;
 }
 
+const colorCache = new Map<string, string>();
+
 export function cursorColor(id: string): string {
-  return PALETTE[hash(id) % PALETTE.length];
+  let c = colorCache.get(id);
+  if (c) return c;
+  c = PALETTE[hash(id) % PALETTE.length];
+  colorCache.set(id, c);
+  return c;
 }

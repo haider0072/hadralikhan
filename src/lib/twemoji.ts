@@ -7,24 +7,39 @@ const TWEMOJI_BASE =
 
 const GLOBE_CODEPOINT = "1f30d";
 
+const flagUrlCache = new Map<string, string>();
+const flagFullUrlCache = new Map<string, string>();
+
 export function flagUrl(country: string | null | undefined): string {
+  const key = country ?? "";
+  const hit = flagUrlCache.get(key);
+  if (hit) return hit;
+  let url: string;
   if (!country || country.length !== 2) {
-    return `${TWEMOJI_BASE}/${GLOBE_CODEPOINT}.svg`;
+    url = `${TWEMOJI_BASE}/${GLOBE_CODEPOINT}.svg`;
+  } else {
+    const upper = country.toUpperCase();
+    const code = [...upper]
+      .map((ch) => (0x1f1e6 + (ch.charCodeAt(0) - 65)).toString(16))
+      .join("-");
+    url = `${TWEMOJI_BASE}/${code}.svg`;
   }
-  const upper = country.toUpperCase();
-  const code = [...upper]
-    .map((ch) => (0x1f1e6 + (ch.charCodeAt(0) - 65)).toString(16))
-    .join("-");
-  return `${TWEMOJI_BASE}/${code}.svg`;
+  flagUrlCache.set(key, url);
+  return url;
 }
 
 /* Full-bleed rectangular flag (no padding) — for circular avatars where we
    want the flag to fill the whole circle. flagcdn.com hosts clean SVGs. */
 export function flagFullUrl(country: string | null | undefined): string {
-  if (!country || country.length !== 2) {
-    return `https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/${GLOBE_CODEPOINT}.svg`;
-  }
-  return `https://flagcdn.com/${country.toLowerCase()}.svg`;
+  const key = country ?? "";
+  const hit = flagFullUrlCache.get(key);
+  if (hit) return hit;
+  const url =
+    !country || country.length !== 2
+      ? `${TWEMOJI_BASE}/${GLOBE_CODEPOINT}.svg`
+      : `https://flagcdn.com/${country.toLowerCase()}.svg`;
+  flagFullUrlCache.set(key, url);
+  return url;
 }
 
 export function emojiUrl(emoji: string): string {

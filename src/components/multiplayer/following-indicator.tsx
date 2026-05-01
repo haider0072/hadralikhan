@@ -28,7 +28,6 @@ export function FollowingIndicator({ country, color, onExit }: Props) {
         alt=""
         width={14}
         height={14}
-        unoptimized
         className="rounded-[2px]"
         aria-hidden
       />

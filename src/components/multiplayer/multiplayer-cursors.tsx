@@ -82,8 +82,12 @@ export function MultiplayerCursors({ viewport, followingId }: Props) {
     return ids;
   }, [others, viewport.scale, viewport.x, viewport.y]);
 
+  // Only run the lerp loop when there's actually something to animate. When
+  // the user is alone (or zoomed out enough that we returned null below) the
+  // rAF stays parked.
+  const hasVisible = visibleIds.length > 0;
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !hasVisible) return;
     let raf = 0;
     const tick = () => {
       const map = trackedRef.current;
@@ -106,7 +110,7 @@ export function MultiplayerCursors({ viewport, followingId }: Props) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [enabled]);
+  }, [enabled, hasVisible]);
 
   if (!enabled || visibleIds.length === 0) return null;
 
@@ -161,7 +165,6 @@ export function MultiplayerCursors({ viewport, followingId }: Props) {
                 alt=""
                 width={12}
                 height={12}
-                unoptimized
                 className="rounded-[2px]"
                 aria-hidden
               />

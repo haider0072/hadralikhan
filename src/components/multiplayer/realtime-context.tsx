@@ -97,7 +97,35 @@ function makeClientId(): string {
 }
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
-  const supabase = useMemo(() => getSupabase(), []);
+  // Defer Supabase client + websocket connection off the critical path. We
+  // wait until first user interaction OR a short timeout, whichever comes
+  // first — paint stays fast and the multiplayer layer warms up only when
+  // the visitor is actually on the page.
+  const [supabase, setSupabase] = useState<ReturnType<typeof getSupabase>>(null);
+  useEffect(() => {
+    let armed = true;
+    const arm = () => {
+      if (!armed) return;
+      armed = false;
+      setSupabase(getSupabase());
+      window.removeEventListener("pointermove", arm);
+      window.removeEventListener("scroll", arm);
+      window.removeEventListener("keydown", arm);
+      clearTimeout(t);
+    };
+    const t = window.setTimeout(arm, 1200);
+    window.addEventListener("pointermove", arm, { once: true, passive: true });
+    window.addEventListener("scroll", arm, { once: true, passive: true });
+    window.addEventListener("keydown", arm, { once: true });
+    return () => {
+      armed = false;
+      clearTimeout(t);
+      window.removeEventListener("pointermove", arm);
+      window.removeEventListener("scroll", arm);
+      window.removeEventListener("keydown", arm);
+    };
+  }, []);
+
   const clientId = useMemo(() => makeClientId(), []);
 
   const [country, setCountry] = useState<string | null>(null);

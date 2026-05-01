@@ -89,7 +89,6 @@ function Avatar({
         alt=""
         width={24}
         height={16}
-        unoptimized
         className="rounded-[2px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.15)]"
         aria-hidden
       />
