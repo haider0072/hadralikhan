@@ -1,6 +1,6 @@
 "use client";
 
-import gsap from "gsap";
+import { animate } from "motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MochiPrototype } from "@/components/board/prototypes/mochi";
 import { AudoraPrototype } from "@/components/board/prototypes/audora";
@@ -290,105 +290,91 @@ function FlyingItem({ item, closing }: { item: Item; closing: boolean }) {
   const targetX = item.target.x - ow / 2;
   const targetY = item.target.y - oh / 2;
 
+  // Track active animations so hover/close can cancel cleanly without
+  // killTweensOf-style stragglers.
+  const flightRef = useRef<ReturnType<typeof animate> | null>(null);
+  const hoverRef = useRef<ReturnType<typeof animate> | null>(null);
+
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Start visually identical to the original board card
-    gsap.set(el, {
-      x: homeX,
-      y: homeY,
-      scale: item.home.scale,
-      rotation: item.home.rotation,
-      force3D: true,
-    });
-    // Fly into the grid
-    gsap.to(el, {
-      x: targetX,
-      y: targetY,
-      scale: item.target.scale,
-      rotation: item.target.rotation,
-      duration: 1.1,
-      delay: item.target.delay,
-      ease: "power3.out",
-      force3D: true,
-    });
-    gsap.fromTo(
+    // Start visually identical to the original board card.
+    el.style.transform = `translate(${homeX}px, ${homeY}px) rotate(${item.home.rotation}deg) scale(${item.home.scale})`;
+    // Fly into the grid. Single transform animation — GPU accelerated, no
+    // filter repaint cost (shadow lives on a CSS class instead).
+    flightRef.current = animate(
       el,
-      { filter: "drop-shadow(0 0 0 rgba(42,31,23,0))" },
       {
-        filter: "drop-shadow(0 18px 36px rgba(42,31,23,0.14))",
-        duration: 0.9,
-        delay: item.target.delay + 0.3,
-        ease: "power2.out",
+        transform: `translate(${targetX}px, ${targetY}px) rotate(${item.target.rotation}deg) scale(${item.target.scale})`,
+      },
+      {
+        duration: 1.1,
+        delay: item.target.delay,
+        ease: [0.16, 1, 0.3, 1],
       },
     );
     return () => {
-      gsap.killTweensOf(el);
+      flightRef.current?.cancel();
+      hoverRef.current?.cancel();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Close: fly back to home exactly, matching rotation & scale
+  // Close: fly back to home exactly, matching rotation & scale.
   useEffect(() => {
     if (!closing) return;
     const el = ref.current;
     if (!el) return;
-    gsap.killTweensOf(el);
-    gsap.to(el, {
-      x: homeX,
-      y: homeY,
-      scale: item.home.scale,
-      rotation: item.home.rotation,
-      duration: 0.75,
-      ease: "power2.inOut",
-      force3D: true,
-    });
-    gsap.to(el, {
-      filter: "drop-shadow(0 0 0 rgba(42,31,23,0))",
-      duration: 0.5,
-      ease: "power1.out",
-    });
+    flightRef.current?.cancel();
+    hoverRef.current?.cancel();
+    flightRef.current = animate(
+      el,
+      {
+        transform: `translate(${homeX}px, ${homeY}px) rotate(${item.home.rotation}deg) scale(${item.home.scale})`,
+      },
+      { duration: 0.75, ease: [0.65, 0, 0.35, 1] },
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [closing]);
 
   const onEnter = () => {
     const el = ref.current;
     if (!el || closing) return;
-    gsap.to(el, {
-      scale: item.target.scale * 1.06,
-      rotation: 0,
-      filter: "drop-shadow(0 30px 54px rgba(42,31,23,0.22))",
-      zIndex: 60,
-      duration: 0.4,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
+    hoverRef.current?.cancel();
+    el.style.zIndex = "60";
+    hoverRef.current = animate(
+      el,
+      {
+        transform: `translate(${targetX}px, ${targetY}px) rotate(0deg) scale(${item.target.scale * 1.06})`,
+      },
+      { duration: 0.4, ease: [0.33, 1, 0.68, 1] },
+    );
   };
   const onLeave = () => {
     const el = ref.current;
     if (!el || closing) return;
-    gsap.to(el, {
-      scale: item.target.scale,
-      rotation: item.target.rotation,
-      filter: "drop-shadow(0 18px 36px rgba(42,31,23,0.14))",
-      zIndex: 50,
-      duration: 0.5,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
+    hoverRef.current?.cancel();
+    el.style.zIndex = "50";
+    hoverRef.current = animate(
+      el,
+      {
+        transform: `translate(${targetX}px, ${targetY}px) rotate(${item.target.rotation}deg) scale(${item.target.scale})`,
+      },
+      { duration: 0.5, ease: [0.33, 1, 0.68, 1] },
+    );
   };
 
   return (
     <div
       ref={ref}
-      className="fixed z-[50]"
+      className="fixed z-[50] rounded-2xl shadow-[0_18px_36px_rgba(42,31,23,0.14)] hover:shadow-[0_30px_54px_rgba(42,31,23,0.22)] transition-shadow duration-300"
       style={{
         left: 0,
         top: 0,
         width: ow,
         height: oh,
         transformOrigin: "50% 50%",
-        willChange: "transform, filter",
+        willChange: "transform",
       }}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}

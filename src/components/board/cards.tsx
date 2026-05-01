@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/cn";
 import { site } from "@/data/site";
@@ -123,9 +123,19 @@ function PrototypeCardView({
   const inView = useInViewport(ref, "400px");
   // Mount when on or near screen so cards pre-warm before swinging into view.
   const shouldMount = inView;
-  // Pause heavy inner animations when the card is off-screen, even if the
-  // user is zoomed in. Saves CPU when only a few cards are visible at once.
-  const effectiveActivity: CardActivity = inView ? activity : "idle";
+  // Stay "active" for a grace window after a card leaves the viewport so a
+  // quick pan-out + pan-back doesn't restart multi-stage timer animations
+  // from phase 1. Only fully idle after 5s of being off-screen.
+  const [graceActive, setGraceActive] = useState(true);
+  useEffect(() => {
+    if (inView) {
+      setGraceActive(true);
+      return;
+    }
+    const t = window.setTimeout(() => setGraceActive(false), 5000);
+    return () => window.clearTimeout(t);
+  }, [inView]);
+  const effectiveActivity: CardActivity = graceActive ? activity : "idle";
 
   let content: React.ReactNode = null;
   if (shouldMount) {
