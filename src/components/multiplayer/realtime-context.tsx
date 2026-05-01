@@ -81,6 +81,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const cursorRef = useRef<PresenceData["cursor"]>(null);
+  const countryRef = useRef<string | null>(null);
   const lastSentRef = useRef(0);
   const pendingFlushRef = useRef<number | null>(null);
   const reactionListenersRef = useRef<Set<(e: ReactionEvent) => void>>(new Set());
@@ -99,7 +100,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Channel lifecycle
+  // Channel lifecycle — created once per mount, country/cursor re-tracked separately
   useEffect(() => {
     if (!supabase) return;
 
@@ -136,8 +137,13 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
     channel.subscribe(async (status) => {
       if (status === "SUBSCRIBED") {
-        await channel.track({ country, cursor: null } satisfies PresenceData);
+        await channel.track({
+          country: countryRef.current,
+          cursor: cursorRef.current,
+        } satisfies PresenceData);
         setReady(true);
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+        setReady(false);
       }
     });
 
@@ -146,10 +152,11 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       channelRef.current = null;
       supabase.removeChannel(channel);
     };
-  }, [supabase, clientId, country]);
+  }, [supabase, clientId]);
 
   // Re-track when country resolves later
   useEffect(() => {
+    countryRef.current = country;
     if (!ready || !channelRef.current) return;
     channelRef.current.track({
       country,
