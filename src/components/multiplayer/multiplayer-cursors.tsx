@@ -9,7 +9,6 @@ import type { Viewport } from "@/components/board/types";
 
 type Props = {
   viewport: Viewport;
-  onSelect?: (id: string) => void;
   followingId?: string | null;
 };
 
@@ -25,7 +24,7 @@ type Tracked = {
 
 const LERP = 0.18;
 
-export function MultiplayerCursors({ viewport, onSelect, followingId }: Props) {
+export function MultiplayerCursors({ viewport, followingId }: Props) {
   const others = useOthers();
   const [enabled, setEnabled] = useState(false);
 
@@ -147,23 +146,15 @@ export function MultiplayerCursors({ viewport, onSelect, followingId }: Props) {
                 strokeLinejoin="round"
               />
             </svg>
-            <button
-              onPointerDown={(e) => {
-                e.stopPropagation();
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect?.(id);
-              }}
-              data-no-drag
-              className="absolute left-[18px] top-[16px] flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-[0.18em] text-white whitespace-nowrap pointer-events-auto cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            <div
+              className="absolute left-[18px] top-[16px] flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-[0.18em] text-white whitespace-nowrap"
               style={{
                 backgroundColor: color,
                 boxShadow: isFollowing
                   ? `0 0 0 2px ${color}, 0 0 0 4px white`
                   : undefined,
               }}
-              aria-label={`Follow ${t.country ?? "user"}`}
+              aria-hidden
             >
               <Image
                 src={flagUrl(t.country)}
@@ -175,7 +166,7 @@ export function MultiplayerCursors({ viewport, onSelect, followingId }: Props) {
                 aria-hidden
               />
               <span>{t.country ?? "??"}</span>
-            </button>
+            </div>
           </div>
         );
       })}

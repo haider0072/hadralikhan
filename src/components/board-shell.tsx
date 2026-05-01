@@ -13,6 +13,7 @@ import type { GithubStats } from "@/lib/github";
 export function BoardShell({ github }: { github: GithubStats | null }) {
   const [active, setActive] = useState<DockKey | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [followingId, setFollowingId] = useState<string | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -30,7 +31,12 @@ export function BoardShell({ github }: { github: GithubStats | null }) {
 
   return (
     <RealtimeProvider>
-      <BoardCanvas github={github} dimmed={active !== null} />
+      <BoardCanvas
+        github={github}
+        dimmed={active !== null}
+        followingId={followingId}
+        onFollowChange={setFollowingId}
+      />
       <Dock active={active} onToggle={onToggle} />
       {isMobile ? (
         <WorkDrawer open={active === "work"} onClose={close} />
@@ -45,7 +51,12 @@ export function BoardShell({ github }: { github: GithubStats | null }) {
         }
         onClose={close}
       />
-      <PresenceBadge />
+      <PresenceBadge
+        followingId={followingId}
+        onSelect={(id) =>
+          setFollowingId((cur) => (cur === id ? null : id))
+        }
+      />
     </RealtimeProvider>
   );
 }

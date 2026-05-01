@@ -20,23 +20,25 @@ type Props = {
 type State =
   | { kind: "closed" }
   | {
-      kind: "menu" | "comment";
+      kind: "open";
       screenX: number;
       screenY: number;
       worldX: number;
       worldY: number;
     };
 
-const MAX_LEN = 200;
+const MAX_LEN = 280;
+const PANEL_W = 300;
+const TEXTAREA_MIN_H = 36;
+const TEXTAREA_MAX_H = 140;
 
 export function SlashMenu({ viewportRef, containerRef }: Props) {
   const { ready, broadcastReaction, broadcastComment } = useRealtime();
   const [state, setState] = useState<State>({ kind: "closed" });
   const [text, setText] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Track latest pointer position so '/' keypress knows where to anchor.
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       lastPointerRef.current = { x: e.clientX, y: e.clientY };
@@ -45,14 +47,14 @@ export function SlashMenu({ viewportRef, containerRef }: Props) {
     return () => window.removeEventListener("pointermove", onMove);
   }, []);
 
-  const openMenu = useCallback(() => {
+  const open = useCallback(() => {
     const v = viewportRef.current;
     const p = lastPointerRef.current;
     if (!v || !p) return;
     const worldX = (p.x - v.x) / v.scale;
     const worldY = (p.y - v.y) / v.scale;
     setState({
-      kind: "menu",
+      kind: "open",
       screenX: p.x,
       screenY: p.y,
       worldX,
@@ -61,29 +63,33 @@ export function SlashMenu({ viewportRef, containerRef }: Props) {
     setText("");
   }, [viewportRef]);
 
-  // Global keydown — '/' opens menu, Esc closes
+  const close = useCallback(() => {
+    setState({ kind: "closed" });
+    setText("");
+  }, []);
+
+  // Global keydown — '/' opens, Esc closes
   useEffect(() => {
     if (!ready) return;
     const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
+      const t = e.target as HTMLElement | null;
       const isEditable =
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable;
-
+        t?.tagName === "INPUT" ||
+        t?.tagName === "TEXTAREA" ||
+        t?.isContentEditable;
       if (e.key === "/" && !isEditable && state.kind === "closed") {
         e.preventDefault();
-        openMenu();
+        open();
       } else if (e.key === "Escape" && state.kind !== "closed") {
         e.preventDefault();
-        setState({ kind: "closed" });
+        close();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ready, state.kind, openMenu]);
+  }, [ready, state.kind, open, close]);
 
-  // Close on outside click / pointerdown on the canvas
+  // Close on canvas pointerdown outside the menu
   useEffect(() => {
     if (state.kind === "closed") return;
     const el = containerRef.current;
@@ -91,100 +97,71 @@ export function SlashMenu({ viewportRef, containerRef }: Props) {
     const onDown = (e: PointerEvent) => {
       const t = e.target as HTMLElement;
       if (t.closest("[data-slash-menu]")) return;
-      setState({ kind: "closed" });
+      close();
     };
     el.addEventListener("pointerdown", onDown);
     return () => el.removeEventListener("pointerdown", onDown);
-  }, [state.kind, containerRef]);
+  }, [state.kind, containerRef, close]);
 
-  // Focus input when entering comment mode
+  // Focus textarea when opened
   useEffect(() => {
-    if (state.kind === "comment") {
-      requestAnimationFrame(() => inputRef.current?.focus());
+    if (state.kind === "open") {
+      requestAnimationFrame(() => textareaRef.current?.focus());
     }
   }, [state.kind]);
 
+  // Auto-grow textarea
+  const handleInput = (value: string) => {
+    setText(value.slice(0, MAX_LEN));
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    const next = Math.min(
+      TEXTAREA_MAX_H,
+      Math.max(TEXTAREA_MIN_H, ta.scrollHeight),
+    );
+    ta.style.height = `${next}px`;
+  };
+
   if (!ready || state.kind === "closed") return null;
 
-  // Clamp menu to viewport so it never escapes
-  const MENU_W = state.kind === "comment" ? 280 : 240;
-  const MENU_H = 44;
   const margin = 12;
   const left = Math.min(
     Math.max(state.screenX + 14, margin),
-    window.innerWidth - MENU_W - margin,
+    window.innerWidth - PANEL_W - margin,
   );
-  const top = Math.min(
-    Math.max(state.screenY + 14, margin),
-    window.innerHeight - MENU_H - margin,
-  );
-  const baseStyle: CSSProperties = { left, top };
+  // Prefer placing the panel above the cursor when there isn't enough room
+  // below — keeps the textarea close to the click without going off-screen.
+  const ESTIMATED_H = 120;
+  const below = state.screenY + 14;
+  const top =
+    below + ESTIMATED_H < window.innerHeight - margin
+      ? below
+      : Math.max(margin, state.screenY - ESTIMATED_H - 14);
 
-  if (state.kind === "menu") {
-    return (
-      <div
-        data-slash-menu
-        data-no-drag
-        className="fixed z-50 flex items-center gap-1 bg-paper/95 backdrop-blur-md border border-ink/10 rounded-full px-2 py-1.5 shadow-[0_8px_24px_rgba(42,31,23,0.16)]"
-        style={baseStyle}
-      >
-        <button
-          onClick={() =>
-            setState({
-              kind: "comment",
-              screenX: state.screenX,
-              screenY: state.screenY,
-              worldX: state.worldX,
-              worldY: state.worldY,
-            })
-          }
-          className="flex items-center gap-1.5 px-3 h-8 rounded-full text-[11px] font-mono uppercase tracking-[0.18em] text-ink hover:bg-ink/5 active:scale-95 transition-transform"
-          aria-label="Add comment"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path
-              d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span>Comment</span>
-        </button>
-        <span className="h-5 w-px bg-ink/10" aria-hidden />
-        {REACTIONS.map((emoji) => (
-          <button
-            key={emoji}
-            onClick={() => {
-              broadcastReaction(emoji, state.worldX, state.worldY);
-              setState({ kind: "closed" });
-            }}
-            className="flex items-center justify-center h-8 w-8 rounded-full text-base hover:bg-ink/5 active:scale-90 transition-transform"
-            aria-label={`React with ${emoji}`}
-          >
-            {emoji}
-          </button>
-        ))}
-      </div>
-    );
-  }
+  const style: CSSProperties = { left, top, width: PANEL_W };
 
-  // Comment mode
+  const submit = () => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    broadcastComment(trimmed, state.worldX, state.worldY);
+    close();
+  };
+
   return (
     <div
       data-slash-menu
       data-no-drag
-      className="fixed z-50 bg-paper/95 backdrop-blur-md border border-ink/10 rounded-2xl px-3 py-2 shadow-[0_8px_24px_rgba(42,31,23,0.16)]"
-      style={{ ...baseStyle, width: 280 }}
+      className="fixed z-50 bg-paper/95 backdrop-blur-md border border-ink/10 rounded-2xl px-3 pt-2 pb-2 shadow-[0_10px_28px_rgba(42,31,23,0.18)]"
+      style={style}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
         <svg
           width="14"
           height="14"
           viewBox="0 0 24 24"
           fill="none"
-          className="text-terracotta shrink-0"
+          className="text-terracotta shrink-0 mt-1.5"
           aria-hidden
         >
           <path
@@ -195,25 +172,47 @@ export function SlashMenu({ viewportRef, containerRef }: Props) {
             strokeLinejoin="round"
           />
         </svg>
-        <input
-          ref={inputRef}
+        <textarea
+          ref={textareaRef}
           value={text}
-          onChange={(e) => setText(e.target.value.slice(0, MAX_LEN))}
+          onChange={(e) => handleInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && text.trim()) {
-              broadcastComment(text.trim(), state.worldX, state.worldY);
-              setState({ kind: "closed" });
-              setText("");
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              submit();
             }
           }}
           placeholder="leave a comment…"
-          className="flex-1 bg-transparent outline-none text-sm text-ink placeholder:text-ink/40"
+          rows={1}
+          className="flex-1 bg-transparent outline-none resize-none text-sm text-ink placeholder:text-ink/40 leading-snug py-1"
+          style={{
+            minHeight: TEXTAREA_MIN_H,
+            maxHeight: TEXTAREA_MAX_H,
+            height: TEXTAREA_MIN_H,
+          }}
           maxLength={MAX_LEN}
         />
       </div>
-      <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-ink/5 text-[9px] font-mono uppercase tracking-[0.18em] text-ink/40">
-        <span>enter to send · esc to cancel</span>
-        <span>{text.length}/{MAX_LEN}</span>
+
+      <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-ink/5 gap-2">
+        <div className="flex items-center gap-0.5">
+          {REACTIONS.map((emoji) => (
+            <button
+              key={emoji}
+              onClick={() => {
+                broadcastReaction(emoji, state.worldX, state.worldY);
+                close();
+              }}
+              className="flex items-center justify-center h-8 w-8 rounded-full text-base hover:bg-ink/5 active:scale-90 transition-transform"
+              aria-label={`React with ${emoji}`}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 whitespace-nowrap">
+          {text.length > 0 ? `${text.length}/${MAX_LEN} · ↵` : "esc"}
+        </span>
       </div>
     </div>
   );

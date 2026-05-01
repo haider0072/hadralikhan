@@ -15,7 +15,6 @@ import {
 } from "@/components/multiplayer/follow-controller";
 import { useRealtime } from "@/components/multiplayer/realtime-context";
 import { cn } from "@/lib/cn";
-import { site } from "@/data/site";
 import type { BoardCard, Viewport } from "./types";
 import type { GithubStats } from "@/lib/github";
 
@@ -27,11 +26,15 @@ type Positions = Record<string, { x: number; y: number }>;
 export function BoardCanvas({
   github,
   dimmed = false,
+  followingId,
+  onFollowChange,
 }: {
   github: GithubStats | null;
   dimmed?: boolean;
+  followingId: string | null;
+  onFollowChange: (id: string | null) => void;
 }) {
-  const { containerRef, viewport, setViewport, isDragging, fit } = usePanZoom({
+  const { containerRef, viewport, setViewport, isDragging } = usePanZoom({
     world: WORLD,
     minScale: 0.3,
     maxScale: 2,
@@ -105,12 +108,10 @@ export function BoardCanvas({
   // BoardCanvas doesn't re-render on every cursor broadcast.
   const { updateCursor } = useRealtime();
 
-  const [followingId, setFollowingId] = useState<string | null>(null);
-
   // Cancel follow on user pan / zoom / esc
   useEffect(() => {
     if (!followingId) return;
-    const cancel = () => setFollowingId(null);
+    const cancel = () => onFollowChange(null);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") cancel();
     };
@@ -123,7 +124,7 @@ export function BoardCanvas({
       el?.removeEventListener("wheel", cancel);
       window.removeEventListener("keydown", onKey);
     };
-  }, [followingId, containerRef]);
+  }, [followingId, containerRef, onFollowChange]);
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -153,13 +154,6 @@ export function BoardCanvas({
     },
     [setViewport, size],
   );
-
-  const resetLayout = useCallback(() => {
-    setPositions({});
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {}
-  }, []);
 
   // Per-card drag
   const dragRef = useRef<{
@@ -348,22 +342,18 @@ export function BoardCanvas({
         </div>
       </div>
 
-      <MultiplayerCursors
-        viewport={viewport}
-        followingId={followingId}
-        onSelect={(id) => setFollowingId((cur) => (cur === id ? null : id))}
-      />
+      <MultiplayerCursors viewport={viewport} followingId={followingId} />
       <FollowController
         followingId={followingId}
         containerRef={containerRef}
         viewportRef={viewportRef}
         setViewport={setViewport}
-        onUserGone={() => setFollowingId(null)}
+        onUserGone={() => onFollowChange(null)}
       />
       {followingId && (
         <FollowingIndicatorMount
           followingId={followingId}
-          onExit={() => setFollowingId(null)}
+          onExit={() => onFollowChange(null)}
         />
       )}
       <SlashMenu viewportRef={viewportRef} containerRef={containerRef} />
@@ -401,32 +391,6 @@ export function BoardCanvas({
         <span className="font-hand text-lg text-ink">
           drag the board to pan · pick up any card · scroll to zoom
         </span>
-      </div>
-
-      {/* Top-right controls */}
-      <div
-        data-no-drag
-        className="fixed top-5 right-5 z-40 flex items-center gap-2"
-      >
-        <button
-          onClick={resetLayout}
-          className="bg-paper/90 backdrop-blur border border-ink/10 rounded-full px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted hover:text-ink transition-colors"
-          title="Reset card positions"
-        >
-          Reset
-        </button>
-        <button
-          onClick={fit}
-          className="bg-paper/90 backdrop-blur border border-ink/10 rounded-full px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink hover:bg-ink hover:text-cream transition-colors"
-        >
-          Fit all
-        </button>
-        <a
-          href={site.socials.email}
-          className="bg-ink text-cream rounded-full px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] hover:bg-terracotta transition-colors"
-        >
-          Hello →
-        </a>
       </div>
 
       {/* Zoom indicator */}
