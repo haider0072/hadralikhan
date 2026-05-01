@@ -40,9 +40,7 @@ const RealtimeContext = createContext<RealtimeContextValue | null>(null);
 
 export function useRealtime(): RealtimeContextValue {
   const ctx = useContext(RealtimeContext);
-  if (!ctx) {
-    return EMPTY;
-  }
+  if (!ctx) return EMPTY;
   return ctx;
 }
 
@@ -55,7 +53,14 @@ const EMPTY: RealtimeContextValue = {
   onReaction: () => () => {},
 };
 
-const CURSOR_THROTTLE_MS = 60;
+const CURSOR_SEND_MS = 60;
+const CURSOR_STALE_MS = 4000;
+
+type CursorBroadcast = {
+  from: string;
+  worldX: number | null;
+  worldY: number | null;
+};
 
 function makeClientId(): string {
   if (typeof window === "undefined") return "ssr";
@@ -88,6 +93,31 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const reactionListenersRef = useRef<Set<(e: ReactionEvent) => void>>(new Set());
   const reconnectTimerRef = useRef<number | null>(null);
 
+  // Per-client cursor map (id -> latest cursor + timestamp). Stays in a ref so
+  // rapid-fire broadcast events don't churn React state — we mirror it into
+  // `others` via a single throttled update.
+  const cursorMapRef = useRef<
+    Map<string, { x: number | null; y: number | null; ts: number }>
+  >(new Map());
+  // Per-client country (set on presence join/sync)
+  const countryMapRef = useRef<Map<string, string | null>>(new Map());
+
+  const recomputeOthers = useCallback(() => {
+    const list: OtherUser[] = [];
+    const now = performance.now();
+    for (const [id, country] of countryMapRef.current.entries()) {
+      if (id === clientId) continue;
+      const cur = cursorMapRef.current.get(id);
+      const fresh = cur && now - cur.ts < CURSOR_STALE_MS;
+      const cursor =
+        fresh && cur && cur.x != null && cur.y != null
+          ? { worldX: cur.x, worldY: cur.y }
+          : null;
+      list.push({ id, data: { country, cursor } });
+    }
+    setOthers(list);
+  }, [clientId]);
+
   // Fetch country once
   useEffect(() => {
     let cancelled = false;
@@ -102,7 +132,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Channel lifecycle — created once per mount, country/cursor re-tracked separately
+  // Channel lifecycle
   useEffect(() => {
     if (!supabase) return;
 
@@ -114,24 +144,36 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     });
     channelRef.current = channel;
 
-    const syncOthers = () => {
-      const state = channel.presenceState<PresenceData & { _id: string }>();
-      const list: OtherUser[] = [];
+    const syncPresence = () => {
+      const state = channel.presenceState<{ country: string | null }>();
+      const next = new Map<string, string | null>();
       for (const key of Object.keys(state)) {
-        if (key === clientId) continue;
         const entry = state[key]?.[0];
-        if (!entry) continue;
-        list.push({
-          id: key,
-          data: { country: entry.country ?? null, cursor: entry.cursor ?? null },
-        });
+        next.set(key, entry?.country ?? null);
       }
-      setOthers(list);
+      countryMapRef.current = next;
+      // Drop cursor entries for users no longer present
+      for (const id of Array.from(cursorMapRef.current.keys())) {
+        if (!next.has(id)) cursorMapRef.current.delete(id);
+      }
+      recomputeOthers();
     };
 
-    channel.on("presence", { event: "sync" }, syncOthers);
-    channel.on("presence", { event: "join" }, syncOthers);
-    channel.on("presence", { event: "leave" }, syncOthers);
+    channel.on("presence", { event: "sync" }, syncPresence);
+    channel.on("presence", { event: "join" }, syncPresence);
+    channel.on("presence", { event: "leave" }, syncPresence);
+
+    channel.on("broadcast", { event: "cursor" }, ({ payload }) => {
+      const p = payload as CursorBroadcast;
+      if (!p?.from || p.from === clientId) return;
+      cursorMapRef.current.set(p.from, {
+        x: p.worldX,
+        y: p.worldY,
+        ts: performance.now(),
+      });
+      recomputeOthers();
+    });
+
     channel.on("broadcast", { event: "reaction" }, ({ payload }) => {
       const e = payload as ReactionEvent;
       for (const cb of reactionListenersRef.current) cb(e);
@@ -147,10 +189,8 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
     channel.subscribe(async (status) => {
       if (status === "SUBSCRIBED") {
-        await channel.track({
-          country: countryRef.current,
-          cursor: cursorRef.current,
-        } satisfies PresenceData);
+        // Track presence ONCE — country only. Cursor moves over broadcast.
+        await channel.track({ country: countryRef.current });
         setReady(true);
       } else if (
         status === "CHANNEL_ERROR" ||
@@ -159,22 +199,38 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       ) {
         setReady(false);
         setOthers([]);
+        cursorMapRef.current.clear();
+        countryMapRef.current.clear();
         scheduleReconnect();
       }
     });
 
+    // Periodically prune stale cursors
+    const pruneInterval = window.setInterval(() => {
+      const now = performance.now();
+      let changed = false;
+      for (const [id, cur] of cursorMapRef.current.entries()) {
+        if (now - cur.ts > CURSOR_STALE_MS) {
+          cursorMapRef.current.delete(id);
+          changed = true;
+        }
+      }
+      if (changed) recomputeOthers();
+    }, 1500);
+
     return () => {
       setReady(false);
       channelRef.current = null;
+      window.clearInterval(pruneInterval);
       if (reconnectTimerRef.current != null) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
       }
       supabase.removeChannel(channel);
     };
-  }, [supabase, clientId, reconnectKey]);
+  }, [supabase, clientId, reconnectKey, recomputeOthers]);
 
-  // Reconnect when tab becomes visible again (browsers throttle/close idle WS)
+  // Reconnect when tab becomes visible again
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === "visible" && !ready) {
@@ -185,14 +241,11 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [ready]);
 
-  // Re-track when country resolves later
+  // Re-track when country resolves later (presence track, infrequent)
   useEffect(() => {
     countryRef.current = country;
     if (!ready || !channelRef.current) return;
-    channelRef.current.track({
-      country,
-      cursor: cursorRef.current,
-    } satisfies PresenceData);
+    channelRef.current.track({ country });
   }, [country, ready]);
 
   const flushCursor = useCallback(() => {
@@ -200,8 +253,17 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     const ch = channelRef.current;
     if (!ch) return;
     lastSentRef.current = performance.now();
-    ch.track({ country, cursor: cursorRef.current } satisfies PresenceData);
-  }, [country]);
+    const cur = cursorRef.current;
+    ch.send({
+      type: "broadcast",
+      event: "cursor",
+      payload: {
+        from: clientId,
+        worldX: cur?.worldX ?? null,
+        worldY: cur?.worldY ?? null,
+      } satisfies CursorBroadcast,
+    });
+  }, [clientId]);
 
   const updateCursor = useCallback(
     (cursor: { worldX: number; worldY: number } | null) => {
@@ -209,12 +271,12 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       if (!ready || !channelRef.current) return;
       const now = performance.now();
       const since = now - lastSentRef.current;
-      if (since >= CURSOR_THROTTLE_MS) {
+      if (since >= CURSOR_SEND_MS) {
         flushCursor();
       } else if (pendingFlushRef.current == null) {
         pendingFlushRef.current = window.setTimeout(
           flushCursor,
-          CURSOR_THROTTLE_MS - since,
+          CURSOR_SEND_MS - since,
         );
       }
     },
@@ -225,7 +287,6 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     (emoji: string, worldX: number, worldY: number) => {
       const ch = channelRef.current;
       const event: ReactionEvent = { emoji, worldX, worldY, from: clientId };
-      // Always notify local listeners so the sender sees their own reaction
       for (const cb of reactionListenersRef.current) cb(event);
       if (!ch) return;
       ch.send({ type: "broadcast", event: "reaction", payload: event });
