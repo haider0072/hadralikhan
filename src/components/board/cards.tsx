@@ -120,10 +120,11 @@ function PrototypeCardView({
   activity: CardActivity;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInViewport(ref);
-  // Only mount the heavy prototype when its card is actually on screen AND
-  // the user is zoomed in enough to read it. Both cheaply tracked already.
-  const shouldMount = inView && activity === "active";
+  const inView = useInViewport(ref, "400px");
+  // Mount the prototype whenever its card is on or near screen. The existing
+  // `activity` prop already pauses heavy animations at low zoom — we don't
+  // need to also withhold mounting (that hides the cards entirely).
+  const shouldMount = inView;
 
   let content: React.ReactNode = null;
   if (shouldMount) {
