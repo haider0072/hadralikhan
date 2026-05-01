@@ -81,16 +81,16 @@ function Avatar({
 
   const inner = (
     <span
-      className="relative block h-7 w-7 rounded-full overflow-hidden ring-2 ring-paper"
+      className="relative flex items-center justify-center h-7 w-7 rounded-full overflow-hidden ring-2 ring-paper"
       style={{ backgroundColor: color }}
     >
       <Image
         src={flagFullUrl(country)}
         alt=""
-        fill
+        width={24}
+        height={16}
         unoptimized
-        sizes="28px"
-        className="object-cover"
+        className="rounded-[2px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.15)]"
         aria-hidden
       />
     </span>
