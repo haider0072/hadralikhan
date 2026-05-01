@@ -70,7 +70,7 @@ export default async function TwitterImage() {
             />
             <span>Portfolio · Board</span>
           </div>
-          <span>hadralikhan.vercel.app</span>
+          <span>itshaider.work</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <div

@@ -73,7 +73,7 @@ export default async function OGImage() {
             />
             <span>Portfolio · Board</span>
           </div>
-          <span>hadralikhan.vercel.app</span>
+          <span>itshaider.work</span>
         </div>
 
         {/* Center — name */}

@@ -93,7 +93,7 @@ export default async function ProjectOG({
             />
             <span>Case study · {project.year}</span>
           </div>
-          <span>hadralikhan.vercel.app</span>
+          <span>itshaider.work</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>

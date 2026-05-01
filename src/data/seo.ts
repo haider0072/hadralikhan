@@ -6,7 +6,7 @@ export const seo = {
     "Designs products, ships systems, occasionally a little magic. Senior remote talent for international teams.",
   description:
     "Portfolio of Haider Ali Khan — a senior Product Designer, Product Manager, and Full-Stack Developer working remotely with international teams in the US, UK, Europe, Canada, Australia, and beyond. Builds end-to-end: product design, AI agents, web, mobile, backend, and infrastructure.",
-  url: "https://hadralikhan.vercel.app",
+  url: "https://itshaider.work",
   locale: "en_US",
   twitterHandle: "@hadralikhan",
   location: { city: "Karachi", country: "Pakistan", countryCode: "PK" },
