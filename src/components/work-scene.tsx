@@ -298,14 +298,16 @@ function FlyingItem({ item, closing }: { item: Item; closing: boolean }) {
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Start visually identical to the original board card.
-    el.style.transform = `translate(${homeX}px, ${homeY}px) rotate(${item.home.rotation}deg) scale(${item.home.scale})`;
-    // Fly into the grid. Single transform animation — GPU accelerated, no
-    // filter repaint cost (shadow lives on a CSS class instead).
+    // Animate per-property (x/y/scale/rotate) so Motion interpolates each
+    // value and we don't fight with transform strings. [from, to] arrays
+    // give Motion the explicit start state regardless of any inline style.
     flightRef.current = animate(
       el,
       {
-        transform: `translate(${targetX}px, ${targetY}px) rotate(${item.target.rotation}deg) scale(${item.target.scale})`,
+        x: [homeX, targetX],
+        y: [homeY, targetY],
+        scale: [item.home.scale, item.target.scale],
+        rotate: [item.home.rotation, item.target.rotation],
       },
       {
         duration: 1.1,
@@ -330,7 +332,10 @@ function FlyingItem({ item, closing }: { item: Item; closing: boolean }) {
     flightRef.current = animate(
       el,
       {
-        transform: `translate(${homeX}px, ${homeY}px) rotate(${item.home.rotation}deg) scale(${item.home.scale})`,
+        x: homeX,
+        y: homeY,
+        scale: item.home.scale,
+        rotate: item.home.rotation,
       },
       { duration: 0.75, ease: [0.65, 0, 0.35, 1] },
     );
@@ -345,7 +350,10 @@ function FlyingItem({ item, closing }: { item: Item; closing: boolean }) {
     hoverRef.current = animate(
       el,
       {
-        transform: `translate(${targetX}px, ${targetY}px) rotate(0deg) scale(${item.target.scale * 1.06})`,
+        x: targetX,
+        y: targetY,
+        scale: item.target.scale * 1.06,
+        rotate: 0,
       },
       { duration: 0.4, ease: [0.33, 1, 0.68, 1] },
     );
@@ -358,7 +366,10 @@ function FlyingItem({ item, closing }: { item: Item; closing: boolean }) {
     hoverRef.current = animate(
       el,
       {
-        transform: `translate(${targetX}px, ${targetY}px) rotate(${item.target.rotation}deg) scale(${item.target.scale})`,
+        x: targetX,
+        y: targetY,
+        scale: item.target.scale,
+        rotate: item.target.rotation,
       },
       { duration: 0.5, ease: [0.33, 1, 0.68, 1] },
     );
