@@ -27,13 +27,25 @@ export type ReactionEvent = {
   from: string;
 };
 
+export type CommentEvent = {
+  id: string;
+  text: string;
+  worldX: number;
+  worldY: number;
+  from: string;
+  country: string | null;
+};
+
 type RealtimeContextValue = {
   ready: boolean;
   self: PresenceData;
+  selfId: string;
   others: OtherUser[];
   updateCursor: (cursor: { worldX: number; worldY: number } | null) => void;
   broadcastReaction: (emoji: string, worldX: number, worldY: number) => void;
+  broadcastComment: (text: string, worldX: number, worldY: number) => void;
   onReaction: (cb: (e: ReactionEvent) => void) => () => void;
+  onComment: (cb: (e: CommentEvent) => void) => () => void;
 };
 
 const RealtimeContext = createContext<RealtimeContextValue | null>(null);
@@ -47,10 +59,13 @@ export function useRealtime(): RealtimeContextValue {
 const EMPTY: RealtimeContextValue = {
   ready: false,
   self: { country: null, cursor: null },
+  selfId: "",
   others: [],
   updateCursor: () => {},
   broadcastReaction: () => {},
+  broadcastComment: () => {},
   onReaction: () => () => {},
+  onComment: () => () => {},
 };
 
 const CURSOR_SEND_MS = 60;
@@ -90,6 +105,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const lastSentRef = useRef(0);
   const pendingFlushRef = useRef<number | null>(null);
   const reactionListenersRef = useRef<Set<(e: ReactionEvent) => void>>(new Set());
+  const commentListenersRef = useRef<Set<(e: CommentEvent) => void>>(new Set());
   const reconnectTimerRef = useRef<number | null>(null);
 
   // Per-client cursor map (id -> latest cursor). Cleared only when the user
@@ -188,6 +204,11 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       for (const cb of reactionListenersRef.current) cb(e);
     });
 
+    channel.on("broadcast", { event: "comment" }, ({ payload }) => {
+      const e = payload as CommentEvent;
+      for (const cb of commentListenersRef.current) cb(e);
+    });
+
     const scheduleReconnect = () => {
       if (reconnectTimerRef.current != null) return;
       reconnectTimerRef.current = window.setTimeout(() => {
@@ -214,9 +235,27 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       }
     });
 
+    // Heartbeat: re-broadcast our cursor every few seconds so packet drops
+    // don't cause receivers to lose us, and so anyone who reconnected mid-
+    // session catches up without us having to move.
+    const heartbeat = window.setInterval(() => {
+      const cur = cursorRef.current;
+      if (!cur || !channelRef.current) return;
+      channelRef.current.send({
+        type: "broadcast",
+        event: "cursor",
+        payload: {
+          from: clientId,
+          worldX: cur.worldX,
+          worldY: cur.worldY,
+        } satisfies CursorBroadcast,
+      });
+    }, 5000);
+
     return () => {
       setReady(false);
       channelRef.current = null;
+      window.clearInterval(heartbeat);
       if (reconnectTimerRef.current != null) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
@@ -289,6 +328,25 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     [clientId],
   );
 
+  const broadcastComment = useCallback(
+    (text: string, worldX: number, worldY: number) => {
+      const ch = channelRef.current;
+      const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const event: CommentEvent = {
+        id,
+        text: text.slice(0, 200),
+        worldX,
+        worldY,
+        from: clientId,
+        country: countryRef.current,
+      };
+      for (const cb of commentListenersRef.current) cb(event);
+      if (!ch) return;
+      ch.send({ type: "broadcast", event: "comment", payload: event });
+    },
+    [clientId],
+  );
+
   const onReaction = useCallback((cb: (e: ReactionEvent) => void) => {
     reactionListenersRef.current.add(cb);
     return () => {
@@ -296,16 +354,36 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const onComment = useCallback((cb: (e: CommentEvent) => void) => {
+    commentListenersRef.current.add(cb);
+    return () => {
+      commentListenersRef.current.delete(cb);
+    };
+  }, []);
+
   const value = useMemo<RealtimeContextValue>(
     () => ({
       ready,
       self: { country, cursor: null },
+      selfId: clientId,
       others,
       updateCursor,
       broadcastReaction,
+      broadcastComment,
       onReaction,
+      onComment,
     }),
-    [ready, country, others, updateCursor, broadcastReaction, onReaction],
+    [
+      ready,
+      country,
+      clientId,
+      others,
+      updateCursor,
+      broadcastReaction,
+      broadcastComment,
+      onReaction,
+      onComment,
+    ],
   );
 
   return (

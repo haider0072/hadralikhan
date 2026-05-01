@@ -4,19 +4,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { flagUrl } from "@/lib/twemoji";
 import { useRealtime } from "./realtime-context";
+import { cursorColor } from "./palette";
 import type { Viewport } from "@/components/board/types";
 
 type Props = {
   viewport: Viewport;
+  onSelect?: (id: string) => void;
+  followingId?: string | null;
 };
 
 type Tracked = {
   id: string;
   country: string | null;
-  // Latest server-provided target in screen coords
   targetX: number;
   targetY: number;
-  // Current rendered position (lerped each frame)
   renderX: number;
   renderY: number;
   visible: boolean;
@@ -24,7 +25,7 @@ type Tracked = {
 
 const LERP = 0.18;
 
-export function MultiplayerCursors({ viewport }: Props) {
+export function MultiplayerCursors({ viewport, onSelect, followingId }: Props) {
   const { others } = useRealtime();
   const [enabled, setEnabled] = useState(false);
 
@@ -36,13 +37,9 @@ export function MultiplayerCursors({ viewport }: Props) {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Stable map keyed by other.id holding both target + rendered position.
   const trackedRef = useRef<Map<string, Tracked>>(new Map());
-  // Refs to the actual DOM nodes so we can mutate transforms outside React.
   const nodesRef = useRef<Map<string, HTMLDivElement | null>>(new Map());
 
-  // Convert latest realtime data to per-id targets in screen coords.
-  // Recomputed when others or viewport change.
   const visibleIds = useMemo(() => {
     const ids: string[] = [];
     const map = trackedRef.current;
@@ -66,8 +63,6 @@ export function MultiplayerCursors({ viewport }: Props) {
         existing.country = o.data.country;
         existing.visible = true;
       } else {
-        // First time we see this user — start render at the target so it
-        // doesn't fly in from (0,0).
         map.set(o.id, {
           id: o.id,
           country: o.data.country,
@@ -81,7 +76,6 @@ export function MultiplayerCursors({ viewport }: Props) {
       ids.push(o.id);
     }
 
-    // Drop entries for users who left.
     for (const key of map.keys()) {
       if (!seen.has(key)) map.delete(key);
     }
@@ -89,7 +83,6 @@ export function MultiplayerCursors({ viewport }: Props) {
     return ids;
   }, [others, viewport.scale, viewport.x, viewport.y]);
 
-  // rAF loop — lerps every tracked cursor toward its target each frame.
   useEffect(() => {
     if (!enabled) return;
     let raf = 0;
@@ -123,6 +116,8 @@ export function MultiplayerCursors({ viewport }: Props) {
       {visibleIds.map((id) => {
         const t = trackedRef.current.get(id);
         if (!t || !t.visible) return null;
+        const color = cursorColor(id);
+        const isFollowing = followingId === id;
         return (
           <div
             key={id}
@@ -134,20 +129,53 @@ export function MultiplayerCursors({ viewport }: Props) {
                 nodesRef.current.delete(id);
               }
             }}
-            className="pointer-events-none absolute top-0 left-0 will-change-transform"
+            className="absolute top-0 left-0 will-change-transform"
           >
-            <div className="-translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-              <span className="absolute h-1.5 w-1.5 rounded-full bg-ink/70 shadow-[0_0_0_2px_rgba(244,236,224,0.85)]" />
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 22 22"
+              fill="none"
+              className="drop-shadow-[0_2px_4px_rgba(42,31,23,0.25)]"
+              aria-hidden
+            >
+              <path
+                d="M4.5 2.4v15.5c0 .42.5.62.78.32l4.07-4.07a.5.5 0 0 1 .35-.15h5.78a.5.5 0 0 0 .36-.85L5.36 2.04a.5.5 0 0 0-.86.36z"
+                fill={color}
+                stroke="white"
+                strokeWidth="1.4"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <button
+              onPointerDown={(e) => {
+                e.stopPropagation();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect?.(id);
+              }}
+              data-no-drag
+              className="absolute left-[18px] top-[16px] flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-[0.18em] text-white whitespace-nowrap pointer-events-auto cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+              style={{
+                backgroundColor: color,
+                boxShadow: isFollowing
+                  ? `0 0 0 2px ${color}, 0 0 0 4px white`
+                  : undefined,
+              }}
+              aria-label={`Follow ${t.country ?? "user"}`}
+            >
               <Image
                 src={flagUrl(t.country)}
                 alt=""
-                width={28}
-                height={28}
+                width={12}
+                height={12}
                 unoptimized
-                className="absolute translate-x-3 translate-y-3 drop-shadow-[0_2px_6px_rgba(42,31,23,0.25)]"
+                className="rounded-[2px]"
                 aria-hidden
               />
-            </div>
+              <span>{t.country ?? "??"}</span>
+            </button>
           </div>
         );
       })}
