@@ -6,6 +6,8 @@ import { Dock, type DockKey } from "@/components/dock";
 import { WorkDrawer } from "@/components/work-drawer";
 import { WorkScene } from "@/components/work-scene";
 import { InfoDrawer } from "@/components/info-drawer";
+import { RealtimeProvider } from "@/components/multiplayer/realtime-context";
+import { PresenceBadge } from "@/components/multiplayer/presence-badge";
 import type { GithubStats } from "@/lib/github";
 
 export function BoardShell({ github }: { github: GithubStats | null }) {
@@ -27,7 +29,7 @@ export function BoardShell({ github }: { github: GithubStats | null }) {
   const close = () => setActive(null);
 
   return (
-    <>
+    <RealtimeProvider>
       <BoardCanvas github={github} dimmed={active !== null} />
       <Dock active={active} onToggle={onToggle} />
       {isMobile ? (
@@ -43,6 +45,7 @@ export function BoardShell({ github }: { github: GithubStats | null }) {
         }
         onClose={close}
       />
-    </>
+      <PresenceBadge />
+    </RealtimeProvider>
   );
 }

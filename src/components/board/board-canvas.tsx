@@ -6,6 +6,10 @@ import { cards as initialCards, WORLD, BOARD_HOME } from "./layout";
 import { CardRenderer } from "./cards";
 import { Minimap } from "./minimap";
 import { Cursor } from "./cursor";
+import { MultiplayerCursors } from "@/components/multiplayer/multiplayer-cursors";
+import { FloatingReactions } from "@/components/multiplayer/floating-reactions";
+import { ReactionBar } from "@/components/multiplayer/reaction-bar";
+import { useRealtime } from "@/components/multiplayer/realtime-context";
 import { cn } from "@/lib/cn";
 import { site } from "@/data/site";
 import type { BoardCard, Viewport } from "./types";
@@ -92,6 +96,30 @@ export function BoardCanvas({
     const t = setTimeout(() => setShowHint(false), 5200);
     return () => clearTimeout(t);
   }, []);
+
+  // Broadcast local cursor position to other users as world coords. The
+  // realtime context throttles outgoing updates so a raw listener is fine.
+  const { updateCursor } = useRealtime();
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onMove = (e: PointerEvent) => {
+      const rect = el.getBoundingClientRect();
+      const v = viewportRef.current;
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+      const worldX = (sx - v.x) / v.scale;
+      const worldY = (sy - v.y) / v.scale;
+      updateCursor({ worldX, worldY });
+    };
+    const onLeave = () => updateCursor(null);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerleave", onLeave);
+    return () => {
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerleave", onLeave);
+    };
+  }, [containerRef, updateCursor]);
 
   const onMinimapJump = useCallback(
     (wx: number, wy: number) => {
@@ -294,8 +322,12 @@ export function BoardCanvas({
           }}
         >
           {cardList}
+          <FloatingReactions />
         </div>
       </div>
+
+      <MultiplayerCursors viewport={viewport} />
+      <ReactionBar viewportRef={viewportRef} />
 
       {/* Top-left brand */}
       <div
