@@ -121,31 +121,32 @@ function PrototypeCardView({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInViewport(ref, "400px");
-  // Mount the prototype whenever its card is on or near screen. The existing
-  // `activity` prop already pauses heavy animations at low zoom — we don't
-  // need to also withhold mounting (that hides the cards entirely).
+  // Mount when on or near screen so cards pre-warm before swinging into view.
   const shouldMount = inView;
+  // Pause heavy inner animations when the card is off-screen, even if the
+  // user is zoomed in. Saves CPU when only a few cards are visible at once.
+  const effectiveActivity: CardActivity = inView ? activity : "idle";
 
   let content: React.ReactNode = null;
   if (shouldMount) {
     switch (card.slug) {
       case "audora":
-        content = <AudoraPrototype activity={activity} />;
+        content = <AudoraPrototype activity={effectiveActivity} />;
         break;
       case "mochi":
-        content = <MochiPrototype activity={activity} />;
+        content = <MochiPrototype activity={effectiveActivity} />;
         break;
       case "trading-bot":
-        content = <TradingBotPrototype activity={activity} />;
+        content = <TradingBotPrototype activity={effectiveActivity} />;
         break;
       case "wisesend":
-        content = <WiseSendPrototype activity={activity} />;
+        content = <WiseSendPrototype activity={effectiveActivity} />;
         break;
       case "ember":
-        content = <EmberPrototype activity={activity} />;
+        content = <EmberPrototype activity={effectiveActivity} />;
         break;
       case "flowcraft":
-        content = <FlowCraftPrototype activity={activity} />;
+        content = <FlowCraftPrototype activity={effectiveActivity} />;
         break;
       default:
         content = <GhPlaceholder label={`${card.slug} · coming soon`} />;

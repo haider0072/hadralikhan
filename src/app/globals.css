@@ -133,4 +133,14 @@ body {
   .animate-marquee {
     animation: none;
   }
+  /* Cut every CSS animation/transition to a single frame for users who
+     opted into reduced motion or whose OS forces it on low-power mode. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
