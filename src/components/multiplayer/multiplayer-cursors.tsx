@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { flagUrl } from "@/lib/twemoji";
-import { useRealtime } from "./realtime-context";
+import { useOthers } from "./realtime-context";
 import { cursorColor } from "./palette";
 import type { Viewport } from "@/components/board/types";
 
@@ -26,7 +26,7 @@ type Tracked = {
 const LERP = 0.18;
 
 export function MultiplayerCursors({ viewport, onSelect, followingId }: Props) {
-  const { others } = useRealtime();
+  const others = useOthers();
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {

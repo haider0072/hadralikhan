@@ -9,8 +9,10 @@ import { MultiplayerCursors } from "@/components/multiplayer/multiplayer-cursors
 import { FloatingReactions } from "@/components/multiplayer/floating-reactions";
 import { SlashMenu } from "@/components/multiplayer/slash-menu";
 import { FloatingComments } from "@/components/multiplayer/floating-comments";
-import { FollowingIndicator } from "@/components/multiplayer/following-indicator";
-import { cursorColor } from "@/components/multiplayer/palette";
+import {
+  FollowController,
+  FollowingIndicatorMount,
+} from "@/components/multiplayer/follow-controller";
 import { useRealtime } from "@/components/multiplayer/realtime-context";
 import { cn } from "@/lib/cn";
 import { site } from "@/data/site";
@@ -99,17 +101,13 @@ export function BoardCanvas({
     return () => clearTimeout(t);
   }, []);
 
-  // Broadcast local cursor position to other users as world coords. The
-  // realtime context throttles outgoing updates so a raw listener is fine.
-  const { updateCursor, others } = useRealtime();
-  const othersRef = useRef(others);
-  othersRef.current = others;
+  // Stable realtime callbacks only — `others` lives in a separate context so
+  // BoardCanvas doesn't re-render on every cursor broadcast.
+  const { updateCursor } = useRealtime();
 
   const [followingId, setFollowingId] = useState<string | null>(null);
-  const followingIdRef = useRef<string | null>(null);
-  followingIdRef.current = followingId;
 
-  // Cancel follow on user pan / zoom / scroll / esc
+  // Cancel follow on user pan / zoom / esc
   useEffect(() => {
     if (!followingId) return;
     const cancel = () => setFollowingId(null);
@@ -126,40 +124,6 @@ export function BoardCanvas({
       window.removeEventListener("keydown", onKey);
     };
   }, [followingId, containerRef]);
-
-  // Auto-exit follow if the followed user leaves the room.
-  useEffect(() => {
-    if (!followingId) return;
-    if (!others.some((o) => o.id === followingId)) {
-      setFollowingId(null);
-    }
-  }, [followingId, others]);
-
-  // While following, lerp viewport each frame so the followed user's cursor
-  // sits at the screen center.
-  useEffect(() => {
-    if (!followingId) return;
-    let raf = 0;
-    const tick = () => {
-      const target = othersRef.current.find((o) => o.id === followingId);
-      const cur = target?.data.cursor;
-      const el = containerRef.current;
-      if (cur && el) {
-        const rect = el.getBoundingClientRect();
-        const v = viewportRef.current;
-        const tx = rect.width / 2 - cur.worldX * v.scale;
-        const ty = rect.height / 2 - cur.worldY * v.scale;
-        setViewport({
-          x: v.x + (tx - v.x) * 0.12,
-          y: v.y + (ty - v.y) * 0.12,
-          scale: v.scale,
-        });
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [followingId, containerRef, setViewport]);
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -389,12 +353,16 @@ export function BoardCanvas({
         followingId={followingId}
         onSelect={(id) => setFollowingId((cur) => (cur === id ? null : id))}
       />
+      <FollowController
+        followingId={followingId}
+        containerRef={containerRef}
+        viewportRef={viewportRef}
+        setViewport={setViewport}
+        onUserGone={() => setFollowingId(null)}
+      />
       {followingId && (
-        <FollowingIndicator
-          country={
-            others.find((o) => o.id === followingId)?.data.country ?? null
-          }
-          color={cursorColor(followingId)}
+        <FollowingIndicatorMount
+          followingId={followingId}
           onExit={() => setFollowingId(null)}
         />
       )}

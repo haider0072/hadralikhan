@@ -40,7 +40,6 @@ type RealtimeContextValue = {
   ready: boolean;
   self: PresenceData;
   selfId: string;
-  others: OtherUser[];
   updateCursor: (cursor: { worldX: number; worldY: number } | null) => void;
   broadcastReaction: (emoji: string, worldX: number, worldY: number) => void;
   broadcastComment: (text: string, worldX: number, worldY: number) => void;
@@ -49,6 +48,10 @@ type RealtimeContextValue = {
 };
 
 const RealtimeContext = createContext<RealtimeContextValue | null>(null);
+// Separate context just for the high-frequency `others` array — components
+// that only need stable callbacks (like BoardCanvas for updateCursor) won't
+// re-render on every cursor broadcast.
+const OthersContext = createContext<OtherUser[]>([]);
 
 export function useRealtime(): RealtimeContextValue {
   const ctx = useContext(RealtimeContext);
@@ -56,11 +59,14 @@ export function useRealtime(): RealtimeContextValue {
   return ctx;
 }
 
+export function useOthers(): OtherUser[] {
+  return useContext(OthersContext);
+}
+
 const EMPTY: RealtimeContextValue = {
   ready: false,
   self: { country: null, cursor: null },
   selfId: "",
-  others: [],
   updateCursor: () => {},
   broadcastReaction: () => {},
   broadcastComment: () => {},
@@ -68,7 +74,7 @@ const EMPTY: RealtimeContextValue = {
   onComment: () => () => {},
 };
 
-const CURSOR_SEND_MS = 60;
+const CURSOR_SEND_MS = 100;
 
 type CursorBroadcast = {
   from: string;
@@ -366,7 +372,6 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       ready,
       self: { country, cursor: null },
       selfId: clientId,
-      others,
       updateCursor,
       broadcastReaction,
       broadcastComment,
@@ -377,7 +382,6 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       ready,
       country,
       clientId,
-      others,
       updateCursor,
       broadcastReaction,
       broadcastComment,
@@ -387,6 +391,8 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <RealtimeContext.Provider value={value}>{children}</RealtimeContext.Provider>
+    <RealtimeContext.Provider value={value}>
+      <OthersContext.Provider value={others}>{children}</OthersContext.Provider>
+    </RealtimeContext.Provider>
   );
 }

@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import { flagUrl } from "@/lib/twemoji";
-import { useRealtime } from "./realtime-context";
+import { useRealtime, useOthers } from "./realtime-context";
 
 const MAX_FLAGS = 3;
 
 export function PresenceBadge() {
-  const { ready, self, others } = useRealtime();
+  const { ready, self } = useRealtime();
+  const others = useOthers();
 
   if (!ready) return null;
 
