@@ -11,7 +11,7 @@ export function getSupabase(): SupabaseClient | null {
   if (!url || !anon) return null;
   if (client) return client;
   client = createClient(url, anon, {
-    realtime: { params: { eventsPerSecond: 15 } },
+    realtime: { params: { eventsPerSecond: 30 } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return client;

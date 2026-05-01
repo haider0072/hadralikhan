@@ -55,7 +55,7 @@ const EMPTY: RealtimeContextValue = {
   onReaction: () => () => {},
 };
 
-const CURSOR_THROTTLE_MS = 80;
+const CURSOR_THROTTLE_MS = 60;
 
 function makeClientId(): string {
   if (typeof window === "undefined") return "ssr";
