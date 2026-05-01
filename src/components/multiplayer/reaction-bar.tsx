@@ -37,7 +37,7 @@ export function ReactionBar({ viewportRef }: Props) {
   return (
     <div
       data-no-drag
-      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 bg-paper/90 backdrop-blur border border-ink/10 rounded-full px-2 py-1.5"
+      className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 bg-paper/90 backdrop-blur border border-ink/10 rounded-full px-2 py-1.5"
     >
       {REACTIONS.map((emoji) => (
         <button
