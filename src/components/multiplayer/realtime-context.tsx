@@ -258,14 +258,30 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       });
     }, 5000);
 
+    // Synchronous untrack on tab close / reload — the default Phoenix leave
+    // detection takes 30s, which leaves a phantom self in presence and makes
+    // the badge flicker between "you" and "+1" if the same user reloads or
+    // had multiple tabs.
+    const onPageHide = () => {
+      try {
+        channel.untrack();
+        supabase.removeChannel(channel);
+      } catch {}
+    };
+    window.addEventListener("pagehide", onPageHide);
+
     return () => {
       setReady(false);
       channelRef.current = null;
       window.clearInterval(heartbeat);
+      window.removeEventListener("pagehide", onPageHide);
       if (reconnectTimerRef.current != null) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
       }
+      try {
+        channel.untrack();
+      } catch {}
       supabase.removeChannel(channel);
     };
   }, [supabase, clientId, reconnectKey, recomputeOthers]);
