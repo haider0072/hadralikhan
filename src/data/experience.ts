@@ -5,6 +5,7 @@ export type Experience = {
   location: string;
   body: string;
   highlights: string[];
+  href?: string;
 };
 
 export const experience: Experience[] = [
@@ -13,6 +14,7 @@ export const experience: Experience[] = [
     role: "Designer · PM · Developer",
     period: "2022 — now",
     location: "Karachi",
+    href: "https://digitalhire.com/",
     body: "Video-first recruitment SaaS. Joined as the sole product designer, became PM because I was already the one nobody could go around, and moved back into the code when the chat rewrite stalled.",
     highlights: [
       "Redesigned every surface from scratch, day one design system",

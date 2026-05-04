@@ -266,9 +266,26 @@ function AboutCardView({ card }: { card: AboutCard }) {
                 }}
               />
               <div className="min-w-0">
-                <p className="font-medium text-cream leading-tight text-sm">
-                  {exp.company}
-                </p>
+                {exp.href ? (
+                  <a
+                    href={exp.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group/exp inline-flex items-center gap-1.5 font-medium text-cream leading-tight text-sm hover:text-terracotta transition-colors"
+                  >
+                    <span>{exp.company}</span>
+                    <span
+                      aria-hidden
+                      className="text-[10px] text-cream/45 group-hover/exp:text-terracotta group-hover/exp:translate-x-0.5 transition-all"
+                    >
+                      ↗
+                    </span>
+                  </a>
+                ) : (
+                  <p className="font-medium text-cream leading-tight text-sm">
+                    {exp.company}
+                  </p>
+                )}
                 <p className="text-cream/55 text-[11px] leading-tight mt-0.5">
                   {exp.role}
                 </p>
