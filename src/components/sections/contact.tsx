@@ -58,6 +58,15 @@ export function Contact() {
         <Reveal delay={0.2}>
           <div className="mt-14 flex flex-wrap items-center gap-4">
             <a
+              href="/work-with-me"
+              className="group inline-flex items-center gap-3 rounded-full bg-terracotta text-cream px-7 py-4 text-base font-medium hover:bg-ink transition-colors"
+            >
+              <span>Work with me</span>
+              <span className="transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </a>
+            <a
               href={site.socials.email}
               className="group inline-flex items-center gap-3 rounded-full bg-ink text-cream px-7 py-4 text-base font-medium hover:bg-terracotta transition-colors"
             >

@@ -479,8 +479,14 @@ function ContactCardView({ card }: { card: ContactCard }) {
       </div>
       <div className="flex flex-wrap gap-2">
         <a
-          href={site.socials.email}
+          href="/work-with-me"
           className="rounded-full bg-terracotta text-cream px-4 py-2 text-xs font-mono uppercase tracking-[0.2em] hover:bg-cream hover:text-ink transition-colors"
+        >
+          Work with me →
+        </a>
+        <a
+          href={site.socials.email}
+          className="rounded-full border border-cream/30 px-4 py-2 text-xs font-mono uppercase tracking-[0.2em] hover:bg-cream hover:text-ink transition-colors"
         >
           Email
         </a>
