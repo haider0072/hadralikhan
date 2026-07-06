@@ -129,20 +129,6 @@ function Hero() {
           >
             Open the live app →
           </a>
-          <a
-            href="https://github.com/haider0072"
-            target="_blank"
-            rel="noreferrer"
-            className="h-11 px-5 rounded-full text-[13px] font-semibold flex items-center gap-2"
-            style={{
-              background: "#fff",
-              border: `1px solid ${SURF.border}`,
-              color: SURF.ink,
-              fontFamily: "var(--font-inter)",
-            }}
-          >
-            View on GitHub
-          </a>
         </div>
       </div>
 

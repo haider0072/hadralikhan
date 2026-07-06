@@ -117,7 +117,7 @@ export function InfoDrawer({
                 <div className="space-y-5">
                   <Row
                     label="Building"
-                    value="DigitalHire backend v2. Migrating the old Kotlin microservices into a single NestJS monolith."
+                    value="Backend v2 of a video-based hiring SaaS. Migrating the old Kotlin microservices into a single NestJS monolith."
                   />
                   <Row
                     label="Shipping"
@@ -125,7 +125,7 @@ export function InfoDrawer({
                   />
                   <Row
                     label="Designing"
-                    value="Flutter mobile app for DigitalHire. Polishing Rive micro-animations."
+                    value="Flutter mobile app for the same hiring platform. Polishing Rive micro-animations."
                   />
                   <Row
                     label="Tinkering"
@@ -145,24 +145,14 @@ export function InfoDrawer({
               {kind === "contact" && (
                 <div className="space-y-4">
                   <p>
-                    Best way to reach me is email. I open DMs on Twitter and
-                    LinkedIn too, but email is where I actually reply.
+                    Best way to reach me is email. I open DMs on Twitter too,
+                    but email is where I actually reply.
                   </p>
                   <ul className="pt-2 space-y-3 font-sans text-[15px]">
                     <ContactLink
                       label="Email"
                       value={site.email}
                       href={site.socials.email}
-                    />
-                    <ContactLink
-                      label="GitHub"
-                      value="haider0072"
-                      href={site.socials.github}
-                    />
-                    <ContactLink
-                      label="LinkedIn"
-                      value="hadralikhan"
-                      href={site.socials.linkedin}
                     />
                     <ContactLink
                       label="Twitter"

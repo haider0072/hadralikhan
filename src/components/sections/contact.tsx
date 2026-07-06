@@ -75,22 +75,6 @@ export function Contact() {
                 →
               </span>
             </a>
-            <a
-              href={site.socials.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-3 rounded-full border border-ink/20 px-7 py-4 text-base font-medium hover:bg-ink hover:text-cream transition-colors"
-            >
-              LinkedIn
-            </a>
-            <a
-              href={site.socials.github}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-3 rounded-full border border-ink/20 px-7 py-4 text-base font-medium hover:bg-ink hover:text-cream transition-colors"
-            >
-              GitHub
-            </a>
           </div>
         </Reveal>
 

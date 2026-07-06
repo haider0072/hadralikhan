@@ -10,22 +10,6 @@ export function Footer() {
           </p>
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 font-serif text-2xl md:text-3xl">
             <a
-              href={site.socials.github}
-              target="_blank"
-              rel="noreferrer"
-              className="underline-offset-8 hover:text-terracotta hover:underline"
-            >
-              GitHub
-            </a>
-            <a
-              href={site.socials.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="underline-offset-8 hover:text-terracotta hover:underline"
-            >
-              LinkedIn
-            </a>
-            <a
               href={site.socials.twitter}
               target="_blank"
               rel="noreferrer"
@@ -55,7 +39,7 @@ export function Footer() {
             Currently
           </p>
           <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-            Building AI agents at DigitalHire. Open to select collaborations
+            Building AI agents for a video-based hiring SaaS. Open to select collaborations
             and unreasonable ideas.
           </p>
         </div>

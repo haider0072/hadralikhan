@@ -68,8 +68,8 @@ export function SeoContent() {
 
         <dt>What is his current role?</dt>
         <dd>
-          Product Designer, PM, and Full-Stack engineer at DigitalHire, a
-          video-based hiring SaaS. He designs the entire product surface,
+          Product Designer, PM, and Full-Stack engineer at a video-based
+          hiring SaaS. He designs the entire product surface,
           migrated 14 microservices into a NestJS monolith, built the AI Chat
           Agent end-to-end, and ships the Vue/Nuxt admin dashboard plus the
           Flutter mobile app.
@@ -177,16 +177,6 @@ export function SeoContent() {
 
       <h2>Links</h2>
       <ul>
-        <li>
-          <a href={site.socials.github} rel="me noreferrer">
-            GitHub · haider0072
-          </a>
-        </li>
-        <li>
-          <a href={site.socials.linkedin} rel="me noreferrer">
-            LinkedIn · hadralikhan
-          </a>
-        </li>
         <li>
           <a href={site.socials.twitter} rel="me noreferrer">
             Twitter · @hadralikhan

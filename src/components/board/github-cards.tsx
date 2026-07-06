@@ -1,7 +1,5 @@
 import type { GithubStats } from "@/lib/github";
 
-const GH_URL = "https://github.com/haider0072";
-
 const langColors: Record<string, string> = {
   TypeScript: "#3178c6",
   JavaScript: "#f7df1e",
@@ -217,13 +215,9 @@ export function ContributionCalendarCard({
     4: "#8a4e28",
   };
   return (
-    <a
-      href={GH_URL}
-      target="_blank"
-      rel="noreferrer"
+    <div
       data-no-drag
-      data-cursor-text="GitHub"
-      className="block bg-paper border border-ink/10 rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.3)] p-5 w-[520px] overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-10px_rgba(42,31,23,0.4)] transition-all"
+      className="block bg-paper border border-ink/10 rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.3)] p-5 w-[520px] overflow-hidden"
     >
       <div className="flex items-start justify-between mb-3">
         <div>
@@ -270,7 +264,7 @@ export function ContributionCalendarCard({
         ))}
       </div>
       <div className="mt-3 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.22em] text-ink-muted">
-        <span>@haider0072</span>
+        <span>github</span>
         <div className="flex items-center gap-2">
           <span>less</span>
           {[0, 1, 2, 3, 4].map((l) => (
@@ -283,7 +277,7 @@ export function ContributionCalendarCard({
           <span>more</span>
         </div>
       </div>
-    </a>
+    </div>
   );
 }
 
@@ -306,17 +300,13 @@ export function StatsSummaryCard({ data }: { data: GithubStats }) {
     { label: "Following", value: data.user?.following ?? 0 },
   ];
   return (
-    <a
-      href="https://github.com/haider0072"
-      target="_blank"
-      rel="noreferrer"
+    <div
       data-no-drag
-      data-cursor-text="GitHub"
-      className="block bg-paper border border-ink/10 rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.3)] p-5 w-[300px] hover:-translate-y-1 transition-transform"
+      className="block bg-paper border border-ink/10 rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.3)] p-5 w-[300px]"
     >
       <div className="flex items-center justify-between">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted">
-          GitHub · @haider0072
+          GitHub
         </p>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.57.1.78-.25.78-.55v-2.1c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.3-5.23-1.28-5.23-5.67 0-1.25.44-2.27 1.17-3.07-.12-.3-.5-1.45.11-3.02 0 0 .96-.3 3.15 1.17a10.95 10.95 0 0 1 5.74 0c2.2-1.47 3.15-1.17 3.15-1.17.62 1.57.23 2.72.1 3.02.74.8 1.17 1.82 1.17 3.07 0 4.4-2.68 5.36-5.24 5.65.42.36.77 1.06.77 2.13v3.16c0 .3.2.66.79.54A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z" />
@@ -334,19 +324,15 @@ export function StatsSummaryCard({ data }: { data: GithubStats }) {
           </div>
         ))}
       </div>
-    </a>
+    </div>
   );
 }
 
 export function ActivityFeedCard({ data }: { data: GithubStats["activity"] }) {
   return (
-    <a
-      href={GH_URL}
-      target="_blank"
-      rel="noreferrer"
+    <div
       data-no-drag
-      data-cursor-text="GitHub"
-      className="block bg-[#18120c] text-[#f4ece0] rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.45)] p-5 w-[360px] font-mono text-[11px] hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-10px_rgba(42,31,23,0.55)] transition-all"
+      className="block bg-[#18120c] text-[#f4ece0] rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.45)] p-5 w-[360px] font-mono text-[11px]"
     >
       <div className="flex items-center justify-between mb-3">
         <span className="text-[#f4ece0]/50 uppercase tracking-[0.22em] text-[10px]">
@@ -381,7 +367,7 @@ export function ActivityFeedCard({ data }: { data: GithubStats["activity"] }) {
           ))}
         </ul>
       )}
-    </a>
+    </div>
   );
 }
 
@@ -396,13 +382,9 @@ export function LanguagesCard({
   const circumference = 2 * Math.PI * 36;
 
   return (
-    <a
-      href={GH_URL}
-      target="_blank"
-      rel="noreferrer"
+    <div
       data-no-drag
-      data-cursor-text="GitHub"
-      className="block bg-paper border border-ink/10 rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.3)] p-5 w-[300px] hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-10px_rgba(42,31,23,0.4)] transition-all"
+      className="block bg-paper border border-ink/10 rounded-sm shadow-[0_14px_30px_-10px_rgba(42,31,23,0.3)] p-5 w-[300px]"
     >
       <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted">
         Top languages
@@ -451,6 +433,6 @@ export function LanguagesCard({
           ))}
         </ul>
       </div>
-    </a>
+    </div>
   );
 }

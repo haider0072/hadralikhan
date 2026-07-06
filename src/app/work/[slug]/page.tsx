@@ -82,11 +82,7 @@ export default async function WorkFallbackPage({
       "@type": "Person",
       name: seo.name,
       url: seo.url,
-      sameAs: [
-        site.socials.github,
-        site.socials.linkedin,
-        site.socials.twitter,
-      ],
+      sameAs: [site.socials.twitter],
     },
     author: { "@type": "Person", name: seo.name, url: seo.url },
     keywords: project.stack.join(", "),

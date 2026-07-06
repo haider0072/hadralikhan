@@ -194,10 +194,8 @@ function AboutCardView({ card }: { card: AboutCard }) {
       <div className="mt-5 space-y-3 text-[13px] leading-relaxed text-cream/85">
         <p>
           I design, manage, and ship software end-to-end. Karachi-based.
-          Currently building{" "}
-          <span className="font-semibold text-cream">DigitalHire</span>, a
-          video-first hiring platform where I lead product and also work
-          down the stack.
+          Currently building a video-first hiring platform where I lead
+          product and also work down the stack.
         </p>
         <p className="text-cream/70">
           Outside the editor: Japanese architecture, cinematic storytelling,
@@ -212,22 +210,6 @@ function AboutCardView({ card }: { card: AboutCard }) {
           className="rounded-lg bg-cream/10 hover:bg-cream/15 border border-cream/10 px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-cream transition-colors"
         >
           Email
-        </a>
-        <a
-          href={site.socials.linkedin}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-lg bg-cream/10 hover:bg-cream/15 border border-cream/10 px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-cream transition-colors"
-        >
-          LinkedIn
-        </a>
-        <a
-          href={site.socials.github}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-lg bg-cream/10 hover:bg-cream/15 border border-cream/10 px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-cream transition-colors"
-        >
-          GitHub
         </a>
         <a
           href={site.socials.twitter}
@@ -256,7 +238,7 @@ function AboutCardView({ card }: { card: AboutCard }) {
                 aria-hidden
                 style={{
                   background:
-                    exp.company === "DigitalHire"
+                    exp.company === "Video hiring SaaS"
                       ? "#c4623d"
                       : exp.company === "iSystematic"
                         ? "#6b8aa5"
@@ -489,22 +471,6 @@ function ContactCardView({ card }: { card: ContactCard }) {
           className="rounded-full border border-cream/30 px-4 py-2 text-xs font-mono uppercase tracking-[0.2em] hover:bg-cream hover:text-ink transition-colors"
         >
           Email
-        </a>
-        <a
-          href={site.socials.linkedin}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-full border border-cream/30 px-4 py-2 text-xs font-mono uppercase tracking-[0.2em] hover:bg-cream hover:text-ink transition-colors"
-        >
-          LinkedIn
-        </a>
-        <a
-          href={site.socials.github}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-full border border-cream/30 px-4 py-2 text-xs font-mono uppercase tracking-[0.2em] hover:bg-cream hover:text-ink transition-colors"
-        >
-          GitHub
         </a>
       </div>
     </div>

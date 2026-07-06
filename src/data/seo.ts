@@ -67,7 +67,6 @@ export const seo = {
     "UI design",
     "product design portfolio",
     "AI product design portfolio",
-    "DigitalHire",
   ],
   skills: [
     "Product Design",

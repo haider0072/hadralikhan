@@ -42,7 +42,7 @@ const jsonLd = {
     "@type": "Person",
     name: seo.name,
     url: seo.url,
-    sameAs: [site.socials.github, site.socials.linkedin, site.socials.twitter],
+    sameAs: [site.socials.twitter],
   },
   author: { "@type": "Person", name: seo.name, url: seo.url },
   keywords:

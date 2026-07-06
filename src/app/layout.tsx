@@ -159,11 +159,6 @@ function JsonLd() {
         skills: "LLM agents, MCP, LangChain, prompt engineering, RAG",
       },
     ],
-    worksFor: {
-      "@type": "Organization",
-      name: "DigitalHire",
-      url: "https://digitalhire.com",
-    },
     alumniOf: {
       "@type": "CollegeOrUniversity",
       name: "Bahria University",
@@ -189,11 +184,7 @@ function JsonLd() {
       "@type": "Place",
       name: "Remote, worldwide",
     },
-    sameAs: [
-      site.socials.github,
-      site.socials.linkedin,
-      site.socials.twitter,
-    ],
+    sameAs: [site.socials.twitter],
     seeks: {
       "@type": "Demand",
       name: "Remote product design and engineering opportunities, worldwide",
@@ -396,8 +387,6 @@ export default function RootLayout({
       className={`${fraunces.variable} ${inter.variable} ${jetbrains.variable} ${caveat.variable}`}
     >
       <head>
-        <link rel="me" href={site.socials.github} />
-        <link rel="me" href={site.socials.linkedin} />
         <link rel="me" href={site.socials.twitter} />
         <link rel="me" href={site.socials.email} />
         <link rel="author" href={seo.url} />
